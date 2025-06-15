@@ -25,7 +25,7 @@ const Index = () => {
         </header>
 
         <main>
-          <Tabs defaultValue="matches" className="w-full">
+          <Tabs defaultValue="trainings" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="matches">Wedstrijden</TabsTrigger>
               <TabsTrigger value="trainings">Trainingen</TabsTrigger>

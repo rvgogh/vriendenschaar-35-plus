@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/accordion";
 import TrainingPlayerList from "./TrainingPlayerList";
 import { Calendar, Users } from "lucide-react";
+import TrainingStatusIndicator from "./TrainingStatusIndicator";
 
 interface TrainingWithCount extends Training {
     yes_count: number;
@@ -76,9 +77,14 @@ const TrainingList = () => {
                 <AccordionItem value={`training-${training.id}`} key={training.id}>
                     <AccordionTrigger>
                         <div className="flex justify-between w-full pr-4 items-center">
-                            <div className="flex items-center gap-2">
-                                <Calendar className="h-5 w-5 text-primary" />
-                                <span className="text-lg font-semibold">{formatDate(training.training_at)}</span>
+                            <div className="flex flex-col items-start text-left gap-1">
+                                <div className="flex items-center gap-2">
+                                    <Calendar className="h-5 w-5 text-primary" />
+                                    <span className="text-lg font-semibold">{formatDate(training.training_at)}</span>
+                                </div>
+                                <div className="pl-7">
+                                    <TrainingStatusIndicator yesCount={training.yes_count} />
+                                </div>
                             </div>
                             <div className="flex items-center gap-2 text-muted-foreground">
                                 <Users className="h-5 w-5" />
