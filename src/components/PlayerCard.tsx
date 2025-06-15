@@ -1,4 +1,3 @@
-
 import { PlayerWithStatus, PlayerStatus } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,12 +11,12 @@ interface PlayerCardProps {
 const PlayerCard = ({ player, onStatusChange }: PlayerCardProps) => {
   return (
     <Card className="bg-secondary/50 flex flex-col justify-between">
-      <CardHeader>
+      <CardHeader className="p-4">
         <CardTitle className="text-xl">
           {player.name}
         </CardTitle>
       </CardHeader>
-      <CardFooter className="flex justify-end gap-2">
+      <CardFooter className="flex justify-end gap-2 p-4 pt-0">
         <Button 
           variant='outline'
           size="sm" 
