@@ -14,7 +14,7 @@ const Index = () => {
               className="h-40 sm:h-56 bg-cover"
               style={{
                 backgroundImage: `url('/lovable-uploads/2c6b32eb-0f33-43a7-8a95-d6b6d9f2f175.png')`,
-                backgroundPosition: "center bottom -20px",
+                backgroundPosition: "center bottom -80px",
               }}
             />
             <div className="px-4">
