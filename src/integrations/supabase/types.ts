@@ -9,7 +9,69 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      matches: {
+        Row: {
+          id: number
+          opponent: string
+        }
+        Insert: {
+          id?: number
+          opponent: string
+        }
+        Update: {
+          id?: number
+          opponent?: string
+        }
+        Relationships: []
+      }
+      player_statuses: {
+        Row: {
+          match_id: number
+          player_id: number
+          status: Database["public"]["Enums"]["player_status"]
+        }
+        Insert: {
+          match_id: number
+          player_id: number
+          status: Database["public"]["Enums"]["player_status"]
+        }
+        Update: {
+          match_id?: number
+          player_id?: number
+          status?: Database["public"]["Enums"]["player_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "player_statuses_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "player_statuses_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      players: {
+        Row: {
+          id: number
+          name: string
+        }
+        Insert: {
+          id?: number
+          name: string
+        }
+        Update: {
+          id?: number
+          name?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -18,7 +80,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      player_status: "IN" | "OUT" | "MAYBE" | "UNKNOWN"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -133,6 +195,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      player_status: ["IN", "OUT", "MAYBE", "UNKNOWN"],
+    },
   },
 } as const

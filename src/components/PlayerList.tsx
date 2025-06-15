@@ -1,18 +1,60 @@
 
-import { useState } from "react";
-import { initialPlayers, Player, PlayerStatus } from "@/data/players";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { PlayerStatus, PlayerWithStatus } from "@/types";
 import PlayerCard from "./PlayerCard";
+import { toast } from "@/components/ui/sonner";
 
-const PlayerList = () => {
-  const [players, setPlayers] = useState<Player[]>(initialPlayers);
+const fetchPlayersWithStatus = async (matchId: number): Promise<PlayerWithStatus[]> => {
+    const { data: players, error: playersError } = await supabase.from("players").select("*").order('name', { ascending: true });
+    if (playersError) throw playersError;
+
+    const { data: statuses, error: statusesError } = await supabase
+        .from("player_statuses")
+        .select("*")
+        .eq("match_id", matchId);
+    if (statusesError) throw statusesError;
+
+    const statusMap = new Map((statuses || []).map(s => [s.player_id, s.status]));
+
+    return (players || []).map(p => ({
+        ...p,
+        status: statusMap.get(p.id) || "UNKNOWN",
+    }));
+};
+
+const PlayerList = ({ matchId }: { matchId: number }) => {
+  const queryClient = useQueryClient();
+
+  const { data: players, isLoading } = useQuery({
+      queryKey: ["players", matchId],
+      queryFn: () => fetchPlayersWithStatus(matchId),
+  });
+
+  const updateStatusMutation = useMutation({
+      mutationFn: async ({ playerId, status }: { playerId: number, status: PlayerStatus }) => {
+          const { error } = await supabase
+              .from("player_statuses")
+              .upsert({ match_id: matchId, player_id: playerId, status: status });
+          if (error) throw error;
+      },
+      onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: ["players", matchId] });
+          queryClient.invalidateQueries({ queryKey: ["matches"] });
+          toast.success("Status updated!");
+      },
+      onError: (error) => {
+          toast.error(`Failed to update status: ${error.message}`);
+      }
+  });
 
   const handleStatusChange = (id: number, status: PlayerStatus) => {
-    setPlayers(
-      players.map((p) => (p.id === id ? { ...p, status } : p))
-    );
+      updateStatusMutation.mutate({ playerId: id, status });
   };
 
-  const inCount = players.filter(p => p.status === 'IN').length;
+  if (isLoading) return <div>Loading players...</div>;
+
+  const inCount = players?.filter(p => p.status === 'IN').length || 0;
 
   return (
     <div>
@@ -24,7 +66,7 @@ const PlayerList = () => {
         </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {players.map((player) => (
+        {players?.map((player) => (
           <PlayerCard
             key={player.id}
             player={player}

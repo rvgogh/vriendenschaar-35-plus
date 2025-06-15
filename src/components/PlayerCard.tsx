@@ -1,16 +1,16 @@
 
-import { Player, PlayerStatus } from "@/data/players";
+import { PlayerWithStatus, PlayerStatus } from "@/types";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { Check, HelpCircle, X } from "lucide-react";
 
 interface PlayerCardProps {
-  player: Player;
+  player: PlayerWithStatus;
   onStatusChange: (id: number, status: PlayerStatus) => void;
 }
 
-const statusConfig = {
+const statusConfig: Record<PlayerStatus, { icon: JSX.Element; color: string; text: string }> = {
   IN: {
     icon: <Check className="h-5 w-5" />,
     color: "bg-green-500",
@@ -25,6 +25,11 @@ const statusConfig = {
     icon: <HelpCircle className="h-5 w-5" />,
     color: "bg-yellow-500",
     text: "MAYBE",
+  },
+  UNKNOWN: {
+    icon: <HelpCircle className="h-5 w-5" />,
+    color: "bg-gray-500",
+    text: "???",
   },
 };
 
@@ -43,9 +48,9 @@ const PlayerCard = ({ player, onStatusChange }: PlayerCardProps) => {
         </CardTitle>
       </CardHeader>
       <CardFooter className="flex justify-end gap-2">
-        <Button variant="outline" size="sm" onClick={() => onStatusChange(player.id, "IN")}>IN</Button>
-        <Button variant="outline" size="sm" onClick={() => onStatusChange(player.id, "MAYBE")}>MAYBE</Button>
-        <Button variant="outline" size="sm" onClick={() => onStatusChange(player.id, "OUT")}>OUT</Button>
+        <Button variant={player.status === 'IN' ? 'default' : 'outline'} size="sm" onClick={() => onStatusChange(player.id, "IN")}>IN</Button>
+        <Button variant={player.status === 'MAYBE' ? 'default' : 'outline'} size="sm" onClick={() => onStatusChange(player.id, "MAYBE")}>MAYBE</Button>
+        <Button variant={player.status === 'OUT' ? 'destructive' : 'outline'} size="sm" onClick={() => onStatusChange(player.id, "OUT")}>OUT</Button>
       </CardFooter>
     </Card>
   );
