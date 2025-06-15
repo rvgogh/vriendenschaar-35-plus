@@ -17,15 +17,27 @@ const PlayerCard = ({ player, onStatusChange }: PlayerCardProps) => {
         </CardTitle>
       </CardHeader>
       <CardFooter className="flex justify-end gap-2">
-        <Button variant={player.status === 'IN' ? 'default' : 'outline'} size="sm" onClick={() => onStatusChange(player.id, "IN")}>JA</Button>
+        <Button 
+          variant={player.status === 'IN' ? 'default' : 'outline'} 
+          size="sm" 
+          onClick={() => onStatusChange(player.id, player.status === 'IN' ? 'UNKNOWN' : 'IN')}
+        >
+          JA
+        </Button>
         <Button 
           variant={player.status === 'MAYBE' ? 'secondary' : 'outline'} 
           size="sm" 
-          onClick={() => onStatusChange(player.id, "MAYBE")}
+          onClick={() => onStatusChange(player.id, player.status === 'MAYBE' ? 'UNKNOWN' : 'MAYBE')}
         >
           ?
         </Button>
-        <Button variant={player.status === 'OUT' ? 'destructive' : 'outline'} size="sm" onClick={() => onStatusChange(player.id, "OUT")}>NEE</Button>
+        <Button 
+          variant={player.status === 'OUT' ? 'destructive' : 'outline'} 
+          size="sm" 
+          onClick={() => onStatusChange(player.id, player.status === 'OUT' ? 'UNKNOWN' : 'OUT')}
+        >
+          NEE
+        </Button>
       </CardFooter>
     </Card>
   );

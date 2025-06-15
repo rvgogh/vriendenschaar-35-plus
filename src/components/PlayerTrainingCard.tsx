@@ -17,8 +17,20 @@ const PlayerTrainingCard = ({ player, onStatusChange }: PlayerTrainingCardProps)
         </CardTitle>
       </CardHeader>
       <CardFooter className="flex justify-end gap-2">
-        <Button variant={player.status === 'YES' ? 'default' : 'outline'} size="sm" onClick={() => onStatusChange(player.id, "YES")}>JA</Button>
-        <Button variant={player.status === 'NO' ? 'destructive' : 'outline'} size="sm" onClick={() => onStatusChange(player.id, "NO")}>NEE</Button>
+        <Button 
+          variant={player.status === 'YES' ? 'default' : 'outline'} 
+          size="sm" 
+          onClick={() => onStatusChange(player.id, player.status === 'YES' ? 'UNKNOWN' : 'YES')}
+        >
+          JA
+        </Button>
+        <Button 
+          variant={player.status === 'NO' ? 'destructive' : 'outline'} 
+          size="sm" 
+          onClick={() => onStatusChange(player.id, player.status === 'NO' ? 'UNKNOWN' : 'NO')}
+        >
+          NEE
+        </Button>
       </CardFooter>
     </Card>
   );
