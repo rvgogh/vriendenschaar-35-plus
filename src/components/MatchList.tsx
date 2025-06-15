@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -73,7 +72,7 @@ const MatchList = () => {
                                 <Users className="mr-2 h-5 w-5" />
                                 <span>{match.in_count} spelers AANWEZIG</span>
                             </div>
-                            <div className="flex items-center text-orange-500 font-semibold mt-2">
+                            <div className="flex items-center text-muted-foreground font-semibold mt-2">
                                 <HelpCircle className="mr-2 h-5 w-5" />
                                 <span>{match.maybe_count} spelers MISSCHIEN</span>
                             </div>

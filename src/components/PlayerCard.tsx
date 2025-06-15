@@ -2,7 +2,6 @@
 import { PlayerWithStatus, PlayerStatus } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
 
 interface PlayerCardProps {
   player: PlayerWithStatus;
@@ -20,12 +19,9 @@ const PlayerCard = ({ player, onStatusChange }: PlayerCardProps) => {
       <CardFooter className="flex justify-end gap-2">
         <Button variant={player.status === 'IN' ? 'default' : 'outline'} size="sm" onClick={() => onStatusChange(player.id, "IN")}>JA</Button>
         <Button 
-          variant={player.status === 'MAYBE' ? 'default' : 'outline'} 
+          variant={player.status === 'MAYBE' ? 'secondary' : 'outline'} 
           size="sm" 
           onClick={() => onStatusChange(player.id, "MAYBE")}
-          className={cn(
-            player.status === 'MAYBE' && "bg-orange-500 hover:bg-orange-600 text-primary-foreground"
-          )}
         >
           ?
         </Button>
