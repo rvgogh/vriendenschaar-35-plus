@@ -14,7 +14,7 @@ const PlayerCard = ({ player, onStatusChange }: PlayerCardProps) => {
     <Card className="bg-secondary/50 flex flex-col justify-between">
       <CardHeader>
         <CardTitle className="text-xl">
-          <span>{player.name}</span>
+          {player.name}
         </CardTitle>
       </CardHeader>
       <CardFooter className="flex justify-end gap-2">
