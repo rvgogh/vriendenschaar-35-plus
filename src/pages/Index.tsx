@@ -21,7 +21,7 @@ const Index = () => {
             <div className="flex justify-between items-center">
                 <div className="flex items-center gap-4">
                     <div className="h-16 w-16 bg-white/95 rounded-lg p-1 flex items-center justify-center shadow-md">
-                        <img src="/lovable-uploads/65c8fbc2-d51c-4e79-848c-fff915fcf671.png" alt="Club Logo" className="max-h-full max-w-full object-contain" />
+                        <img src="/lovable-uploads/59cda614-0c72-4bed-b791-eacb6fd4a572.png" alt="Club Logo" className="max-h-full max-w-full object-contain" />
                     </div>
                     <h1 className="text-5xl font-extrabold tracking-tight text-shadow">
                         Vriendenschaar 35+
