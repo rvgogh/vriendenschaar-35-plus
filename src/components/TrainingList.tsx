@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Training } from "@/types";
@@ -61,12 +60,9 @@ const TrainingList = () => {
     const formatDate = (dateString: string) => {
         const date = new Date(dateString);
         return new Intl.DateTimeFormat('nl-NL', {
-            weekday: 'long',
             year: 'numeric',
             month: 'long',
             day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
             timeZone: 'Europe/Amsterdam'
         }).format(date);
     };
