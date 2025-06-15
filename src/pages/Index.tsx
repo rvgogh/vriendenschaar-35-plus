@@ -2,6 +2,8 @@
 import MatchList from "@/components/MatchList";
 import { Trophy } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import TrainingList from "@/components/TrainingList";
 
 const Index = () => {
   return (
@@ -18,12 +20,23 @@ const Index = () => {
                 <ThemeToggle />
             </div>
           <p className="text-muted-foreground mt-2 text-lg text-center">
-            Aankomende Wedstrijden
+            Selecteer hieronder wat je wilt bekijken
           </p>
         </header>
 
         <main>
-          <MatchList />
+          <Tabs defaultValue="matches" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="matches">Wedstrijden</TabsTrigger>
+              <TabsTrigger value="trainings">Trainingen</TabsTrigger>
+            </TabsList>
+            <TabsContent value="matches" className="mt-6">
+              <MatchList />
+            </TabsContent>
+            <TabsContent value="trainings" className="mt-6">
+              <TrainingList />
+            </TabsContent>
+          </Tabs>
         </main>
       </div>
     </div>

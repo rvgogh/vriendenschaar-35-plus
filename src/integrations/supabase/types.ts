@@ -72,6 +72,54 @@ export type Database = {
         }
         Relationships: []
       }
+      training_statuses: {
+        Row: {
+          player_id: number
+          status: Database["public"]["Enums"]["training_status"]
+          training_id: number
+        }
+        Insert: {
+          player_id: number
+          status: Database["public"]["Enums"]["training_status"]
+          training_id: number
+        }
+        Update: {
+          player_id?: number
+          status?: Database["public"]["Enums"]["training_status"]
+          training_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "training_statuses_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "training_statuses_training_id_fkey"
+            columns: ["training_id"]
+            isOneToOne: false
+            referencedRelation: "trainings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trainings: {
+        Row: {
+          id: number
+          training_at: string
+        }
+        Insert: {
+          id?: number
+          training_at: string
+        }
+        Update: {
+          id?: number
+          training_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -81,6 +129,7 @@ export type Database = {
     }
     Enums: {
       player_status: "IN" | "OUT" | "MAYBE" | "UNKNOWN"
+      training_status: "YES" | "NO" | "UNKNOWN"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -197,6 +246,7 @@ export const Constants = {
   public: {
     Enums: {
       player_status: ["IN", "OUT", "MAYBE", "UNKNOWN"],
+      training_status: ["YES", "NO", "UNKNOWN"],
     },
   },
 } as const

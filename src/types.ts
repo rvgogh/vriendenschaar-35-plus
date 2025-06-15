@@ -1,4 +1,3 @@
-
 export type PlayerStatus = "IN" | "OUT" | "MAYBE" | "UNKNOWN";
 
 export interface Player {
@@ -13,4 +12,15 @@ export interface PlayerWithStatus extends Player {
 export interface Match {
   id: number;
   opponent: string;
+}
+
+export type TrainingAttendanceStatus = "YES" | "NO" | "UNKNOWN";
+
+export interface Training {
+  id: number;
+  training_at: string;
+}
+
+export interface PlayerWithTrainingStatus extends Player {
+  status: TrainingAttendanceStatus;
 }
