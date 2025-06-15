@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { PlayerStatus, PlayerWithStatus } from "@/types";
@@ -61,8 +60,7 @@ const PlayerList = ({ matchId }: { matchId: number }) => {
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-3xl font-bold text-primary">Selectie</h2>
         <div className="text-right">
-            <p className="text-2xl font-bold text-primary">{inCount}</p>
-            <p className="text-sm text-muted-foreground">Spelers aanwezig</p>
+            <p className="text-2xl font-bold text-primary">{inCount} 🍆</p>
         </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

@@ -21,15 +21,17 @@ const PlayerTrainingCard = ({ player, onStatusChange }: PlayerTrainingCardProps)
           variant={player.status === 'YES' ? 'default' : 'outline'} 
           size="sm" 
           onClick={() => onStatusChange(player.id, player.status === 'YES' ? 'UNKNOWN' : 'YES')}
+          className="text-2xl w-12"
         >
-          JA
+          🍆
         </Button>
         <Button 
           variant={player.status === 'NO' ? 'destructive' : 'outline'} 
           size="sm" 
           onClick={() => onStatusChange(player.id, player.status === 'NO' ? 'UNKNOWN' : 'NO')}
+          className="text-2xl w-12"
         >
-          NEE
+          ❌
         </Button>
       </CardFooter>
     </Card>

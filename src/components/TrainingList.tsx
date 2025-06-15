@@ -8,7 +8,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import TrainingPlayerList from "./TrainingPlayerList";
-import { Calendar, Users } from "lucide-react";
+import { Calendar } from "lucide-react";
 import TrainingStatusIndicator from "./TrainingStatusIndicator";
 
 interface TrainingWithCount extends Training {
@@ -83,8 +83,7 @@ const TrainingList = () => {
                                 </div>
                             </div>
                             <div className="flex items-center gap-2 text-muted-foreground">
-                                <Users className="h-5 w-5" />
-                                <span>{training.yes_count} aanwezig</span>
+                                <span className="text-lg">{training.yes_count} 🍆</span>
                             </div>
                         </div>
                     </AccordionTrigger>

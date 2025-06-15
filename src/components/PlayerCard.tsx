@@ -21,22 +21,25 @@ const PlayerCard = ({ player, onStatusChange }: PlayerCardProps) => {
           variant={player.status === 'IN' ? 'default' : 'outline'} 
           size="sm" 
           onClick={() => onStatusChange(player.id, player.status === 'IN' ? 'UNKNOWN' : 'IN')}
+          className="text-2xl w-12"
         >
-          JA
+          🍆
         </Button>
         <Button 
           variant={player.status === 'MAYBE' ? 'secondary' : 'outline'} 
           size="sm" 
           onClick={() => onStatusChange(player.id, player.status === 'MAYBE' ? 'UNKNOWN' : 'MAYBE')}
+          className="text-2xl w-12"
         >
-          ?
+          ❓
         </Button>
         <Button 
           variant={player.status === 'OUT' ? 'destructive' : 'outline'} 
           size="sm" 
           onClick={() => onStatusChange(player.id, player.status === 'OUT' ? 'UNKNOWN' : 'OUT')}
+          className="text-2xl w-12"
         >
-          NEE
+          ❌
         </Button>
       </CardFooter>
     </Card>
