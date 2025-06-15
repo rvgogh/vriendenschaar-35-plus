@@ -2,6 +2,7 @@
 import { PlayerWithTrainingStatus, TrainingAttendanceStatus } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 
 interface PlayerTrainingCardProps {
   player: PlayerWithTrainingStatus;
@@ -18,18 +19,18 @@ const PlayerTrainingCard = ({ player, onStatusChange }: PlayerTrainingCardProps)
       </CardHeader>
       <CardFooter className="flex justify-end gap-2">
         <Button 
-          variant={player.status === 'YES' ? 'default' : 'outline'} 
+          variant='outline'
           size="sm" 
           onClick={() => onStatusChange(player.id, player.status === 'YES' ? 'UNKNOWN' : 'YES')}
-          className="text-2xl w-12"
+          className={cn("text-2xl w-12", player.status === 'YES' && "ring-2 ring-primary")}
         >
           🍆
         </Button>
         <Button 
-          variant={player.status === 'NO' ? 'destructive' : 'outline'} 
+          variant='outline'
           size="sm" 
           onClick={() => onStatusChange(player.id, player.status === 'NO' ? 'UNKNOWN' : 'NO')}
-          className="text-2xl w-12"
+          className={cn("text-2xl w-12", player.status === 'NO' && "ring-2 ring-destructive")}
         >
           ❌
         </Button>

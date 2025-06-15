@@ -2,6 +2,7 @@
 import { PlayerWithStatus, PlayerStatus } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 
 interface PlayerCardProps {
   player: PlayerWithStatus;
@@ -18,26 +19,26 @@ const PlayerCard = ({ player, onStatusChange }: PlayerCardProps) => {
       </CardHeader>
       <CardFooter className="flex justify-end gap-2">
         <Button 
-          variant={player.status === 'IN' ? 'default' : 'outline'} 
+          variant='outline'
           size="sm" 
           onClick={() => onStatusChange(player.id, player.status === 'IN' ? 'UNKNOWN' : 'IN')}
-          className="text-2xl w-12"
+          className={cn("text-2xl w-12", player.status === 'IN' && "ring-2 ring-primary")}
         >
           🍆
         </Button>
         <Button 
-          variant={player.status === 'MAYBE' ? 'secondary' : 'outline'} 
+          variant='outline'
           size="sm" 
           onClick={() => onStatusChange(player.id, player.status === 'MAYBE' ? 'UNKNOWN' : 'MAYBE')}
-          className="text-2xl w-12"
+          className={cn("text-2xl w-12", player.status === 'MAYBE' && "ring-2 ring-yellow-400")}
         >
           ❓
         </Button>
         <Button 
-          variant={player.status === 'OUT' ? 'destructive' : 'outline'} 
+          variant='outline'
           size="sm" 
           onClick={() => onStatusChange(player.id, player.status === 'OUT' ? 'UNKNOWN' : 'OUT')}
-          className="text-2xl w-12"
+          className={cn("text-2xl w-12", player.status === 'OUT' && "ring-2 ring-destructive")}
         >
           ❌
         </Button>
