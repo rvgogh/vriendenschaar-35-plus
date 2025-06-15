@@ -3,38 +3,50 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "react-router-dom";
-import { Users } from "lucide-react";
+import { Users, HelpCircle } from "lucide-react";
 
 interface MatchWithCount {
     id: number;
     opponent: string;
-    in_count: number | null;
+    in_count: number;
+    maybe_count: number;
 }
 
 const fetchMatches = async (): Promise<MatchWithCount[]> => {
-    const { data, error } = await supabase
+    const { data: matches, error: matchesError } = await supabase
         .from("matches")
         .select(`id, opponent`);
 
-    if (error) throw error;
-    if (!data) return [];
+    if (matchesError) throw matchesError;
+    if (!matches) return [];
 
-    const matchesWithCounts = await Promise.all(
-        data.map(async (match) => {
-            const { count, error: countError } = await supabase
-                .from("player_statuses")
-                .select('*', { count: 'exact', head: true })
-                .eq('match_id', match.id)
-                .eq('status', 'IN');
+    const { data: statuses, error: statusesError } = await supabase
+        .from("player_statuses")
+        .select('match_id, status');
 
-            if (countError) {
-                console.error(`Error fetching count for match ${match.id}:`, countError);
-                return { ...match, in_count: 0 };
-            }
+    if (statusesError) {
+        console.error("Error fetching player statuses:", statusesError);
+        // Return matches with 0 counts in case of an error
+        return matches.map(match => ({ ...match, in_count: 0, maybe_count: 0 }));
+    }
 
-            return { ...match, in_count: count };
-        })
-    );
+    const statusCounts = (statuses || []).reduce((acc, { match_id, status }) => {
+        if (!acc[match_id]) {
+            acc[match_id] = { in_count: 0, maybe_count: 0 };
+        }
+        if (status === 'IN') {
+            acc[match_id].in_count++;
+        } else if (status === 'MAYBE') {
+            acc[match_id].maybe_count++;
+        }
+        return acc;
+    }, {} as Record<number, { in_count: number, maybe_count: number }>);
+
+    const matchesWithCounts = matches.map(match => ({
+        ...match,
+        in_count: statusCounts[match.id]?.in_count || 0,
+        maybe_count: statusCounts[match.id]?.maybe_count || 0,
+    }));
 
     return matchesWithCounts;
 };
@@ -59,7 +71,11 @@ const MatchList = () => {
                         <CardContent>
                             <div className="flex items-center text-green-500 font-semibold">
                                 <Users className="mr-2 h-5 w-5" />
-                                <span>{match.in_count ?? 0} players IN</span>
+                                <span>{match.in_count} players IN</span>
+                            </div>
+                            <div className="flex items-center text-orange-500 font-semibold mt-2">
+                                <HelpCircle className="mr-2 h-5 w-5" />
+                                <span>{match.maybe_count} players MAYBE</span>
                             </div>
                         </CardContent>
                     </Card>

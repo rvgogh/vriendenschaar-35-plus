@@ -23,7 +23,7 @@ const statusConfig: Record<PlayerStatus, { icon: JSX.Element; color: string; tex
   },
   MAYBE: {
     icon: <HelpCircle className="h-5 w-5" />,
-    color: "bg-yellow-500",
+    color: "bg-orange-500",
     text: "MAYBE",
   },
   UNKNOWN: {
@@ -49,7 +49,16 @@ const PlayerCard = ({ player, onStatusChange }: PlayerCardProps) => {
       </CardHeader>
       <CardFooter className="flex justify-end gap-2">
         <Button variant={player.status === 'IN' ? 'default' : 'outline'} size="sm" onClick={() => onStatusChange(player.id, "IN")}>IN</Button>
-        <Button variant={player.status === 'MAYBE' ? 'default' : 'outline'} size="sm" onClick={() => onStatusChange(player.id, "MAYBE")}>MAYBE</Button>
+        <Button 
+          variant={player.status === 'MAYBE' ? 'default' : 'outline'} 
+          size="sm" 
+          onClick={() => onStatusChange(player.id, "MAYBE")}
+          className={cn(
+            player.status === 'MAYBE' && "bg-orange-500 hover:bg-orange-600 text-primary-foreground"
+          )}
+        >
+          MAYBE
+        </Button>
         <Button variant={player.status === 'OUT' ? 'destructive' : 'outline'} size="sm" onClick={() => onStatusChange(player.id, "OUT")}>OUT</Button>
       </CardFooter>
     </Card>
