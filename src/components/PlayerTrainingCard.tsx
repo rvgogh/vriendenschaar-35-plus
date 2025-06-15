@@ -14,7 +14,7 @@ const PlayerTrainingCard = ({ player, onStatusChange }: PlayerTrainingCardProps)
     <Card className="bg-secondary/50 flex items-center justify-between p-3">
       <CardTitle className="text-xl truncate mr-2">
         {player.name}
-      </Title>
+      </CardTitle>
       <div className="flex gap-2 flex-shrink-0">
         <Button 
           variant='outline'
