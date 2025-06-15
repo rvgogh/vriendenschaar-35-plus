@@ -28,11 +28,11 @@ const MatchPage = () => {
         enabled: !!matchId,
     });
 
-    if (isLoading) return <div className="container mx-auto px-4 py-8">Wedstrijd details laden...</div>;
-    if (error || !match) return <div className="container mx-auto px-4 py-8">Wedstrijd niet gevonden.</div>;
+    if (isLoading) return <div className="container mx-auto px-4 py-8 max-w-[800px]">Wedstrijd details laden...</div>;
+    if (error || !match) return <div className="container mx-auto px-4 py-8 max-w-[800px]">Wedstrijd niet gevonden.</div>;
 
     return (
-        <div className="container mx-auto px-4 py-8">
+        <div className="container mx-auto px-4 py-8 max-w-[800px]">
             <header className="mb-8">
                 <Button asChild variant="outline">
                     <Link to="/" className="flex items-center gap-2">

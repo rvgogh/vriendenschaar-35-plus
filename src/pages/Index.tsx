@@ -15,7 +15,7 @@ const Index = () => {
           }}
         />
         <div className="bg-card border-b">
-          <div className="container mx-auto px-4">
+          <div className="container mx-auto px-4 max-w-[800px]">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-4">
               <div className="flex items-center gap-4 w-full sm:w-auto">
                 <div className="h-20 w-20 bg-white/95 rounded-lg p-1 flex items-center justify-center shadow-md flex-shrink-0">
@@ -42,7 +42,7 @@ const Index = () => {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-8 max-w-[800px]">
         <Tabs defaultValue="trainings" className="w-full">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="matches">Wedstrijden</TabsTrigger>
