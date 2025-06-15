@@ -11,7 +11,7 @@ const Index = () => {
         <div className="bg-card border-b">
           <div className="max-w-[800px] mx-auto">
             <div
-              className="h-40 sm:h-56 bg-cover bg-center"
+              className="h-40 sm:h-56 bg-cover bg-bottom"
               style={{
                 backgroundImage: `url('/lovable-uploads/2c6b32eb-0f33-43a7-8a95-d6b6d9f2f175.png')`,
               }}
