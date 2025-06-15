@@ -7,49 +7,53 @@ import TrainingList from "@/components/TrainingList";
 const Index = () => {
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <div className="container mx-auto px-4 py-8">
-        <header
-          className="mb-12 rounded-lg p-8 relative overflow-hidden text-white shadow-lg"
+      <header className="mb-8">
+        <div
+          className="h-40 sm:h-56 bg-cover bg-center"
           style={{
             backgroundImage: `url('/lovable-uploads/2c6b32eb-0f33-43a7-8a95-d6b6d9f2f175.png')`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
           }}
-        >
-          <div className="absolute inset-0 bg-black/60 z-0" />
-          <div className="relative z-10">
-            <div className="flex justify-between items-center">
-                <div className="flex items-center gap-4">
-                    <div className="h-16 w-16 bg-white/95 rounded-lg p-1 flex items-center justify-center shadow-md">
-                        <img src="/lovable-uploads/59cda614-0c72-4bed-b791-eacb6fd4a572.png" alt="Club Logo" className="max-h-full max-w-full object-contain" />
-                    </div>
-                    <h1 className="text-5xl font-extrabold tracking-tight text-shadow">
-                        Vriendenschaar 35+
-                    </h1>
-                </div>
-                <ThemeToggle />
+        />
+        <div className="container mx-auto px-4">
+          <div className="bg-card p-4 rounded-lg shadow-lg flex flex-col sm:flex-row items-center justify-between gap-4 -mt-12">
+            <div className="flex items-center gap-4 w-full sm:w-auto">
+              <div className="h-20 w-20 sm:h-24 sm:w-24 bg-white/95 rounded-lg p-1 flex items-center justify-center shadow-md flex-shrink-0 -mt-8 sm:-mt-10 border-4 border-card">
+                <img
+                  src="/lovable-uploads/59cda614-0c72-4bed-b791-eacb6fd4a572.png"
+                  alt="Club Logo"
+                  className="max-h-full max-w-full object-contain"
+                />
+              </div>
+              <div className="flex-grow">
+                <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight text-foreground">
+                  Vriendenschaar 35+
+                </h1>
+                <p className="text-sm sm:text-base text-muted-foreground mt-1">
+                  Selecteer hieronder wat je wilt bekijken
+                </p>
+              </div>
             </div>
-            <p className="mt-4 text-lg text-center text-white/90">
-                Selecteer hieronder wat je wilt bekijken
-            </p>
+            <div className="w-full flex justify-end sm:w-auto">
+              <ThemeToggle />
+            </div>
           </div>
-        </header>
+        </div>
+      </header>
 
-        <main>
-          <Tabs defaultValue="trainings" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="matches">Wedstrijden</TabsTrigger>
-              <TabsTrigger value="trainings">Trainingen</TabsTrigger>
-            </TabsList>
-            <TabsContent value="matches" className="mt-6">
-              <MatchList />
-            </TabsContent>
-            <TabsContent value="trainings" className="mt-6">
-              <TrainingList />
-            </TabsContent>
-          </Tabs>
-        </main>
-      </div>
+      <main className="container mx-auto px-4 pb-8">
+        <Tabs defaultValue="trainings" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="matches">Wedstrijden</TabsTrigger>
+            <TabsTrigger value="trainings">Trainingen</TabsTrigger>
+          </TabsList>
+          <TabsContent value="matches" className="mt-6">
+            <MatchList />
+          </TabsContent>
+          <TabsContent value="trainings" className="mt-6">
+            <TrainingList />
+          </TabsContent>
+        </Tabs>
+      </main>
     </div>
   );
 };
