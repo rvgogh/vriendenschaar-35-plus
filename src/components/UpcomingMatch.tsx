@@ -12,7 +12,7 @@ const UpcomingMatch = ({ match }: UpcomingMatchProps) => {
     return (
       <Card className="mb-8 bg-secondary border-primary">
         <CardHeader>
-          <CardTitle>Loading match...</CardTitle>
+          <CardTitle>Wedstrijd laden...</CardTitle>
         </CardHeader>
       </Card>
     );
@@ -22,14 +22,14 @@ const UpcomingMatch = ({ match }: UpcomingMatchProps) => {
     <Card className="mb-8 bg-secondary border-primary">
       <CardHeader>
         <CardTitle className="text-center text-2xl font-bold text-primary">
-          Match Details
+          Wedstrijddetails
         </CardTitle>
       </CardHeader>
       <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6 text-lg">
         <div className="flex items-center gap-4">
           <Shield className="h-8 w-8 text-primary" />
           <div>
-            <p className="font-semibold">Opponent</p>
+            <p className="font-semibold">Tegenstander</p>
             <p className="text-muted-foreground">{match.opponent}</p>
           </div>
         </div>

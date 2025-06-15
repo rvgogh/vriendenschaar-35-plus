@@ -28,8 +28,8 @@ const MatchPage = () => {
         enabled: !!matchId,
     });
 
-    if (isLoading) return <div className="container mx-auto px-4 py-8">Loading match details...</div>;
-    if (error || !match) return <div className="container mx-auto px-4 py-8">Match not found.</div>;
+    if (isLoading) return <div className="container mx-auto px-4 py-8">Wedstrijd details laden...</div>;
+    if (error || !match) return <div className="container mx-auto px-4 py-8">Wedstrijd niet gevonden.</div>;
 
     return (
         <div className="container mx-auto px-4 py-8">
@@ -37,7 +37,7 @@ const MatchPage = () => {
                 <Button asChild variant="outline">
                     <Link to="/" className="flex items-center gap-2">
                         <ArrowLeft className="h-4 w-4" />
-                        Back to all matches
+                        Terug naar alle wedstrijden
                     </Link>
                 </Button>
             </header>

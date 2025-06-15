@@ -57,8 +57,8 @@ const MatchList = () => {
         queryFn: fetchMatches,
     });
 
-    if (isLoading) return <div>Loading matches...</div>;
-    if (error) return <div>Error loading matches.</div>;
+    if (isLoading) return <div>Wedstrijden laden...</div>;
+    if (error) return <div>Fout bij laden van wedstrijden.</div>;
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -69,13 +69,13 @@ const MatchList = () => {
                             <CardTitle className="text-xl">{match.opponent}</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="flex items-center text-green-500 font-semibold">
+                            <div className="flex items-center text-primary font-semibold">
                                 <Users className="mr-2 h-5 w-5" />
-                                <span>{match.in_count} players IN</span>
+                                <span>{match.in_count} spelers AANWEZIG</span>
                             </div>
                             <div className="flex items-center text-orange-500 font-semibold mt-2">
                                 <HelpCircle className="mr-2 h-5 w-5" />
-                                <span>{match.maybe_count} players MAYBE</span>
+                                <span>{match.maybe_count} spelers MISSCHIEN</span>
                             </div>
                         </CardContent>
                     </Card>

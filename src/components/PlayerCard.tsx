@@ -18,7 +18,7 @@ const PlayerCard = ({ player, onStatusChange }: PlayerCardProps) => {
         </CardTitle>
       </CardHeader>
       <CardFooter className="flex justify-end gap-2">
-        <Button variant={player.status === 'IN' ? 'default' : 'outline'} size="sm" onClick={() => onStatusChange(player.id, "IN")}>IN</Button>
+        <Button variant={player.status === 'IN' ? 'default' : 'outline'} size="sm" onClick={() => onStatusChange(player.id, "IN")}>JA</Button>
         <Button 
           variant={player.status === 'MAYBE' ? 'default' : 'outline'} 
           size="sm" 
@@ -27,9 +27,9 @@ const PlayerCard = ({ player, onStatusChange }: PlayerCardProps) => {
             player.status === 'MAYBE' && "bg-orange-500 hover:bg-orange-600 text-primary-foreground"
           )}
         >
-          MAYBE
+          ?
         </Button>
-        <Button variant={player.status === 'OUT' ? 'destructive' : 'outline'} size="sm" onClick={() => onStatusChange(player.id, "OUT")}>OUT</Button>
+        <Button variant={player.status === 'OUT' ? 'destructive' : 'outline'} size="sm" onClick={() => onStatusChange(player.id, "OUT")}>NEE</Button>
       </CardFooter>
     </Card>
   );

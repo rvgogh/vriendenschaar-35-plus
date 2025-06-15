@@ -41,10 +41,10 @@ const PlayerList = ({ matchId }: { matchId: number }) => {
       onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: ["players", matchId] });
           queryClient.invalidateQueries({ queryKey: ["matches"] });
-          toast.success("Status updated!");
+          toast.success("Status bijgewerkt!");
       },
       onError: (error) => {
-          toast.error(`Failed to update status: ${error.message}`);
+          toast.error(`Kon status niet bijwerken: ${error.message}`);
       }
   });
 
@@ -52,17 +52,17 @@ const PlayerList = ({ matchId }: { matchId: number }) => {
       updateStatusMutation.mutate({ playerId: id, status });
   };
 
-  if (isLoading) return <div>Loading players...</div>;
+  if (isLoading) return <div>Spelers laden...</div>;
 
   const inCount = players?.filter(p => p.status === 'IN').length || 0;
 
   return (
     <div>
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-3xl font-bold text-primary">Team Roster</h2>
+        <h2 className="text-3xl font-bold text-primary">Selectie</h2>
         <div className="text-right">
-            <p className="text-2xl font-bold text-green-500">{inCount}</p>
-            <p className="text-sm text-muted-foreground">Players Confirmed</p>
+            <p className="text-2xl font-bold text-primary">{inCount}</p>
+            <p className="text-sm text-muted-foreground">Spelers aanwezig</p>
         </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
