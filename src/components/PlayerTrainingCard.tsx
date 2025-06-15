@@ -1,6 +1,7 @@
+
 import { PlayerWithTrainingStatus, TrainingAttendanceStatus } from "@/types";
 import { Button } from "@/components/ui/button";
-import { Card, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
 interface PlayerTrainingCardProps {
@@ -10,13 +11,11 @@ interface PlayerTrainingCardProps {
 
 const PlayerTrainingCard = ({ player, onStatusChange }: PlayerTrainingCardProps) => {
   return (
-    <Card className="bg-secondary/50 flex flex-col justify-between">
-      <CardHeader className="p-4">
-        <CardTitle className="text-xl">
-          {player.name}
-        </CardTitle>
-      </CardHeader>
-      <CardFooter className="flex justify-end gap-2 p-4 pt-0">
+    <Card className="bg-secondary/50 flex items-center justify-between p-3">
+      <CardTitle className="text-xl truncate mr-2">
+        {player.name}
+      </Title>
+      <div className="flex gap-2 flex-shrink-0">
         <Button 
           variant='outline'
           size="sm" 
@@ -33,7 +32,7 @@ const PlayerTrainingCard = ({ player, onStatusChange }: PlayerTrainingCardProps)
         >
           ❌
         </Button>
-      </CardFooter>
+      </div>
     </Card>
   );
 };
