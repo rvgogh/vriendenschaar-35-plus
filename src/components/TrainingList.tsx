@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Training } from "@/types";
@@ -67,8 +68,11 @@ const TrainingList = () => {
         }).format(date);
     };
 
+    // Get the first training's ID to set as default expanded
+    const firstTrainingId = trainings && trainings.length > 0 ? `training-${trainings[0].id}` : undefined;
+
     return (
-        <Accordion type="single" collapsible className="w-full">
+        <Accordion type="single" collapsible className="w-full" defaultValue={firstTrainingId}>
             {trainings?.map((training) => (
                 <AccordionItem value={`training-${training.id}`} key={training.id}>
                     <AccordionTrigger>
