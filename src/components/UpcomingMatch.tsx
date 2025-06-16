@@ -1,6 +1,6 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Shield } from "lucide-react";
+import { Shield, Calendar } from "lucide-react";
 import { Match } from "@/types";
 
 interface UpcomingMatchProps {
@@ -18,6 +18,20 @@ const UpcomingMatch = ({ match }: UpcomingMatchProps) => {
     );
   }
 
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat('nl-NL', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZone: 'Europe/Amsterdam'
+    }).format(date);
+  };
+
   return (
     <Card className="mb-8 bg-secondary border-primary">
       <CardHeader>
@@ -33,6 +47,15 @@ const UpcomingMatch = ({ match }: UpcomingMatchProps) => {
             <p className="text-muted-foreground">{match.opponent}</p>
           </div>
         </div>
+        {match.match_date && (
+          <div className="flex items-center gap-4">
+            <Calendar className="h-8 w-8 text-primary" />
+            <div>
+              <p className="font-semibold">Datum & Tijd</p>
+              <p className="text-muted-foreground">{formatDate(match.match_date)}</p>
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

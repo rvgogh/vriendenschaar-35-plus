@@ -1,12 +1,14 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "react-router-dom";
-import { Users, HelpCircle } from "lucide-react";
+import { Users, HelpCircle, Calendar } from "lucide-react";
 
 interface MatchWithCount {
     id: number;
     opponent: string;
+    match_date: string | null;
     in_count: number;
     maybe_count: number;
 }
@@ -14,7 +16,8 @@ interface MatchWithCount {
 const fetchMatches = async (): Promise<MatchWithCount[]> => {
     const { data: matches, error: matchesError } = await supabase
         .from("matches")
-        .select(`id, opponent`);
+        .select(`id, opponent, match_date`)
+        .order('match_date', { ascending: true });
 
     if (matchesError) throw matchesError;
     if (!matches) return [];
@@ -59,6 +62,20 @@ const MatchList = () => {
     if (isLoading) return <div>Wedstrijden laden...</div>;
     if (error) return <div>Fout bij laden van wedstrijden.</div>;
 
+    const formatDate = (dateString: string | null) => {
+        if (!dateString) return '';
+        const date = new Date(dateString);
+        return new Intl.DateTimeFormat('nl-NL', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            timeZone: 'Europe/Amsterdam'
+        }).format(date);
+    };
+
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {matches?.map(match => (
@@ -66,6 +83,12 @@ const MatchList = () => {
                     <Card className="hover:bg-muted/50 transition-colors h-full">
                         <CardHeader>
                             <CardTitle className="text-xl">{match.opponent}</CardTitle>
+                            {match.match_date && (
+                                <div className="flex items-center gap-2 text-muted-foreground">
+                                    <Calendar className="h-4 w-4" />
+                                    <span className="text-sm">{formatDate(match.match_date)}</span>
+                                </div>
+                            )}
                         </CardHeader>
                         <CardContent>
                             <div className="flex items-center text-primary font-semibold">

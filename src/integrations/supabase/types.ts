@@ -12,14 +12,17 @@ export type Database = {
       matches: {
         Row: {
           id: number
+          match_date: string | null
           opponent: string
         }
         Insert: {
           id?: number
+          match_date?: string | null
           opponent: string
         }
         Update: {
           id?: number
+          match_date?: string | null
           opponent?: string
         }
         Relationships: []
