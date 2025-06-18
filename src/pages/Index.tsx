@@ -3,8 +3,64 @@ import MatchList from "@/components/MatchList";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import TrainingList from "@/components/TrainingList";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+
+const fetchNextActivity = async () => {
+  const now = new Date().toISOString();
+  
+  // Fetch next match
+  const { data: nextMatch } = await supabase
+    .from("matches")
+    .select("id, match_date")
+    .not("match_date", "is", null)
+    .gte("match_date", now)
+    .order("match_date", { ascending: true })
+    .limit(1)
+    .maybeSingle();
+
+  // Fetch next training
+  const { data: nextTraining } = await supabase
+    .from("trainings")
+    .select("id, training_at")
+    .gte("training_at", now)
+    .order("training_at", { ascending: true })
+    .limit(1)
+    .maybeSingle();
+
+  // Determine which is next
+  if (!nextMatch && !nextTraining) {
+    return { type: 'trainings', id: null };
+  }
+  
+  if (!nextMatch) {
+    return { type: 'trainings', id: nextTraining!.id };
+  }
+  
+  if (!nextTraining) {
+    return { type: 'matches', id: nextMatch.id };
+  }
+
+  // Compare dates to see which is sooner
+  const matchDate = new Date(nextMatch.match_date);
+  const trainingDate = new Date(nextTraining.training_at);
+  
+  if (matchDate <= trainingDate) {
+    return { type: 'matches', id: nextMatch.id };
+  } else {
+    return { type: 'trainings', id: nextTraining.id };
+  }
+};
 
 const Index = () => {
+  const { data: nextActivity } = useQuery({
+    queryKey: ["nextActivity"],
+    queryFn: fetchNextActivity,
+  });
+
+  const defaultTab = nextActivity?.type || 'trainings';
+  const nextActivityId = nextActivity?.id;
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       <header>
@@ -46,7 +102,7 @@ const Index = () => {
       </header>
 
       <main className="container mx-auto px-4 py-8 max-w-[800px]">
-        <Tabs defaultValue="trainings" className="w-full">
+        <Tabs defaultValue={defaultTab} className="w-full">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="matches">Wedstrijden</TabsTrigger>
             <TabsTrigger value="trainings">Trainingen</TabsTrigger>
@@ -55,7 +111,7 @@ const Index = () => {
             <MatchList />
           </TabsContent>
           <TabsContent value="trainings" className="mt-6">
-            <TrainingList />
+            <TrainingList nextActivityId={nextActivityId} />
           </TabsContent>
         </Tabs>
       </main>

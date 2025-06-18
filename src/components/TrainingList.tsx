@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Training } from "@/types";
@@ -16,6 +15,10 @@ import { useState } from "react";
 
 interface TrainingWithCount extends Training {
     yes_count: number;
+}
+
+interface TrainingListProps {
+    nextActivityId?: number | null;
 }
 
 const fetchTrainings = async (): Promise<TrainingWithCount[]> => {
@@ -50,7 +53,7 @@ const fetchTrainings = async (): Promise<TrainingWithCount[]> => {
     return trainingsWithCounts;
 };
 
-const TrainingList = () => {
+const TrainingList = ({ nextActivityId }: TrainingListProps) => {
     const [showPastTrainings, setShowPastTrainings] = useState(false);
     
     const { data: allTrainings, isLoading, error } = useQuery<TrainingWithCount[]>({
@@ -90,8 +93,22 @@ const TrainingList = () => {
         }).format(date);
     };
 
-    // Get the first training's ID to set as default expanded
-    const firstTrainingId = trainingsToShow && trainingsToShow.length > 0 ? `training-${trainingsToShow[0].id}` : undefined;
+    // Determine which training to expand by default
+    let defaultExpandedTraining: string | undefined;
+    
+    if (nextActivityId && trainingsToShow?.some(training => training.id === nextActivityId)) {
+        // If nextActivityId matches a training in our list, expand that one
+        defaultExpandedTraining = `training-${nextActivityId}`;
+    } else if (trainingsToShow && trainingsToShow.length > 0) {
+        // Otherwise, expand the first upcoming training
+        const firstUpcoming = trainingsToShow.find(training => new Date(training.training_at) >= now);
+        if (firstUpcoming) {
+            defaultExpandedTraining = `training-${firstUpcoming.id}`;
+        } else {
+            // If no upcoming trainings, expand the first one in the list
+            defaultExpandedTraining = `training-${trainingsToShow[0].id}`;
+        }
+    }
 
     return (
         <div className="space-y-4">
@@ -114,7 +131,7 @@ const TrainingList = () => {
                 </div>
             )}
             
-            <Accordion type="single" collapsible className="w-full" defaultValue={firstTrainingId}>
+            <Accordion type="single" collapsible className="w-full" defaultValue={defaultExpandedTraining}>
                 {trainingsToShow?.map((training) => {
                     const isPast = new Date(training.training_at) < now;
                     return (
