@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "react-router-dom";
-import { Users, HelpCircle, Calendar, Clock, UserCheck } from "lucide-react";
+import { Users, HelpCircle, Calendar, Clock, UserCheck, UserX, User } from "lucide-react";
 
 interface MatchWithCount {
     id: number;
@@ -13,6 +13,8 @@ interface MatchWithCount {
     arrival_time: string | null;
     in_count: number;
     maybe_count: number;
+    out_count: number;
+    unknown_count: number;
 }
 
 const fetchMatches = async (): Promise<MatchWithCount[]> => {
@@ -31,26 +33,46 @@ const fetchMatches = async (): Promise<MatchWithCount[]> => {
     if (statusesError) {
         console.error("Error fetching player statuses:", statusesError);
         // Return matches with 0 counts in case of an error
-        return matches.map(match => ({ ...match, in_count: 0, maybe_count: 0 }));
+        return matches.map(match => ({ ...match, in_count: 0, maybe_count: 0, out_count: 0, unknown_count: 0 }));
     }
+
+    // Get total number of players
+    const { data: players, error: playersError } = await supabase
+        .from("players")
+        .select('id');
+
+    if (playersError) {
+        console.error("Error fetching players:", playersError);
+        return matches.map(match => ({ ...match, in_count: 0, maybe_count: 0, out_count: 0, unknown_count: 0 }));
+    }
+
+    const totalPlayers = players?.length || 0;
 
     const statusCounts = (statuses || []).reduce((acc, { match_id, status }) => {
         if (!acc[match_id]) {
-            acc[match_id] = { in_count: 0, maybe_count: 0 };
+            acc[match_id] = { in_count: 0, maybe_count: 0, out_count: 0, unknown_count: 0 };
         }
         if (status === 'IN') {
             acc[match_id].in_count++;
         } else if (status === 'MAYBE') {
             acc[match_id].maybe_count++;
+        } else if (status === 'OUT') {
+            acc[match_id].out_count++;
         }
         return acc;
-    }, {} as Record<number, { in_count: number, maybe_count: number }>);
+    }, {} as Record<number, { in_count: number, maybe_count: number, out_count: number, unknown_count: number }>);
 
-    const matchesWithCounts = matches.map(match => ({
-        ...match,
-        in_count: statusCounts[match.id]?.in_count || 0,
-        maybe_count: statusCounts[match.id]?.maybe_count || 0,
-    }));
+    const matchesWithCounts = matches.map(match => {
+        const counts = statusCounts[match.id] || { in_count: 0, maybe_count: 0, out_count: 0, unknown_count: 0 };
+        const respondedCount = counts.in_count + counts.maybe_count + counts.out_count;
+        const unknownCount = totalPlayers - respondedCount;
+        
+        return {
+            ...match,
+            ...counts,
+            unknown_count: unknownCount
+        };
+    });
 
     return matchesWithCounts;
 };
@@ -110,13 +132,23 @@ const MatchList = () => {
                             </div>
                         </CardHeader>
                         <CardContent>
-                            <div className="flex items-center text-primary font-semibold">
-                                <Users className="mr-2 h-5 w-5" />
-                                <span>{match.in_count} spelers AANWEZIG</span>
-                            </div>
-                            <div className="flex items-center text-muted-foreground font-semibold mt-2">
-                                <HelpCircle className="mr-2 h-5 w-5" />
-                                <span>{match.maybe_count} spelers MISSCHIEN</span>
+                            <div className="grid grid-cols-2 gap-2 text-sm">
+                                <div className="flex items-center text-green-600 font-semibold">
+                                    <Users className="mr-2 h-4 w-4" />
+                                    <span>{match.in_count} AANWEZIG</span>
+                                </div>
+                                <div className="flex items-center text-orange-500 font-semibold">
+                                    <HelpCircle className="mr-2 h-4 w-4" />
+                                    <span>{match.maybe_count} MISSCHIEN</span>
+                                </div>
+                                <div className="flex items-center text-red-600 font-semibold">
+                                    <UserX className="mr-2 h-4 w-4" />
+                                    <span>{match.out_count} NIET</span>
+                                </div>
+                                <div className="flex items-center text-gray-500 font-semibold">
+                                    <User className="mr-2 h-4 w-4" />
+                                    <span>{match.unknown_count} GEEN REACTIE</span>
+                                </div>
                             </div>
                         </CardContent>
                     </Card>
