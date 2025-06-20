@@ -40,6 +40,7 @@ const PlayerList = ({ matchId }: { matchId: number }) => {
       onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: ["players", matchId] });
           queryClient.invalidateQueries({ queryKey: ["matches"] });
+          queryClient.invalidateQueries({ queryKey: ["playerStatusCounts", matchId] });
           toast.success("Status bijgewerkt!");
       },
       onError: (error) => {
@@ -53,33 +54,10 @@ const PlayerList = ({ matchId }: { matchId: number }) => {
 
   if (isLoading) return <div>Spelers laden...</div>;
 
-  const inCount = players?.filter(p => p.status === 'IN').length || 0;
-  const maybeCount = players?.filter(p => p.status === 'MAYBE').length || 0;
-  const outCount = players?.filter(p => p.status === 'OUT').length || 0;
-  const unknownCount = players?.filter(p => p.status === 'UNKNOWN').length || 0;
-
   return (
     <div>
-      <div className="flex justify-between items-center mb-6">
+      <div className="mb-6">
         <h2 className="text-3xl font-bold text-primary">Selectie</h2>
-        <div className="grid grid-cols-2 gap-4 text-sm">
-          <div className="flex items-center text-green-600 font-semibold">
-            <span className="mr-2 text-lg">🍆</span>
-            <span>{inCount} Aanwezig</span>
-          </div>
-          <div className="flex items-center text-orange-500 font-semibold">
-            <span className="mr-2 text-lg">❓</span>
-            <span>{maybeCount} Misschien</span>
-          </div>
-          <div className="flex items-center text-red-600 font-semibold">
-            <span className="mr-2 text-lg">❌</span>
-            <span>{outCount} Niet</span>
-          </div>
-          <div className="flex items-center text-gray-500 font-semibold">
-            <span className="mr-2 text-lg">➖</span>
-            <span>{unknownCount} Geen reactie</span>
-          </div>
-        </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {players?.map((player) => (
