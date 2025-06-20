@@ -1,9 +1,8 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "react-router-dom";
-import { Users, HelpCircle, Calendar, Clock, UserCheck, UserX, User } from "lucide-react";
+import { Calendar, Clock, UserCheck } from "lucide-react";
 
 interface MatchWithCount {
     id: number;
@@ -134,19 +133,19 @@ const MatchList = () => {
                         <CardContent>
                             <div className="grid grid-cols-2 gap-2 text-sm">
                                 <div className="flex items-center text-green-600 font-semibold">
-                                    <Users className="mr-2 h-4 w-4" />
+                                    <span className="mr-2 text-lg">🍆</span>
                                     <span>{match.in_count} AANWEZIG</span>
                                 </div>
                                 <div className="flex items-center text-orange-500 font-semibold">
-                                    <HelpCircle className="mr-2 h-4 w-4" />
+                                    <span className="mr-2 text-lg">❓</span>
                                     <span>{match.maybe_count} MISSCHIEN</span>
                                 </div>
                                 <div className="flex items-center text-red-600 font-semibold">
-                                    <UserX className="mr-2 h-4 w-4" />
+                                    <span className="mr-2 text-lg">❌</span>
                                     <span>{match.out_count} NIET</span>
                                 </div>
                                 <div className="flex items-center text-gray-500 font-semibold">
-                                    <User className="mr-2 h-4 w-4" />
+                                    <span className="mr-2 text-lg">➖</span>
                                     <span>{match.unknown_count} GEEN REACTIE</span>
                                 </div>
                             </div>

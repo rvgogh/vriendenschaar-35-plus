@@ -1,10 +1,8 @@
-
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { PlayerStatus, PlayerWithStatus } from "@/types";
 import PlayerCard from "./PlayerCard";
 import { toast } from "@/components/ui/sonner";
-import { Users, HelpCircle, UserX, User } from "lucide-react";
 
 const fetchPlayersWithStatus = async (matchId: number): Promise<PlayerWithStatus[]> => {
     const { data: players, error: playersError } = await supabase.from("players").select("*").order('name', { ascending: true });
@@ -66,19 +64,19 @@ const PlayerList = ({ matchId }: { matchId: number }) => {
         <h2 className="text-3xl font-bold text-primary">Selectie</h2>
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div className="flex items-center text-green-600 font-semibold">
-            <Users className="mr-2 h-4 w-4" />
+            <span className="mr-2 text-lg">🍆</span>
             <span>{inCount} Aanwezig</span>
           </div>
           <div className="flex items-center text-orange-500 font-semibold">
-            <HelpCircle className="mr-2 h-4 w-4" />
+            <span className="mr-2 text-lg">❓</span>
             <span>{maybeCount} Misschien</span>
           </div>
           <div className="flex items-center text-red-600 font-semibold">
-            <UserX className="mr-2 h-4 w-4" />
+            <span className="mr-2 text-lg">❌</span>
             <span>{outCount} Niet</span>
           </div>
           <div className="flex items-center text-gray-500 font-semibold">
-            <User className="mr-2 h-4 w-4" />
+            <span className="mr-2 text-lg">➖</span>
             <span>{unknownCount} Geen reactie</span>
           </div>
         </div>
