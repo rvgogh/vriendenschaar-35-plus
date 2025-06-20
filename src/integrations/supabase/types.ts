@@ -11,19 +11,25 @@ export type Database = {
     Tables: {
       matches: {
         Row: {
+          arrival_time: string | null
           id: number
           match_date: string | null
           opponent: string
+          start_time: string | null
         }
         Insert: {
+          arrival_time?: string | null
           id?: number
           match_date?: string | null
           opponent: string
+          start_time?: string | null
         }
         Update: {
+          arrival_time?: string | null
           id?: number
           match_date?: string | null
           opponent?: string
+          start_time?: string | null
         }
         Relationships: []
       }

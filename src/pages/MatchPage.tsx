@@ -11,7 +11,7 @@ import { Match } from "@/types";
 const fetchMatch = async (matchId: number) => {
     const { data, error } = await supabase
         .from("matches")
-        .select("*")
+        .select("id, opponent, match_date, start_time, arrival_time")
         .eq("id", matchId)
         .single();
     if (error) throw error;

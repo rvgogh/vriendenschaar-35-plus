@@ -1,6 +1,6 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Shield, Calendar } from "lucide-react";
+import { Shield, Calendar, Clock, Users } from "lucide-react";
 import { Match } from "@/types";
 
 interface UpcomingMatchProps {
@@ -26,10 +26,13 @@ const UpcomingMatch = ({ match }: UpcomingMatchProps) => {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
       timeZone: 'Europe/Amsterdam'
     }).format(date);
+  };
+
+  const formatTime = (timeString: string | null) => {
+    if (!timeString) return '';
+    return timeString.substring(0, 5); // Format HH:MM from HH:MM:SS
   };
 
   return (
@@ -51,8 +54,26 @@ const UpcomingMatch = ({ match }: UpcomingMatchProps) => {
           <div className="flex items-center gap-4">
             <Calendar className="h-8 w-8 text-primary" />
             <div>
-              <p className="font-semibold">Datum & Tijd</p>
+              <p className="font-semibold">Datum</p>
               <p className="text-muted-foreground">{formatDate(match.match_date)}</p>
+            </div>
+          </div>
+        )}
+        {match.arrival_time && (
+          <div className="flex items-center gap-4">
+            <Users className="h-8 w-8 text-primary" />
+            <div>
+              <p className="font-semibold">Aanwezig zijn</p>
+              <p className="text-muted-foreground">{formatTime(match.arrival_time)}</p>
+            </div>
+          </div>
+        )}
+        {match.start_time && (
+          <div className="flex items-center gap-4">
+            <Clock className="h-8 w-8 text-primary" />
+            <div>
+              <p className="font-semibold">Aanvang wedstrijd</p>
+              <p className="text-muted-foreground">{formatTime(match.start_time)}</p>
             </div>
           </div>
         )}

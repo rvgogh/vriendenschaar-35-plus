@@ -14,6 +14,8 @@ export interface Match {
   id: number;
   opponent: string;
   match_date: string | null;
+  start_time: string | null;
+  arrival_time: string | null;
 }
 
 export type TrainingAttendanceStatus = "YES" | "NO" | "UNKNOWN";

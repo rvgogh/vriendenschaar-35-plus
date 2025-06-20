@@ -3,12 +3,14 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "react-router-dom";
-import { Users, HelpCircle, Calendar } from "lucide-react";
+import { Users, HelpCircle, Calendar, Clock, UserCheck } from "lucide-react";
 
 interface MatchWithCount {
     id: number;
     opponent: string;
     match_date: string | null;
+    start_time: string | null;
+    arrival_time: string | null;
     in_count: number;
     maybe_count: number;
 }
@@ -16,7 +18,7 @@ interface MatchWithCount {
 const fetchMatches = async (): Promise<MatchWithCount[]> => {
     const { data: matches, error: matchesError } = await supabase
         .from("matches")
-        .select(`id, opponent, match_date`)
+        .select(`id, opponent, match_date, start_time, arrival_time`)
         .order('match_date', { ascending: true });
 
     if (matchesError) throw matchesError;
@@ -70,10 +72,13 @@ const MatchList = () => {
             year: 'numeric',
             month: 'long',
             day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
             timeZone: 'Europe/Amsterdam'
         }).format(date);
+    };
+
+    const formatTime = (timeString: string | null) => {
+        if (!timeString) return '';
+        return timeString.substring(0, 5); // Format HH:MM from HH:MM:SS
     };
 
     return (
@@ -89,6 +94,20 @@ const MatchList = () => {
                                     <span className="text-sm">{formatDate(match.match_date)}</span>
                                 </div>
                             )}
+                            <div className="flex gap-4 text-sm text-muted-foreground">
+                                {match.arrival_time && (
+                                    <div className="flex items-center gap-1">
+                                        <UserCheck className="h-4 w-4" />
+                                        <span>Aanwezig: {formatTime(match.arrival_time)}</span>
+                                    </div>
+                                )}
+                                {match.start_time && (
+                                    <div className="flex items-center gap-1">
+                                        <Clock className="h-4 w-4" />
+                                        <span>Start: {formatTime(match.start_time)}</span>
+                                    </div>
+                                )}
+                            </div>
                         </CardHeader>
                         <CardContent>
                             <div className="flex items-center text-primary font-semibold">
