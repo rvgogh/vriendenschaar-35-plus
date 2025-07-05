@@ -3,6 +3,7 @@ import MatchList from "@/components/MatchList";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import TrainingList from "@/components/TrainingList";
+import EventList from "@/components/EventList";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -28,28 +29,29 @@ const fetchNextActivity = async () => {
     .limit(1)
     .maybeSingle();
 
+  // Fetch next event
+  const { data: nextEvent } = await supabase
+    .from("events")
+    .select("id, event_date")
+    .not("event_date", "is", null)
+    .gte("event_date", now)
+    .order("event_date", { ascending: true })
+    .limit(1)
+    .maybeSingle();
+
   // Determine which is next
-  if (!nextMatch && !nextTraining) {
+  const activities = [];
+  if (nextMatch) activities.push({ type: 'matches', date: new Date(nextMatch.match_date), id: nextMatch.id });
+  if (nextTraining) activities.push({ type: 'trainings', date: new Date(nextTraining.training_at), id: nextTraining.id });
+  if (nextEvent) activities.push({ type: 'events', date: new Date(nextEvent.event_date), id: nextEvent.id });
+
+  if (activities.length === 0) {
     return { type: 'trainings', id: null };
   }
-  
-  if (!nextMatch) {
-    return { type: 'trainings', id: nextTraining!.id };
-  }
-  
-  if (!nextTraining) {
-    return { type: 'matches', id: nextMatch.id };
-  }
 
-  // Compare dates to see which is sooner
-  const matchDate = new Date(nextMatch.match_date);
-  const trainingDate = new Date(nextTraining.training_at);
-  
-  if (matchDate <= trainingDate) {
-    return { type: 'matches', id: nextMatch.id };
-  } else {
-    return { type: 'trainings', id: nextTraining.id };
-  }
+  // Sort by date and return the earliest
+  activities.sort((a, b) => a.date.getTime() - b.date.getTime());
+  return { type: activities[0].type, id: activities[0].id };
 };
 
 const Index = () => {
@@ -103,15 +105,19 @@ const Index = () => {
 
       <main className="container mx-auto px-4 py-8 max-w-[800px]">
         <Tabs defaultValue={defaultTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="matches">Wedstrijden</TabsTrigger>
             <TabsTrigger value="trainings">Trainingen</TabsTrigger>
+            <TabsTrigger value="events">Evenementen</TabsTrigger>
           </TabsList>
           <TabsContent value="matches" className="mt-6">
             <MatchList />
           </TabsContent>
           <TabsContent value="trainings" className="mt-6">
             <TrainingList nextActivityId={nextActivityId} />
+          </TabsContent>
+          <TabsContent value="events" className="mt-6">
+            <EventList />
           </TabsContent>
         </Tabs>
       </main>

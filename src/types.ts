@@ -28,3 +28,20 @@ export interface Training {
 export interface PlayerWithTrainingStatus extends Player {
   status: TrainingAttendanceStatus;
 }
+
+export type EventAttendanceStatus = "YES" | "NO" | "MAYBE" | "UNKNOWN";
+
+export interface Event {
+  id: number;
+  title: string;
+  subtitle: string | null;
+  event_date: string | null;
+  event_time: string | null;
+  location: string | null;
+  description: string | null;
+  created_at: string | null;
+}
+
+export interface PlayerWithEventStatus extends Player {
+  status: EventAttendanceStatus;
+}

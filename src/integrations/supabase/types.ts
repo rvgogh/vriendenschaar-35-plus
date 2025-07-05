@@ -9,6 +9,72 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      event_statuses: {
+        Row: {
+          event_id: number
+          player_id: number
+          status: Database["public"]["Enums"]["event_attendance_status"]
+        }
+        Insert: {
+          event_id: number
+          player_id: number
+          status?: Database["public"]["Enums"]["event_attendance_status"]
+        }
+        Update: {
+          event_id?: number
+          player_id?: number
+          status?: Database["public"]["Enums"]["event_attendance_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_statuses_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_statuses_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      events: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          event_date: string | null
+          event_time: string | null
+          id: number
+          location: string | null
+          subtitle: string | null
+          title: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          event_date?: string | null
+          event_time?: string | null
+          id?: number
+          location?: string | null
+          subtitle?: string | null
+          title: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          event_date?: string | null
+          event_time?: string | null
+          id?: number
+          location?: string | null
+          subtitle?: string | null
+          title?: string
+        }
+        Relationships: []
+      }
       matches: {
         Row: {
           arrival_time: string | null
@@ -137,6 +203,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
+      event_attendance_status: "YES" | "NO" | "MAYBE" | "UNKNOWN"
       player_status: "IN" | "OUT" | "MAYBE" | "UNKNOWN"
       training_status: "YES" | "NO" | "UNKNOWN"
     }
@@ -254,6 +321,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      event_attendance_status: ["YES", "NO", "MAYBE", "UNKNOWN"],
       player_status: ["IN", "OUT", "MAYBE", "UNKNOWN"],
       training_status: ["YES", "NO", "UNKNOWN"],
     },
