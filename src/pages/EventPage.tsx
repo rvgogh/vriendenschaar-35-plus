@@ -8,7 +8,7 @@ import UpcomingEvent from "@/components/UpcomingEvent";
 import EventPlayerList from "@/components/EventPlayerList";
 import { Event } from "@/types";
 
-const fetchEvent = async (id: string): Promise<Event | null> => {
+const fetchEvent = async (id: number): Promise<Event | null> => {
   const { data, error } = await supabase
     .from("events")
     .select("*")
@@ -27,8 +27,8 @@ const EventPage = () => {
   
   const { data: event, isLoading, error } = useQuery({
     queryKey: ["event", id],
-    queryFn: () => fetchEvent(id!),
-    enabled: !!id,
+    queryFn: () => fetchEvent(Number(id)),
+    enabled: !!id && !isNaN(Number(id)),
   });
 
   if (isLoading) return <div className="container mx-auto px-4 py-8">Evenement laden...</div>;
