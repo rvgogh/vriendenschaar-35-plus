@@ -20,7 +20,7 @@ const EventPlayerCard = ({ player, onStatusChange }: EventPlayerCardProps) => {
 
   const getStatusText = (status: EventAttendanceStatus) => {
     switch (status) {
-      case "YES": return "✅ Ja";
+      case "YES": return "🍆 Ja";
       case "MAYBE": return "❓ Misschien";
       case "NO": return "❌ Nee";
       default: return "➖ Onbekend";
@@ -44,7 +44,7 @@ const EventPlayerCard = ({ player, onStatusChange }: EventPlayerCardProps) => {
               onClick={() => onStatusChange(player.id, "YES")}
               className="text-xs"
             >
-              ✅ Ja
+              🍆 Ja
             </Button>
             <Button
               size="sm"
