@@ -138,7 +138,7 @@ const EventList = () => {
                         <CardContent>
                             <div className="grid grid-cols-2 gap-2 text-sm">
                                 <div className="flex items-center text-green-600 font-semibold">
-                                    <span className="mr-2 text-lg">✅</span>
+                                    <span className="mr-2 text-lg">🍆</span>
                                     <span>{event.yes_count} JA</span>
                                 </div>
                                 <div className="flex items-center text-orange-500 font-semibold">

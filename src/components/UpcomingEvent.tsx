@@ -136,7 +136,7 @@ const UpcomingEvent = ({ event }: UpcomingEventProps) => {
           <h3 className="text-lg font-semibold mb-3 text-primary">Deelname overzicht</h3>
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div className="flex items-center text-green-600 font-semibold">
-              <span className="mr-2 text-lg">✅</span>
+              <span className="mr-2 text-lg">🍆</span>
               <span>{yesCount} Ja</span>
             </div>
             <div className="flex items-center text-orange-500 font-semibold">
