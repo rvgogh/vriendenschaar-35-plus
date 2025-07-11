@@ -1,9 +1,8 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "react-router-dom";
-import { Calendar, Clock, MapPin } from "lucide-react";
+import { Calendar, Clock, MapPin, UtensilsCrossed } from "lucide-react";
 
 interface EventWithCount {
     id: number;
@@ -106,58 +105,69 @@ const EventList = () => {
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {events?.map(event => (
-                <Link to={`/event/${event.id}`} key={event.id} className="no-underline">
-                    <Card className="hover:bg-muted/50 transition-colors h-full">
-                        <CardHeader>
-                            <CardTitle className="text-xl">{event.title}</CardTitle>
-                            {event.subtitle && (
-                                <p className="text-sm text-muted-foreground italic">{event.subtitle}</p>
-                            )}
-                            {event.event_date && (
-                                <div className="flex items-center gap-2 text-muted-foreground">
-                                    <Calendar className="h-4 w-4" />
-                                    <span className="text-sm">{formatDate(event.event_date)}</span>
-                                </div>
-                            )}
-                            <div className="flex gap-4 text-sm text-muted-foreground">
-                                {event.event_time && (
-                                    <div className="flex items-center gap-1">
-                                        <Clock className="h-4 w-4" />
-                                        <span>{formatTime(event.event_time)}</span>
+            {events?.map(event => {
+                const berrySchotels = Math.ceil(event.yes_count / 4);
+                
+                return (
+                    <Link to={`/event/${event.id}`} key={event.id} className="no-underline">
+                        <Card className="hover:bg-muted/50 transition-colors h-full">
+                            <CardHeader>
+                                <CardTitle className="text-xl">{event.title}</CardTitle>
+                                {event.subtitle && (
+                                    <p className="text-sm text-muted-foreground italic">{event.subtitle}</p>
+                                )}
+                                {event.event_date && (
+                                    <div className="flex items-center gap-2 text-muted-foreground">
+                                        <Calendar className="h-4 w-4" />
+                                        <span className="text-sm">{formatDate(event.event_date)}</span>
                                     </div>
                                 )}
-                                {event.location && (
-                                    <div className="flex items-center gap-1">
-                                        <MapPin className="h-4 w-4" />
-                                        <span className="truncate max-w-[200px]">{event.location}</span>
+                                <div className="flex gap-4 text-sm text-muted-foreground">
+                                    {event.event_time && (
+                                        <div className="flex items-center gap-1">
+                                            <Clock className="h-4 w-4" />
+                                            <span>{formatTime(event.event_time)}</span>
+                                        </div>
+                                    )}
+                                    {event.location && (
+                                        <div className="flex items-center gap-1">
+                                            <MapPin className="h-4 w-4" />
+                                            <span className="truncate max-w-[200px]">{event.location}</span>
+                                        </div>
+                                    )}
+                                </div>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <div className="grid grid-cols-2 gap-2 text-sm">
+                                    <div className="flex items-center text-green-600 font-semibold">
+                                        <span className="mr-2 text-lg">🍆</span>
+                                        <span>{event.yes_count} JA</span>
+                                    </div>
+                                    <div className="flex items-center text-orange-500 font-semibold">
+                                        <span className="mr-2 text-lg">❓</span>
+                                        <span>{event.maybe_count} MISSCHIEN</span>
+                                    </div>
+                                    <div className="flex items-center text-red-600 font-semibold">
+                                        <span className="mr-2 text-lg">❌</span>
+                                        <span>{event.no_count} NIET</span>
+                                    </div>
+                                    <div className="flex items-center text-gray-500 font-semibold">
+                                        <span className="mr-2 text-lg">➖</span>
+                                        <span>{event.unknown_count} GEEN REACTIE</span>
+                                    </div>
+                                </div>
+                                
+                                {event.yes_count > 0 && (
+                                    <div className="flex items-center gap-2 text-sm text-primary font-semibold pt-2 border-t">
+                                        <UtensilsCrossed className="h-4 w-4" />
+                                        <span>{berrySchotels} Berry schotel{berrySchotels !== 1 ? 's' : ''}</span>
                                     </div>
                                 )}
-                            </div>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="grid grid-cols-2 gap-2 text-sm">
-                                <div className="flex items-center text-green-600 font-semibold">
-                                    <span className="mr-2 text-lg">🍆</span>
-                                    <span>{event.yes_count} JA</span>
-                                </div>
-                                <div className="flex items-center text-orange-500 font-semibold">
-                                    <span className="mr-2 text-lg">❓</span>
-                                    <span>{event.maybe_count} MISSCHIEN</span>
-                                </div>
-                                <div className="flex items-center text-red-600 font-semibold">
-                                    <span className="mr-2 text-lg">❌</span>
-                                    <span>{event.no_count} NIET</span>
-                                </div>
-                                <div className="flex items-center text-gray-500 font-semibold">
-                                    <span className="mr-2 text-lg">➖</span>
-                                    <span>{event.unknown_count} GEEN REACTIE</span>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </Link>
-            ))}
+                            </CardContent>
+                        </Card>
+                    </Link>
+                );
+            })}
         </div>
     );
 };

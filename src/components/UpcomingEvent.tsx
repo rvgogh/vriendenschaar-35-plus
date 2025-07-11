@@ -1,6 +1,6 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar, Clock, MapPin, FileText } from "lucide-react";
+import { Calendar, Clock, MapPin, FileText, UtensilsCrossed } from "lucide-react";
 import { Event } from "@/types";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -74,6 +74,7 @@ const UpcomingEvent = ({ event }: UpcomingEventProps) => {
   };
 
   const { yesCount = 0, maybeCount = 0, noCount = 0, unknownCount = 0 } = statusCounts || {};
+  const berrySchotels = Math.ceil(yesCount / 4);
 
   return (
     <Card className="mb-8 bg-secondary border-primary">
@@ -153,6 +154,24 @@ const UpcomingEvent = ({ event }: UpcomingEventProps) => {
             </div>
           </div>
         </div>
+
+        {yesCount > 0 && (
+          <div className="border-t pt-4">
+            <div className="flex items-center gap-4">
+              <UtensilsCrossed className="h-6 w-6 text-primary" />
+              <div>
+                <h3 className="text-lg font-semibold text-primary">Berry schotels benodigd</h3>
+                <p className="text-muted-foreground">
+                  {berrySchotels} Berry schotel{berrySchotels !== 1 ? 's' : ''} 
+                  <span className="text-sm ml-2">(bittergarnituur met friet en saus)</span>
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Berekening: {yesCount} aanmeldingen ÷ 4 = {berrySchotels} schotel{berrySchotels !== 1 ? 's' : ''}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
