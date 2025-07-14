@@ -87,7 +87,7 @@ const AuthPage = () => {
         const { error: playerError } = await supabase
           .from('players')
           .update({ user_id: data.user.id })
-          .eq('id', selectedPlayerId);
+          .eq('id', parseInt(selectedPlayerId));
 
         if (playerError) throw playerError;
 
