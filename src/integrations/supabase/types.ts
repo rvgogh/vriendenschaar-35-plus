@@ -141,14 +141,17 @@ export type Database = {
         Row: {
           id: number
           name: string
+          user_id: string | null
         }
         Insert: {
           id?: number
           name: string
+          user_id?: string | null
         }
         Update: {
           id?: number
           name?: string
+          user_id?: string | null
         }
         Relationships: []
       }
