@@ -10,6 +10,7 @@ import Index from "./pages/Index";
 import MatchPage from "./pages/MatchPage";
 import EventPage from "./pages/EventPage";
 import AuthPage from "./pages/AuthPage";
+import AdminPage from "./pages/AdminPage";
 import NotFound from "./pages/NotFound";
 import { ThemeProvider } from "@/components/ThemeProvider";
 
@@ -28,6 +29,11 @@ const App = () => (
               <Route path="/" element={
                 <ProtectedRoute>
                   <Index />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin" element={
+                <ProtectedRoute>
+                  <AdminPage />
                 </ProtectedRoute>
               } />
               <Route path="/match/:id" element={

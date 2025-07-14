@@ -5,14 +5,19 @@ import {
   DropdownMenu, 
   DropdownMenuContent, 
   DropdownMenuItem, 
-  DropdownMenuTrigger 
+  DropdownMenuTrigger,
+  DropdownMenuSeparator
 } from '@/components/ui/dropdown-menu';
-import { User, LogOut } from 'lucide-react';
+import { User, LogOut, Shield } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { useUserRole } from '@/hooks/useUserRole';
 import { toast } from '@/components/ui/sonner';
+import { useNavigate } from 'react-router-dom';
 
 const UserMenu = () => {
   const { user, signOut } = useAuth();
+  const { isSuperuser } = useUserRole();
+  const navigate = useNavigate();
 
   const handleSignOut = async () => {
     try {
@@ -21,6 +26,10 @@ const UserMenu = () => {
     } catch (error) {
       toast.error('Uitloggen mislukt');
     }
+  };
+
+  const handleAdminClick = () => {
+    navigate('/admin');
   };
 
   if (!user) return null;
@@ -34,6 +43,15 @@ const UserMenu = () => {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
+        {isSuperuser && (
+          <>
+            <DropdownMenuItem onClick={handleAdminClick}>
+              <Shield className="h-4 w-4 mr-2" />
+              Admin Dashboard
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+          </>
+        )}
         <DropdownMenuItem onClick={handleSignOut}>
           <LogOut className="h-4 w-4 mr-2" />
           Uitloggen
