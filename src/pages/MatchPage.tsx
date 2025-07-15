@@ -2,6 +2,7 @@
 import { useParams, Link } from "react-router-dom";
 import PlayerList from "@/components/PlayerList";
 import UpcomingMatch from "@/components/UpcomingMatch";
+import LoginButton from "@/components/LoginButton";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft } from "lucide-react";
@@ -33,13 +34,14 @@ const MatchPage = () => {
 
     return (
         <div className="container mx-auto px-4 py-8 max-w-[800px]">
-            <header className="mb-8">
+            <header className="mb-8 flex justify-between items-start">
                 <Button asChild variant="outline">
                     <Link to="/" className="flex items-center gap-2">
                         <ArrowLeft className="h-4 w-4" />
                         Terug naar alle wedstrijden
                     </Link>
                 </Button>
+                <LoginButton />
             </header>
             <main>
                 <UpcomingMatch match={match} />

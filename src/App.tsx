@@ -26,26 +26,14 @@ const App = () => (
           <BrowserRouter>
             <Routes>
               <Route path="/auth" element={<AuthPage />} />
-              <Route path="/" element={
-                <ProtectedRoute>
-                  <Index />
-                </ProtectedRoute>
-              } />
+              <Route path="/" element={<Index />} />
               <Route path="/admin" element={
                 <ProtectedRoute>
                   <AdminPage />
                 </ProtectedRoute>
               } />
-              <Route path="/match/:id" element={
-                <ProtectedRoute>
-                  <MatchPage />
-                </ProtectedRoute>
-              } />
-              <Route path="/event/:id" element={
-                <ProtectedRoute>
-                  <EventPage />
-                </ProtectedRoute>
-              } />
+              <Route path="/match/:id" element={<MatchPage />} />
+              <Route path="/event/:id" element={<EventPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>

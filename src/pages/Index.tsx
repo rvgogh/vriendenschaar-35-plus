@@ -1,6 +1,6 @@
 
 import { useAuth } from "@/hooks/useAuth";
-import UserMenu from "@/components/UserMenu";
+import LoginButton from "@/components/LoginButton";
 import MatchList from "@/components/MatchList";
 import EventList from "@/components/EventList";
 import TrainingList from "@/components/TrainingList";
@@ -15,9 +15,13 @@ const Index = () => {
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-4xl font-bold text-primary mb-2">Team Overzicht</h1>
-            <p className="text-muted-foreground">Welkom {user?.email}</p>
+            {user ? (
+              <p className="text-muted-foreground">Welkom {user.email}</p>
+            ) : (
+              <p className="text-muted-foreground">Bekijk wedstrijden, evenementen en trainingen</p>
+            )}
           </div>
-          <UserMenu />
+          <LoginButton />
         </div>
 
         <Tabs defaultValue="matches" className="w-full">
