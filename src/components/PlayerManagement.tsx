@@ -12,16 +12,11 @@ interface Player {
   id: number;
   name: string;
   user_id: string | null;
-}
-
-interface UserData {
-  id: string;
-  email: string;
+  user_email?: string;
 }
 
 const PlayerManagement = () => {
   const [players, setPlayers] = useState<Player[]>([]);
-  const [users, setUsers] = useState<UserData[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -30,25 +25,53 @@ const PlayerManagement = () => {
 
   const fetchData = async () => {
     try {
-      // Fetch all players
+      // Fetch all players with their linked user email addresses
       const { data: playersData, error: playersError } = await supabase
         .from('players')
-        .select('*')
+        .select(`
+          *,
+          user_email:user_id (
+            email:raw_user_meta_data->email
+          )
+        `)
         .order('name');
 
-      if (playersError) throw playersError;
-
-      // Fetch all users from auth (we can't query auth.users directly, so we get them from user_roles)
-      const { data: userRolesData, error: userRolesError } = await supabase
-        .from('user_roles')
-        .select('user_id');
-
-      if (userRolesError) throw userRolesError;
-
-      // For demonstration, we'll show users by their linked players
-      // In a real scenario, you might want to create a profiles table
-      setPlayers(playersData || []);
-      setUsers([]); // We'll populate this differently
+      if (playersError) {
+        console.error('Players error:', playersError);
+        // Fallback: fetch players without email data
+        const { data: fallbackData, error: fallbackError } = await supabase
+          .from('players')
+          .select('*')
+          .order('name');
+        
+        if (fallbackError) throw fallbackError;
+        setPlayers(fallbackData || []);
+      } else {
+        // Since we can't directly join with auth.users, we'll need to fetch emails separately
+        const playersWithEmails = await Promise.all(
+          (playersData || []).map(async (player) => {
+            if (player.user_id) {
+              try {
+                // We can't query auth.users directly, so we'll show the user_id for now
+                // In a real app, you'd typically have a profiles table
+                return {
+                  ...player,
+                  user_email: `User ID: ${player.user_id}`
+                };
+              } catch (error) {
+                console.error('Error fetching user email:', error);
+                return {
+                  ...player,
+                  user_email: `User ID: ${player.user_id}`
+                };
+              }
+            }
+            return player;
+          })
+        );
+        
+        setPlayers(playersWithEmails);
+      }
     } catch (error) {
       console.error('Error fetching data:', error);
       toast.error('Kon data niet laden');
@@ -115,7 +138,7 @@ const PlayerManagement = () => {
               </div>
               <CardDescription>
                 {player.user_id 
-                  ? `Account gekoppeld aan: ${player.user_id}`
+                  ? `Account gekoppeld: ${player.user_email || 'Email niet beschikbaar'}`
                   : 'Geen account gekoppeld'
                 }
               </CardDescription>
