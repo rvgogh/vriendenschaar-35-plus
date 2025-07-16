@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -115,8 +114,11 @@ const AuthPage = () => {
 
       if (error) throw error;
 
-      if (data.user) {
-        // Koppel de gebruiker direct aan de geselecteerde speler
+      // De user wordt altijd aangemaakt, ook als email verificatie vereist is
+      // We gebruiken de user ID uit de response om de koppeling te maken
+      if (data.user?.id) {
+        console.log('Koppeling speler', selectedPlayerId, 'aan user', data.user.id);
+        
         const { error: playerError } = await supabase
           .from('players')
           .update({ user_id: data.user.id })
@@ -126,6 +128,7 @@ const AuthPage = () => {
           console.error('Player linking error:', playerError);
           toast.error('Fout bij koppelen speler: ' + playerError.message);
         } else {
+          console.log('Speler succesvol gekoppeld aan account');
           toast.success('Account succesvol aangemaakt! Check je email voor bevestiging.');
           // Refresh de beschikbare spelers lijst
           fetchAvailablePlayers();
@@ -134,6 +137,9 @@ const AuthPage = () => {
           setEmail('');
           setPassword('');
         }
+      } else {
+        console.error('Geen user ID ontvangen van Supabase');
+        toast.error('Account aangemaakt maar speler koppeling mislukt');
       }
     } catch (error: any) {
       console.error('Registration error:', error);
