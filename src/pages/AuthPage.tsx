@@ -99,7 +99,8 @@ const AuthPage = () => {
     setLoading(true);
 
     try {
-      const redirectUrl = `${window.location.origin}/`;
+      // Use the correct production URL for email redirect
+      const redirectUrl = 'https://vriendenschaar-35-plus.lovable.app/';
       
       const { data, error } = await supabase.auth.signUp({
         email,
