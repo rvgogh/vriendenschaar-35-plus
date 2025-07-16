@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from '@/components/ui/sonner';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Player } from '@/types';
 
 const AuthPage = () => {
@@ -18,10 +18,39 @@ const AuthPage = () => {
   const [players, setPlayers] = useState<Player[]>([]);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   useEffect(() => {
     fetchAvailablePlayers();
-  }, []);
+    
+    // Handle email verification redirect
+    const handleEmailVerification = async () => {
+      const token = searchParams.get('token');
+      const type = searchParams.get('type');
+      
+      if (token && type === 'email') {
+        try {
+          const { error } = await supabase.auth.verifyOtp({
+            token_hash: token,
+            type: 'email'
+          });
+          
+          if (error) {
+            console.error('Email verification error:', error);
+            toast.error('Email verificatie mislukt: ' + error.message);
+          } else {
+            toast.success('Email succesvol geverifieerd!');
+            navigate('/');
+          }
+        } catch (error) {
+          console.error('Email verification error:', error);
+          toast.error('Email verificatie mislukt');
+        }
+      }
+    };
+
+    handleEmailVerification();
+  }, [searchParams, navigate]);
 
   const fetchAvailablePlayers = async () => {
     try {
@@ -76,25 +105,37 @@ const AuthPage = () => {
         email,
         password,
         options: {
-          emailRedirectTo: redirectUrl
+          emailRedirectTo: redirectUrl,
+          data: {
+            player_id: selectedPlayerId
+          }
         }
       });
 
       if (error) throw error;
 
       if (data.user) {
-        // Koppel de gebruiker aan de geselecteerde speler
+        // Koppel de gebruiker direct aan de geselecteerde speler
         const { error: playerError } = await supabase
           .from('players')
           .update({ user_id: data.user.id })
           .eq('id', parseInt(selectedPlayerId));
 
-        if (playerError) throw playerError;
-
-        toast.success('Account succesvol aangemaakt! Check je email voor bevestiging.');
-        navigate('/');
+        if (playerError) {
+          console.error('Player linking error:', playerError);
+          toast.error('Fout bij koppelen speler: ' + playerError.message);
+        } else {
+          toast.success('Account succesvol aangemaakt! Check je email voor bevestiging.');
+          // Refresh de beschikbare spelers lijst
+          fetchAvailablePlayers();
+          // Reset de form
+          setSelectedPlayerId('');
+          setEmail('');
+          setPassword('');
+        }
       }
     } catch (error: any) {
+      console.error('Registration error:', error);
       toast.error(error.message || 'Registratie mislukt');
     } finally {
       setLoading(false);
