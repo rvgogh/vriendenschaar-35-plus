@@ -1,15 +1,10 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Training } from "@/types";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-import TrainingPlayerList from "./TrainingPlayerList";
-import { Calendar, Eye, EyeOff } from "lucide-react";
-import TrainingStatusIndicator from "./TrainingStatusIndicator";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Link } from "react-router-dom";
+import { Calendar, Clock, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 
@@ -93,23 +88,6 @@ const TrainingList = ({ nextActivityId }: TrainingListProps) => {
         }).format(date);
     };
 
-    // Determine which training to expand by default
-    let defaultExpandedTraining: string | undefined;
-    
-    if (nextActivityId && trainingsToShow?.some(training => training.id === nextActivityId)) {
-        // If nextActivityId matches a training in our list, expand that one
-        defaultExpandedTraining = `training-${nextActivityId}`;
-    } else if (trainingsToShow && trainingsToShow.length > 0) {
-        // Otherwise, expand the first upcoming training
-        const firstUpcoming = trainingsToShow.find(training => new Date(training.training_at) >= now);
-        if (firstUpcoming) {
-            defaultExpandedTraining = `training-${firstUpcoming.id}`;
-        } else {
-            // If no upcoming trainings, expand the first one in the list
-            defaultExpandedTraining = `training-${trainingsToShow[0].id}`;
-        }
-    }
-
     return (
         <div className="space-y-4">
             <div className="flex justify-between items-center">
@@ -131,40 +109,36 @@ const TrainingList = ({ nextActivityId }: TrainingListProps) => {
                 </div>
             )}
             
-            <Accordion type="single" collapsible className="w-full" defaultValue={defaultExpandedTraining}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {trainingsToShow?.map((training) => {
                     const isPast = new Date(training.training_at) < now;
+                    const isNext = nextActivityId === training.id;
+                    
                     return (
-                        <AccordionItem value={`training-${training.id}`} key={training.id} className={isPast ? 'opacity-60' : ''}>
-                            <AccordionTrigger>
-                                <div className="flex justify-between w-full pr-4 items-center">
-                                    <div className="flex flex-col items-start text-left gap-1">
-                                        <div className="flex items-center gap-2">
-                                            <Calendar className="h-5 w-5 text-primary" />
-                                            <div className="flex flex-col">
-                                                <span className="text-lg font-semibold">{formatDate(training.training_at)}</span>
-                                                <span className="text-sm text-muted-foreground">{formatTime(training.training_at)}</span>
-                                            </div>
-                                            {isPast && <span className="text-xs bg-muted px-2 py-1 rounded">Geweest</span>}
+                        <Link to={`/training/${training.id}`} key={training.id} className="no-underline">
+                            <Card className={`hover:bg-muted/50 transition-colors h-full ${isPast ? 'opacity-60' : ''} ${isNext ? 'ring-2 ring-primary' : ''}`}>
+                                <CardHeader>
+                                    <CardTitle className="text-xl flex items-center gap-2">
+                                        <Calendar className="h-5 w-5 text-primary" />
+                                        <div className="flex flex-col">
+                                            <span>{formatDate(training.training_at)}</span>
+                                            <span className="text-sm text-muted-foreground font-normal">{formatTime(training.training_at)}</span>
                                         </div>
-                                        {!isPast && (
-                                            <div className="pl-7">
-                                                <TrainingStatusIndicator yesCount={training.yes_count} />
-                                            </div>
-                                        )}
+                                        {isPast && <span className="text-xs bg-muted px-2 py-1 rounded ml-auto">Geweest</span>}
+                                        {isNext && !isPast && <span className="text-xs bg-primary text-primary-foreground px-2 py-1 rounded ml-auto">Volgende</span>}
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="flex items-center text-green-600 font-semibold">
+                                        <span className="mr-2 text-lg">🍆</span>
+                                        <span>{training.yes_count} AANWEZIG</span>
                                     </div>
-                                    <div className="flex items-center gap-2 text-muted-foreground">
-                                        <span className="text-lg">{training.yes_count} 🍆</span>
-                                    </div>
-                                </div>
-                            </AccordionTrigger>
-                            <AccordionContent>
-                                <TrainingPlayerList trainingId={training.id} />
-                            </AccordionContent>
-                        </AccordionItem>
-                    )
+                                </CardContent>
+                            </Card>
+                        </Link>
+                    );
                 })}
-            </Accordion>
+            </div>
         </div>
     );
 };
