@@ -9,6 +9,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import MatchPage from "./pages/MatchPage";
 import EventPage from "./pages/EventPage";
+import TrainingPage from "./pages/TrainingPage";
 import AuthPage from "./pages/AuthPage";
 import AdminPage from "./pages/AdminPage";
 import NotFound from "./pages/NotFound";
@@ -34,6 +35,7 @@ const App = () => (
               } />
               <Route path="/match/:id" element={<MatchPage />} />
               <Route path="/event/:id" element={<EventPage />} />
+              <Route path="/training/:id" element={<TrainingPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>

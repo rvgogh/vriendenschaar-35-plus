@@ -10,6 +10,8 @@ import { useState } from "react";
 
 interface TrainingWithCount extends Training {
     yes_count: number;
+    no_count: number;
+    unknown_count: number;
 }
 
 interface TrainingListProps {
@@ -27,23 +29,48 @@ const fetchTrainings = async (): Promise<TrainingWithCount[]> => {
 
     const { data: statuses, error: statusesError } = await supabase
         .from("training_statuses")
-        .select('training_id, status')
-        .eq('status', 'YES');
+        .select('training_id, status');
 
     if (statusesError) {
         console.error("Error fetching training statuses:", statusesError);
-        return trainings.map(training => ({ ...training, yes_count: 0 }));
+        return trainings.map(training => ({ ...training, yes_count: 0, no_count: 0, unknown_count: 0 }));
     }
 
-    const statusCounts = (statuses || []).reduce((acc, { training_id }) => {
-        acc[training_id] = (acc[training_id] || 0) + 1;
-        return acc;
-    }, {} as Record<number, number>);
+    // Get total number of players
+    const { data: players, error: playersError } = await supabase
+        .from("players")
+        .select('id');
 
-    const trainingsWithCounts = trainings.map(training => ({
-        ...training,
-        yes_count: statusCounts[training.id] || 0,
-    }));
+    if (playersError) {
+        console.error("Error fetching players:", playersError);
+        return trainings.map(training => ({ ...training, yes_count: 0, no_count: 0, unknown_count: 0 }));
+    }
+
+    const totalPlayers = players?.length || 0;
+
+    const statusCounts = (statuses || []).reduce((acc, { training_id, status }) => {
+        if (!acc[training_id]) {
+            acc[training_id] = { yes_count: 0, no_count: 0, unknown_count: 0 };
+        }
+        if (status === 'YES') {
+            acc[training_id].yes_count++;
+        } else if (status === 'NO') {
+            acc[training_id].no_count++;
+        }
+        return acc;
+    }, {} as Record<number, { yes_count: number, no_count: number, unknown_count: number }>);
+
+    const trainingsWithCounts = trainings.map(training => {
+        const counts = statusCounts[training.id] || { yes_count: 0, no_count: 0, unknown_count: 0 };
+        const respondedCount = counts.yes_count + counts.no_count;
+        const unknownCount = totalPlayers - respondedCount;
+        
+        return {
+            ...training,
+            ...counts,
+            unknown_count: unknownCount
+        };
+    });
 
     return trainingsWithCounts;
 };
@@ -129,9 +156,19 @@ const TrainingList = ({ nextActivityId }: TrainingListProps) => {
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent>
-                                    <div className="flex items-center text-green-600 font-semibold">
-                                        <span className="mr-2 text-lg">🍆</span>
-                                        <span>{training.yes_count} AANWEZIG</span>
+                                    <div className="grid grid-cols-2 gap-2 text-sm">
+                                        <div className="flex items-center text-green-600 font-semibold">
+                                            <span className="mr-2 text-lg">🍆</span>
+                                            <span>{training.yes_count} AANWEZIG</span>
+                                        </div>
+                                        <div className="flex items-center text-red-600 font-semibold">
+                                            <span className="mr-2 text-lg">❌</span>
+                                            <span>{training.no_count} NIET</span>
+                                        </div>
+                                        <div className="flex items-center text-gray-500 font-semibold col-span-2">
+                                            <span className="mr-2 text-lg">➖</span>
+                                            <span>{training.unknown_count} GEEN REACTIE</span>
+                                        </div>
                                     </div>
                                 </CardContent>
                             </Card>
