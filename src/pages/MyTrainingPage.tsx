@@ -65,26 +65,33 @@ const TrainingCard = ({ training, myPlayer, onStatusChange }: {
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return new Intl.DateTimeFormat('nl-NL', {
+    const dateStr = new Intl.DateTimeFormat('nl-NL', {
       weekday: 'long',
       year: 'numeric',
       month: 'long',
       day: 'numeric',
     }).format(date);
-  };
-
-  const formatTime = (dateString: string) => {
-    const date = new Date(dateString);
-    return new Intl.DateTimeFormat('nl-NL', {
+    
+    const timeStr = new Intl.DateTimeFormat('nl-NL', {
       hour: '2-digit',
       minute: '2-digit',
     }).format(date);
+    
+    return `${dateStr} om ${timeStr}`;
   };
 
   const myStatus = players?.find(p => p.id === myPlayer?.id)?.status || "UNKNOWN";
   const yesCount = players?.filter(p => p.status === 'YES').length || 0;
   const noCount = players?.filter(p => p.status === 'NO').length || 0;
   const unknownCount = players?.filter(p => p.status === 'UNKNOWN').length || 0;
+
+  // Sort players by status and then alphabetically
+  const sortedPlayers = players?.slice().sort((a, b) => {
+    const statusOrder = { 'YES': 0, 'NO': 1, 'UNKNOWN': 2 };
+    const statusDiff = statusOrder[a.status] - statusOrder[b.status];
+    if (statusDiff !== 0) return statusDiff;
+    return a.name.localeCompare(b.name);
+  }) || [];
 
   return (
     <Card className="mb-6 bg-secondary/50">
@@ -100,36 +107,9 @@ const TrainingCard = ({ training, myPlayer, onStatusChange }: {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="flex items-center gap-2 text-muted-foreground">
-          <Clock className="h-4 w-4" />
-          <span>Tijd: {formatTime(training.training_at)}</span>
-        </div>
-
-        {/* Status Overview */}
-        <div className="border-t pt-4">
-          <h4 className="text-sm font-semibold mb-3 text-muted-foreground">Aanwezigheidsoverzicht</h4>
-          <div className="grid grid-cols-3 gap-4 text-center text-sm">
-            <div className="space-y-1">
-              <div className="text-xl">🍆</div>
-              <div className="font-semibold text-green-600">{yesCount}</div>
-              <div className="text-muted-foreground">Aanwezig</div>
-            </div>
-            <div className="space-y-1">
-              <div className="text-xl">❌</div>
-              <div className="font-semibold text-red-600">{noCount}</div>
-              <div className="text-muted-foreground">Afwezig</div>
-            </div>
-            <div className="space-y-1">
-              <div className="text-xl">❓</div>
-              <div className="font-semibold text-gray-600">{unknownCount}</div>
-              <div className="text-muted-foreground">Niet gereageerd</div>
-            </div>
-          </div>
-        </div>
-
         {/* My Status */}
         {myPlayer && (
-          <div className="border-t pt-4">
+          <div>
             <h4 className="text-sm font-semibold mb-3 text-muted-foreground">Mijn aanwezigheid</h4>
             <div className="flex items-center justify-between p-3 bg-card rounded-lg border">
               <span className="font-medium">{myPlayer.name}</span>
@@ -155,11 +135,33 @@ const TrainingCard = ({ training, myPlayer, onStatusChange }: {
           </div>
         )}
 
+        {/* Status Overview */}
+        <div className="border-t pt-4">
+          <h4 className="text-sm font-semibold mb-3 text-muted-foreground">Aanwezigheidsoverzicht</h4>
+          <div className="grid grid-cols-3 gap-4 text-center text-sm">
+            <div className="space-y-1">
+              <div className="text-xl">🍆</div>
+              <div className="font-semibold text-green-600">{yesCount}</div>
+              <div className="text-muted-foreground">Aanwezig</div>
+            </div>
+            <div className="space-y-1">
+              <div className="text-xl">❌</div>
+              <div className="font-semibold text-red-600">{noCount}</div>
+              <div className="text-muted-foreground">Afwezig</div>
+            </div>
+            <div className="space-y-1">
+              <div className="text-xl">❓</div>
+              <div className="font-semibold text-gray-600">{unknownCount}</div>
+              <div className="text-muted-foreground">Niet gereageerd</div>
+            </div>
+          </div>
+        </div>
+
         {/* All Players List */}
         <div className="border-t pt-4">
           <h4 className="text-sm font-semibold mb-3 text-muted-foreground">Alle spelers</h4>
           <div className="space-y-2 max-h-40 overflow-y-auto">
-            {players?.map((player) => (
+            {sortedPlayers.map((player) => (
               <div key={player.id} className="flex items-center justify-between text-sm p-2 bg-muted/30 rounded">
                 <span>{player.name}</span>
                 <span className="text-lg">
