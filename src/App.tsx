@@ -16,6 +16,8 @@ import MatchPage from "./pages/MatchPage";
 import EventPage from "./pages/EventPage";
 import TrainingPage from "./pages/TrainingPage";
 import MyTrainingPage from "./pages/MyTrainingPage";
+import MyMatchesPage from "./pages/MyMatchesPage";
+import MyEventsPage from "./pages/MyEventsPage";
 import AuthPage from "./pages/AuthPage";
 import AdminPage from "./pages/AdminPage";
 import NotFound from "./pages/NotFound";
@@ -63,6 +65,16 @@ const App = () => (
                         <Route path="/my-trainings" element={
                           <ProtectedRoute>
                             <MyTrainingPage />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/my-matches" element={
+                          <ProtectedRoute>
+                            <MyMatchesPage />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/my-events" element={
+                          <ProtectedRoute>
+                            <MyEventsPage />
                           </ProtectedRoute>
                         } />
                         <Route path="*" element={<NotFound />} />
