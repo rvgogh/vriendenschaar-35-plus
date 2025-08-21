@@ -9,6 +9,8 @@ import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
 import { ArrowLeft, Calendar, Clock, UserCheck } from "lucide-react";
 import LoginButton from "@/components/LoginButton";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { useState } from "react";
 
 const fetchMyPlayer = async (userId: string) => {
   const { data: player, error } = await supabase
@@ -58,6 +60,9 @@ const MatchCard = ({ match, myPlayer, onStatusChange }: {
   myPlayer: any;
   onStatusChange: (matchId: number, status: PlayerStatus) => void;
 }) => {
+  const isMobile = useIsMobile();
+  const [selectedStatus, setSelectedStatus] = useState<PlayerStatus>('IN');
+  
   const { data: players } = useQuery({
     queryKey: ["matchPlayers", match.id],
     queryFn: () => fetchPlayersWithMatchStatus(match.id),
@@ -86,13 +91,13 @@ const MatchCard = ({ match, myPlayer, onStatusChange }: {
   const maybeCount = players?.filter(p => p.status === 'MAYBE').length || 0;
   const unknownCount = players?.filter(p => p.status === 'UNKNOWN').length || 0;
 
-  // Sort players by status and then alphabetically
-  const sortedPlayers = players?.slice().sort((a, b) => {
-    const statusOrder = { 'IN': 0, 'MAYBE': 1, 'OUT': 2, 'UNKNOWN': 3 };
-    const statusDiff = statusOrder[a.status] - statusOrder[b.status];
-    if (statusDiff !== 0) return statusDiff;
-    return a.name.localeCompare(b.name);
-  }) || [];
+  // Group players by status
+  const playersByStatus = {
+    IN: players?.filter(p => p.status === 'IN').sort((a, b) => a.name.localeCompare(b.name)) || [],
+    MAYBE: players?.filter(p => p.status === 'MAYBE').sort((a, b) => a.name.localeCompare(b.name)) || [],
+    OUT: players?.filter(p => p.status === 'OUT').sort((a, b) => a.name.localeCompare(b.name)) || [],
+    UNKNOWN: players?.filter(p => p.status === 'UNKNOWN').sort((a, b) => a.name.localeCompare(b.name)) || []
+  };
 
   return (
     <Card className="mb-6 bg-secondary/50">
@@ -151,46 +156,111 @@ const MatchCard = ({ match, myPlayer, onStatusChange }: {
           </div>
         )}
 
-        {/* Status Overview */}
+        {/* Combined Status Overview and Players */}
         <div className="border-t pt-4">
           <h4 className="text-sm font-semibold mb-3 text-muted-foreground">Statusoverzicht</h4>
           <div className="grid grid-cols-4 gap-4 text-center text-sm">
-            <div className="space-y-1">
+            <div 
+              className={cn(
+                "space-y-1 cursor-pointer rounded-lg p-2 transition-colors",
+                isMobile && selectedStatus === 'IN' && "bg-muted/50",
+                isMobile && "hover:bg-muted/30"
+              )}
+              onClick={() => isMobile && setSelectedStatus('IN')}
+            >
               <div className="text-xl">🍆</div>
               <div className="font-semibold text-green-600">{inCount}</div>
               <div className="text-muted-foreground">Aanwezig</div>
+              {!isMobile && playersByStatus.IN.length > 0 && (
+                <div className="mt-2 space-y-1">
+                  {playersByStatus.IN.map((player) => (
+                    <div key={player.id} className="text-xs text-foreground font-medium">
+                      {player.name}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
-            <div className="space-y-1">
+            <div 
+              className={cn(
+                "space-y-1 cursor-pointer rounded-lg p-2 transition-colors",
+                isMobile && selectedStatus === 'MAYBE' && "bg-muted/50",
+                isMobile && "hover:bg-muted/30"
+              )}
+              onClick={() => isMobile && setSelectedStatus('MAYBE')}
+            >
               <div className="text-xl">❓</div>
               <div className="font-semibold text-orange-500">{maybeCount}</div>
               <div className="text-muted-foreground">Misschien</div>
+              {!isMobile && playersByStatus.MAYBE.length > 0 && (
+                <div className="mt-2 space-y-1">
+                  {playersByStatus.MAYBE.map((player) => (
+                    <div key={player.id} className="text-xs text-foreground font-medium">
+                      {player.name}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
-            <div className="space-y-1">
+            <div 
+              className={cn(
+                "space-y-1 cursor-pointer rounded-lg p-2 transition-colors",
+                isMobile && selectedStatus === 'OUT' && "bg-muted/50",
+                isMobile && "hover:bg-muted/30"
+              )}
+              onClick={() => isMobile && setSelectedStatus('OUT')}
+            >
               <div className="text-xl">❌</div>
               <div className="font-semibold text-red-600">{outCount}</div>
               <div className="text-muted-foreground">Afwezig</div>
+              {!isMobile && playersByStatus.OUT.length > 0 && (
+                <div className="mt-2 space-y-1">
+                  {playersByStatus.OUT.map((player) => (
+                    <div key={player.id} className="text-xs text-foreground font-medium">
+                      {player.name}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
-            <div className="space-y-1">
+            <div 
+              className={cn(
+                "space-y-1 cursor-pointer rounded-lg p-2 transition-colors",
+                isMobile && selectedStatus === 'UNKNOWN' && "bg-muted/50",
+                isMobile && "hover:bg-muted/30"
+              )}
+              onClick={() => isMobile && setSelectedStatus('UNKNOWN')}
+            >
               <div className="text-xl">➖</div>
               <div className="font-semibold text-gray-600">{unknownCount}</div>
               <div className="text-muted-foreground">Niet gereageerd</div>
+              {!isMobile && playersByStatus.UNKNOWN.length > 0 && (
+                <div className="mt-2 space-y-1">
+                  {playersByStatus.UNKNOWN.map((player) => (
+                    <div key={player.id} className="text-xs text-foreground font-medium">
+                      {player.name}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
-        </div>
-
-        {/* All Players List */}
-        <div className="border-t pt-4">
-          <h4 className="text-sm font-semibold mb-3 text-muted-foreground">Alle spelers</h4>
-          <div className="space-y-2 max-h-40 overflow-y-auto">
-            {sortedPlayers.map((player) => (
-              <div key={player.id} className="flex items-center justify-between text-sm p-2 bg-muted/30 rounded">
-                <span>{player.name}</span>
-                <span className="text-lg">
-                  {player.status === 'IN' ? '🍆' : player.status === 'MAYBE' ? '❓' : player.status === 'OUT' ? '❌' : '➖'}
-                </span>
+          
+          {/* Mobile Player List */}
+          {isMobile && playersByStatus[selectedStatus].length > 0 && (
+            <div className="mt-4 p-3 bg-muted/30 rounded-lg">
+              <h5 className="text-sm font-medium mb-2">
+                {selectedStatus === 'IN' ? 'Aanwezig' : selectedStatus === 'MAYBE' ? 'Misschien' : selectedStatus === 'OUT' ? 'Afwezig' : 'Niet gereageerd'}
+              </h5>
+              <div className="space-y-1">
+                {playersByStatus[selectedStatus].map((player) => (
+                  <div key={player.id} className="text-sm text-foreground">
+                    {player.name}
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>
