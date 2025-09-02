@@ -13,6 +13,7 @@ interface Player {
   name: string;
   user_id: string | null;
   user_email?: string;
+  knvb_member: boolean;
 }
 
 const PlayerManagement = () => {
@@ -129,6 +130,11 @@ const PlayerManagement = () => {
                   <CardTitle className="text-lg">{player.name}</CardTitle>
                 </div>
                 <div className="flex items-center gap-2">
+                  {player.knvb_member ? (
+                    <Badge variant="default" className="bg-green-600 hover:bg-green-700">KNVB Lid</Badge>
+                  ) : (
+                    <Badge variant="outline">Geen KNVB Lid</Badge>
+                  )}
                   {player.user_id ? (
                     <Badge variant="default">Gekoppeld</Badge>
                   ) : (
@@ -137,10 +143,17 @@ const PlayerManagement = () => {
                 </div>
               </div>
               <CardDescription>
-                {player.user_id 
-                  ? `Account gekoppeld: ${player.user_email || 'Email niet beschikbaar'}`
-                  : 'Geen account gekoppeld'
-                }
+                <div className="space-y-1">
+                  <div>
+                    {player.user_id 
+                      ? `Account gekoppeld: ${player.user_email || 'Email niet beschikbaar'}`
+                      : 'Geen account gekoppeld'
+                    }
+                  </div>
+                  <div className="text-sm">
+                    <span className="font-medium">KNVB Status:</span> {player.knvb_member ? 'Lid van KNVB - Mag deelnemen aan wedstrijden' : 'Geen KNVB lid - Kan niet deelnemen aan wedstrijden'}
+                  </div>
+                </div>
               </CardDescription>
             </CardHeader>
             <CardContent>
