@@ -12,16 +12,9 @@ interface PlayerCardProps {
 const PlayerCard = ({ player, onStatusChange }: PlayerCardProps) => {
   return (
     <Card className="bg-secondary/50 flex items-center justify-between p-3">
-      <div className="flex items-center gap-2 mr-2">
-        <CardTitle className="text-xl truncate">
-          {player.name}
-        </CardTitle>
-        {player.knvb_member && (
-          <div className="text-xs bg-primary text-primary-foreground px-2 py-1 rounded-full font-medium">
-            KNVB
-          </div>
-        )}
-      </div>
+      <CardTitle className="text-xl truncate mr-2">
+        {player.name}
+      </CardTitle>
       <div className="flex gap-2 flex-shrink-0">
         <Button 
           variant='outline'
