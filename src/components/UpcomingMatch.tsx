@@ -10,19 +10,26 @@ interface UpcomingMatchProps {
 }
 
 const fetchPlayerStatusCounts = async (matchId: number) => {
-  const { data: statuses, error: statusesError } = await supabase
+  // Fetch only statuses for KNVB members
+  const { data: statuses, error } = await supabase
     .from("player_statuses")
-    .select("status")
-    .eq("match_id", matchId);
+    .select(`
+      status,
+      players!inner(knvb_member)
+    `)
+    .eq("match_id", matchId)
+    .eq("players.knvb_member", true);
 
-  if (statusesError) {
-    console.error("Error fetching player statuses:", statusesError);
+  if (error) {
+    console.error("Error fetching player statuses:", error);
     return { inCount: 0, maybeCount: 0, outCount: 0, unknownCount: 0 };
   }
 
+  // Get total KNVB members
   const { data: players, error: playersError } = await supabase
     .from("players")
-    .select("id");
+    .select("id")
+    .eq("knvb_member", true);
 
   if (playersError) {
     console.error("Error fetching players:", playersError);

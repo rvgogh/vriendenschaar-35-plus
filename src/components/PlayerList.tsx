@@ -5,7 +5,12 @@ import PlayerCard from "./PlayerCard";
 import { toast } from "@/components/ui/sonner";
 
 const fetchPlayersWithStatus = async (matchId: number): Promise<PlayerWithStatus[]> => {
-    const { data: players, error: playersError } = await supabase.from("players").select("*").order('name', { ascending: true });
+    // Fetch only KNVB member players
+    const { data: players, error: playersError } = await supabase
+        .from("players")
+        .select("id, name, knvb_member")
+        .eq("knvb_member", true)
+        .order('name', { ascending: true });
     if (playersError) throw playersError;
 
     const { data: statuses, error: statusesError } = await supabase

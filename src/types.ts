@@ -4,6 +4,7 @@ export type PlayerStatus = "IN" | "OUT" | "MAYBE" | "UNKNOWN";
 export interface Player {
   id: number;
   name: string;
+  knvb_member: boolean;
 }
 
 export interface PlayerWithStatus extends Player {

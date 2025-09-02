@@ -25,9 +25,15 @@ const fetchMatches = async (): Promise<MatchWithCount[]> => {
     if (matchesError) throw matchesError;
     if (!matches) return [];
 
+    // Fetch statuses only for KNVB members
     const { data: statuses, error: statusesError } = await supabase
         .from("player_statuses")
-        .select('match_id, status');
+        .select(`
+            match_id, 
+            status,
+            players!inner(knvb_member)
+        `)
+        .eq("players.knvb_member", true);
 
     if (statusesError) {
         console.error("Error fetching player statuses:", statusesError);
@@ -35,10 +41,11 @@ const fetchMatches = async (): Promise<MatchWithCount[]> => {
         return matches.map(match => ({ ...match, in_count: 0, maybe_count: 0, out_count: 0, unknown_count: 0 }));
     }
 
-    // Get total number of players
+    // Get total number of KNVB member players
     const { data: players, error: playersError } = await supabase
         .from("players")
-        .select('id');
+        .select('id')
+        .eq("knvb_member", true);
 
     if (playersError) {
         console.error("Error fetching players:", playersError);
