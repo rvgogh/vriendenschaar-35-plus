@@ -46,6 +46,7 @@ const PlayerList = ({ matchId }: { matchId: number }) => {
           queryClient.invalidateQueries({ queryKey: ["players", matchId] });
           queryClient.invalidateQueries({ queryKey: ["matches"] });
           queryClient.invalidateQueries({ queryKey: ["playerStatusCounts", matchId] });
+          queryClient.invalidateQueries({ queryKey: ["matchPresence"] });
           toast.success("Status bijgewerkt!");
       },
       onError: (error) => {

@@ -43,6 +43,7 @@ const TrainingPlayerList = ({ trainingId }: { trainingId: number }) => {
       onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: ["trainingPlayers", trainingId] });
           queryClient.invalidateQueries({ queryKey: ["trainings"] });
+          queryClient.invalidateQueries({ queryKey: ["trainingPresence"] });
           toast.success("Status bijgewerkt!");
       },
       onError: (error) => {
