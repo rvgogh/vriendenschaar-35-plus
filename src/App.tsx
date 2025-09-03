@@ -9,6 +9,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import Index from "./pages/Index";
+import OldHomepage from "./pages/OldHomepage";
 import MatchesPage from "./pages/MatchesPage";
 import EventsPage from "./pages/EventsPage";
 import TrainingsPage from "./pages/TrainingsPage";
@@ -50,7 +51,11 @@ const App = () => (
                         </div>
                       </header>
                       <Routes>
-                        <Route path="/" element={<Index />} />
+                        <Route path="/" element={
+                          <ProtectedRoute>
+                            <Index />
+                          </ProtectedRoute>
+                        } />
                         <Route path="/matches" element={<MatchesPage />} />
                         <Route path="/events" element={<EventsPage />} />
                         <Route path="/trainings" element={<TrainingsPage />} />
@@ -62,7 +67,12 @@ const App = () => (
                             <AdminPage />
                           </ProtectedRoute>
                         } />
-                        <Route path="/my-trainings" element={
+                        <Route path="/old-homepage" element={
+                          <ProtectedRoute>
+                            <OldHomepage />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/my-training" element={
                           <ProtectedRoute>
                             <MyTrainingPage />
                           </ProtectedRoute>
