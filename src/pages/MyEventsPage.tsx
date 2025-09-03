@@ -239,6 +239,7 @@ const MyEventsPage = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["eventPlayers"] });
       queryClient.invalidateQueries({ queryKey: ["events"] });
+      queryClient.invalidateQueries({ queryKey: ["eventPresence"] });
       toast.success("Aanwezigheid bijgewerkt!");
     },
     onError: (error) => {

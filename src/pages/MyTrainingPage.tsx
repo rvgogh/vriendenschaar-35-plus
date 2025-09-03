@@ -256,6 +256,7 @@ const MyTrainingPage = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["trainingPlayers"] });
       queryClient.invalidateQueries({ queryKey: ["trainings"] });
+      queryClient.invalidateQueries({ queryKey: ["trainingPresence"] });
       toast.success("Aanwezigheid bijgewerkt!");
     },
     onError: (error) => {

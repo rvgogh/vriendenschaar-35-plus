@@ -42,6 +42,7 @@ const EventPlayerList = ({ eventId }: { eventId: number }) => {
           queryClient.invalidateQueries({ queryKey: ["eventPlayers", eventId] });
           queryClient.invalidateQueries({ queryKey: ["events"] });
           queryClient.invalidateQueries({ queryKey: ["eventStatusCounts", eventId] });
+          // Invalidate homepage presence queries
           queryClient.invalidateQueries({ queryKey: ["eventPresence"] });
           toast.success("Status bijgewerkt!");
       },

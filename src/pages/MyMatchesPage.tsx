@@ -295,6 +295,7 @@ const MyMatchesPage = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["matchPlayers"] });
       queryClient.invalidateQueries({ queryKey: ["matches"] });
+      queryClient.invalidateQueries({ queryKey: ["matchPresence"] });
       toast.success("Status bijgewerkt!");
     },
     onError: (error) => {
