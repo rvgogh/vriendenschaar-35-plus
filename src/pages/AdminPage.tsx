@@ -4,7 +4,9 @@ import { useUserRole } from '@/hooks/useUserRole';
 import { Navigate } from 'react-router-dom';
 import PlayerManagement from '@/components/PlayerManagement';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Shield, Users, Settings } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Shield, Users, Settings, Home } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const AdminPage = () => {
   const { role, loading } = useUserRole();
@@ -35,7 +37,7 @@ const AdminPage = () => {
           <p className="text-muted-foreground">Superuser beheer paneel</p>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-8">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Spelers</CardTitle>
@@ -72,6 +74,21 @@ const AdminPage = () => {
               <p className="text-xs text-muted-foreground">
                 Volledige toegang
               </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Oude Homepage</CardTitle>
+              <Home className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold mb-2">Legacy</div>
+              <Button asChild size="sm" variant="outline" className="w-full">
+                <Link to="/old-homepage">
+                  Bekijk Oude Homepage
+                </Link>
+              </Button>
             </CardContent>
           </Card>
         </div>
