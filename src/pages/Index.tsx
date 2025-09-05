@@ -171,7 +171,7 @@ const Index = () => {
                   <CardTitle className="text-xl">Mijn Wedstrijden</CardTitle>
                 </div>
                 {upcomingMatch && (
-                  matchPresence ? (
+                  matchPresence && matchPresence.status !== 'UNKNOWN' ? (
                     <CheckCircle className="h-5 w-5 text-green-500" />
                   ) : (
                     <AlertCircle className="h-5 w-5 text-amber-500" />
@@ -182,7 +182,7 @@ const Index = () => {
             <CardContent>
               <CardDescription className="mb-4">
                 {upcomingMatch ? (
-                  matchPresence ? (
+                  matchPresence && matchPresence.status !== 'UNKNOWN' ? (
                     `Aanwezigheid ingesteld voor ${upcomingMatch.opponent}`
                   ) : (
                     `Nog geen aanwezigheid ingesteld voor ${upcomingMatch.opponent}`
@@ -206,7 +206,7 @@ const Index = () => {
                   <CardTitle className="text-xl">Mijn Trainingen</CardTitle>
                 </div>
                 {upcomingTraining && (
-                  trainingPresence ? (
+                  trainingPresence && trainingPresence.status !== 'UNKNOWN' ? (
                     <CheckCircle className="h-5 w-5 text-green-500" />
                   ) : (
                     <AlertCircle className="h-5 w-5 text-amber-500" />
@@ -217,7 +217,7 @@ const Index = () => {
             <CardContent>
               <CardDescription className="mb-4">
                 {upcomingTraining ? (
-                  trainingPresence ? (
+                  trainingPresence && trainingPresence.status !== 'UNKNOWN' ? (
                     "Aanwezigheid ingesteld voor volgende training"
                   ) : (
                     "Nog geen aanwezigheid ingesteld voor volgende training"
@@ -241,7 +241,7 @@ const Index = () => {
                   <CardTitle className="text-xl">Mijn Evenementen</CardTitle>
                 </div>
                 {upcomingEvent && (
-                  eventPresence ? (
+                  eventPresence && eventPresence.status !== 'UNKNOWN' ? (
                     <CheckCircle className="h-5 w-5 text-green-500" />
                   ) : (
                     <AlertCircle className="h-5 w-5 text-amber-500" />
@@ -252,7 +252,7 @@ const Index = () => {
             <CardContent>
               <CardDescription className="mb-4">
                 {upcomingEvent ? (
-                  eventPresence ? (
+                  eventPresence && eventPresence.status !== 'UNKNOWN' ? (
                     `Aanwezigheid ingesteld voor ${upcomingEvent.title}`
                   ) : (
                     "Nog geen aanwezigheid ingesteld - ben je soms een feestbreker? 🎉"
