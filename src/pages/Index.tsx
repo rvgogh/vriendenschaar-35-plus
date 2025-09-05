@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { Calendar, Trophy, Users, CheckCircle, AlertCircle } from "lucide-react";
+import { Calendar, Trophy, Users, CheckCircle, X } from "lucide-react";
 
 const fetchMyPlayer = async (userId: string) => {
   const { data, error } = await supabase
@@ -174,7 +174,7 @@ const Index = () => {
                   matchPresence && matchPresence.status !== 'UNKNOWN' ? (
                     <CheckCircle className="h-5 w-5 text-green-500" />
                   ) : (
-                    <AlertCircle className="h-5 w-5 text-amber-500" />
+                    <X className="h-5 w-5 text-red-500" />
                   )
                 )}
               </div>
@@ -183,9 +183,9 @@ const Index = () => {
               <CardDescription className="mb-4">
                 {upcomingMatch ? (
                   matchPresence && matchPresence.status !== 'UNKNOWN' ? (
-                    `Aanwezigheid ingesteld voor ${upcomingMatch.opponent}`
+                    "Aanwezigheid ingesteld voor volgende wedstrijd"
                   ) : (
-                    `Nog geen aanwezigheid ingesteld voor ${upcomingMatch.opponent}`
+                    "Nog geen aanwezigheid ingesteld voor volgende wedstrijd"
                   )
                 ) : (
                   "Geen komende wedstrijden"
@@ -209,7 +209,7 @@ const Index = () => {
                   trainingPresence && trainingPresence.status !== 'UNKNOWN' ? (
                     <CheckCircle className="h-5 w-5 text-green-500" />
                   ) : (
-                    <AlertCircle className="h-5 w-5 text-amber-500" />
+                    <X className="h-5 w-5 text-red-500" />
                   )
                 )}
               </div>
@@ -244,7 +244,7 @@ const Index = () => {
                   eventPresence && eventPresence.status !== 'UNKNOWN' ? (
                     <CheckCircle className="h-5 w-5 text-green-500" />
                   ) : (
-                    <AlertCircle className="h-5 w-5 text-amber-500" />
+                    <X className="h-5 w-5 text-red-500" />
                   )
                 )}
               </div>
@@ -253,7 +253,7 @@ const Index = () => {
               <CardDescription className="mb-4">
                 {upcomingEvent ? (
                   eventPresence && eventPresence.status !== 'UNKNOWN' ? (
-                    `Aanwezigheid ingesteld voor ${upcomingEvent.title}`
+                    "Aanwezigheid ingesteld voor volgend evenement"
                   ) : (
                     "Nog geen aanwezigheid ingesteld - ben je soms een feestbreker? 🎉"
                   )
