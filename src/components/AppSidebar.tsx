@@ -18,9 +18,6 @@ import {
 
 const mainItems = [
   { title: "Home", url: "/", icon: Home },
-  { title: "Wedstrijden", url: "/matches", icon: Trophy },
-  { title: "Evenementen", url: "/events", icon: Calendar },
-  { title: "Trainingen", url: "/trainings", icon: Dumbbell },
 ];
 
 export function AppSidebar() {
@@ -71,7 +68,7 @@ export function AppSidebar() {
               <SidebarMenu>
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild>
-                    <NavLink to="/my-trainings" className={getNavCls} onClick={handleNavClick}>
+                    <NavLink to="/my-training" className={getNavCls} onClick={handleNavClick}>
                       <User className="mr-2 h-4 w-4" />
                       {state !== "collapsed" && <span>Mijn Trainingen</span>}
                     </NavLink>

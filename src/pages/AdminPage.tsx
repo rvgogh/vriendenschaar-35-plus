@@ -5,7 +5,7 @@ import { Navigate } from 'react-router-dom';
 import PlayerManagement from '@/components/PlayerManagement';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Shield, Users, Settings, Home } from 'lucide-react';
+import { Shield, Users, Settings, Home, Trophy, Calendar, Dumbbell } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const AdminPage = () => {
@@ -76,21 +76,72 @@ const AdminPage = () => {
               </p>
             </CardContent>
           </Card>
+        </div>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Oude Homepage</CardTitle>
-              <Home className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold mb-2">Legacy</div>
-              <Button asChild size="sm" variant="outline" className="w-full">
-                <Link to="/old-homepage">
-                  Bekijk Oude Homepage
-                </Link>
-              </Button>
-            </CardContent>
-          </Card>
+        {/* Legacy Section */}
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold text-primary mb-4">Legacy Pagina's</h2>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Oude Homepage</CardTitle>
+                <Home className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-lg font-bold mb-2">Dashboard</div>
+                <Button asChild size="sm" variant="outline" className="w-full">
+                  <Link to="/old-homepage">
+                    Bekijk
+                  </Link>
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Wedstrijden</CardTitle>
+                <Trophy className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-lg font-bold mb-2">Legacy</div>
+                <Button asChild size="sm" variant="outline" className="w-full">
+                  <Link to="/legacy/matches">
+                    Bekijk
+                  </Link>
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Evenementen</CardTitle>
+                <Calendar className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-lg font-bold mb-2">Legacy</div>
+                <Button asChild size="sm" variant="outline" className="w-full">
+                  <Link to="/legacy/events">
+                    Bekijk
+                  </Link>
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Trainingen</CardTitle>
+                <Dumbbell className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-lg font-bold mb-2">Legacy</div>
+                <Button asChild size="sm" variant="outline" className="w-full">
+                  <Link to="/legacy/trainings">
+                    Bekijk
+                  </Link>
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
         </div>
 
         <PlayerManagement />

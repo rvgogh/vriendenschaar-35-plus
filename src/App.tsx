@@ -56,9 +56,21 @@ const App = () => (
                             <Index />
                           </ProtectedRoute>
                         } />
-                        <Route path="/matches" element={<MatchesPage />} />
-                        <Route path="/events" element={<EventsPage />} />
-                        <Route path="/trainings" element={<TrainingsPage />} />
+                        <Route path="/legacy/matches" element={
+                          <ProtectedRoute>
+                            <MatchesPage />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/legacy/events" element={
+                          <ProtectedRoute>
+                            <EventsPage />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/legacy/trainings" element={
+                          <ProtectedRoute>
+                            <TrainingsPage />
+                          </ProtectedRoute>
+                        } />
                         <Route path="/match/:id" element={<MatchPage />} />
                         <Route path="/event/:id" element={<EventPage />} />
                         <Route path="/training/:id" element={<TrainingPage />} />
