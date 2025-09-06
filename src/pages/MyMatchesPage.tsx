@@ -11,6 +11,8 @@ import { ArrowLeft, Calendar, Clock, UserCheck } from "lucide-react";
 import LoginButton from "@/components/LoginButton";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useState } from "react";
+import { generateICalForMatches, downloadICalFile } from "@/utils/icalExport";
+import { useToast } from "@/hooks/use-toast";
 
 const fetchMyPlayer = async (userId: string) => {
   const { data: player, error } = await supabase
@@ -271,6 +273,7 @@ const MatchCard = ({ match, myPlayer, onStatusChange }: {
 const MyMatchesPage = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const { toast: uiToast } = useToast();
 
   const { data: myPlayer } = useQuery({
     queryKey: ["myPlayer", user?.id],
@@ -305,6 +308,25 @@ const MyMatchesPage = () => {
 
   const handleStatusChange = (matchId: number, status: PlayerStatus) => {
     updateStatusMutation.mutate({ matchId, status });
+  };
+
+  const handleICalExport = () => {
+    if (!matches || matches.length === 0) {
+      uiToast({
+        title: "Geen wedstrijden",
+        description: "Er zijn nog geen wedstrijden om te exporteren.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const iCalContent = generateICalForMatches(matches);
+    downloadICalFile(iCalContent, 'mijn-wedstrijden.ics');
+    
+    uiToast({
+      title: "Export gelukt",
+      description: "De wedstrijden zijn geëxporteerd naar je agenda.",
+    });
   };
 
   if (!myPlayer) {
@@ -343,11 +365,19 @@ const MyMatchesPage = () => {
       </header>
 
       <main>
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-primary mb-2">Mijn Wedstrijden</h1>
-          <p className="text-muted-foreground">
-            Beheer je aanwezigheid voor aankomende wedstrijden
-          </p>
+        <div className="mb-8 flex justify-between items-start">
+          <div>
+            <h1 className="text-3xl font-bold text-primary mb-2">Mijn Wedstrijden</h1>
+            <p className="text-muted-foreground">
+              Beheer je aanwezigheid voor aankomende wedstrijden
+            </p>
+          </div>
+          {matches && matches.length > 0 && (
+            <Button onClick={handleICalExport} variant="outline" className="flex items-center gap-2">
+              <Calendar className="h-4 w-4" />
+              Exporteer naar agenda
+            </Button>
+          )}
         </div>
 
         {isLoading ? (
