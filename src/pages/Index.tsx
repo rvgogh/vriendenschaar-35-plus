@@ -279,70 +279,6 @@ const Index = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Mijn Wedstrijden */}
-          <Card className="hover:shadow-lg transition-shadow">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Trophy className="h-6 w-6 text-primary" />
-                  <CardTitle className="text-xl">Mijn Wedstrijden</CardTitle>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              {matchesWithPresence.length > 0 ? (
-                <div className="space-y-3">
-                  {matchesWithPresence.map((match) => (
-                    <div key={match.id} className="border rounded-lg p-3 bg-secondary/20">
-                      <div className="flex justify-between items-center mb-2">
-                        <div>
-                          <p className="font-medium text-sm">{match.opponent}</p>
-                          <p className="text-xs text-muted-foreground">{formatDate(match.match_date)}</p>
-                        </div>
-                        <div className="flex gap-1">
-                          <Button 
-                            variant='outline'
-                            size="sm" 
-                            onClick={() => handleMatchStatusChange(match.id, match.status === 'IN' ? 'UNKNOWN' : 'IN')}
-                            className={cn("text-lg w-8 h-8 p-0", match.status === 'IN' && "ring-2 ring-primary")}
-                          >
-                            🍆
-                          </Button>
-                          <Button 
-                            variant='outline'
-                            size="sm" 
-                            onClick={() => handleMatchStatusChange(match.id, match.status === 'MAYBE' ? 'UNKNOWN' : 'MAYBE')}
-                            className={cn("text-lg w-8 h-8 p-0", match.status === 'MAYBE' && "ring-2 ring-yellow-400")}
-                          >
-                            ❓
-                          </Button>
-                          <Button 
-                            variant='outline'
-                            size="sm" 
-                            onClick={() => handleMatchStatusChange(match.id, match.status === 'OUT' ? 'UNKNOWN' : 'OUT')}
-                            className={cn("text-lg w-8 h-8 p-0", match.status === 'OUT' && "ring-2 ring-destructive")}
-                          >
-                            ❌
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                  <Button asChild className="w-full mt-3">
-                    <Link to="/my-matches">Alle Wedstrijden</Link>
-                  </Button>
-                </div>
-              ) : (
-                <div>
-                  <CardDescription className="mb-4">Geen komende wedstrijden</CardDescription>
-                  <Button asChild className="w-full">
-                    <Link to="/my-matches">Bekijk Wedstrijden</Link>
-                  </Button>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
           {/* Mijn Trainingen */}
           <Card className="hover:shadow-lg transition-shadow">
             <CardHeader className="pb-3">
@@ -406,6 +342,70 @@ const Index = () => {
                   <CardDescription className="mb-4">Geen komende trainingen</CardDescription>
                   <Button asChild className="w-full">
                     <Link to="/my-training">Bekijk Trainingen</Link>
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Mijn Wedstrijden */}
+          <Card className="hover:shadow-lg transition-shadow">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Trophy className="h-6 w-6 text-primary" />
+                  <CardTitle className="text-xl">Mijn Wedstrijden</CardTitle>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {matchesWithPresence.length > 0 ? (
+                <div className="space-y-3">
+                  {matchesWithPresence.map((match) => (
+                    <div key={match.id} className="border rounded-lg p-3 bg-secondary/20">
+                      <div className="flex justify-between items-center mb-2">
+                        <div>
+                          <p className="font-medium text-sm">{match.opponent}</p>
+                          <p className="text-xs text-muted-foreground">{formatDate(match.match_date)}</p>
+                        </div>
+                        <div className="flex gap-1">
+                          <Button 
+                            variant='outline'
+                            size="sm" 
+                            onClick={() => handleMatchStatusChange(match.id, match.status === 'IN' ? 'UNKNOWN' : 'IN')}
+                            className={cn("text-lg w-8 h-8 p-0", match.status === 'IN' && "ring-2 ring-primary")}
+                          >
+                            🍆
+                          </Button>
+                          <Button 
+                            variant='outline'
+                            size="sm" 
+                            onClick={() => handleMatchStatusChange(match.id, match.status === 'MAYBE' ? 'UNKNOWN' : 'MAYBE')}
+                            className={cn("text-lg w-8 h-8 p-0", match.status === 'MAYBE' && "ring-2 ring-yellow-400")}
+                          >
+                            ❓
+                          </Button>
+                          <Button 
+                            variant='outline'
+                            size="sm" 
+                            onClick={() => handleMatchStatusChange(match.id, match.status === 'OUT' ? 'UNKNOWN' : 'OUT')}
+                            className={cn("text-lg w-8 h-8 p-0", match.status === 'OUT' && "ring-2 ring-destructive")}
+                          >
+                            ❌
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  <Button asChild className="w-full mt-3">
+                    <Link to="/my-matches">Alle Wedstrijden</Link>
+                  </Button>
+                </div>
+              ) : (
+                <div>
+                  <CardDescription className="mb-4">Geen komende wedstrijden</CardDescription>
+                  <Button asChild className="w-full">
+                    <Link to="/my-matches">Bekijk Wedstrijden</Link>
                   </Button>
                 </div>
               )}
