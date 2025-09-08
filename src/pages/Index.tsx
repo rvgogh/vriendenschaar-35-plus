@@ -1,10 +1,13 @@
 import { useAuth } from "@/hooks/useAuth";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { Calendar, Trophy, Users, CheckCircle, X } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
+import { PlayerStatus, TrainingAttendanceStatus } from "@/types";
 
 const fetchMyPlayer = async (userId: string) => {
   const { data, error } = await supabase
@@ -17,17 +20,16 @@ const fetchMyPlayer = async (userId: string) => {
   return data;
 };
 
-const fetchUpcomingMatch = async () => {
+const fetchUpcomingMatches = async () => {
   const { data, error } = await supabase
     .from('matches')
     .select('*')
     .gte('match_date', new Date().toISOString())
     .order('match_date', { ascending: true })
-    .limit(1)
-    .single();
+    .limit(5);
 
-  if (error && error.code !== 'PGRST116') throw error;
-  return data;
+  if (error) throw error;
+  return data || [];
 };
 
 const fetchUpcomingTraining = async () => {
@@ -56,16 +58,78 @@ const fetchUpcomingEvent = async () => {
   return data;
 };
 
-const fetchMatchPresence = async (playerId: number, matchId: number) => {
-  const { data, error } = await supabase
+const fetchMatchesWithPresence = async (playerId: number) => {
+  const { data: matches, error: matchesError } = await supabase
+    .from('matches')
+    .select('*')
+    .gte('match_date', new Date().toISOString())
+    .order('match_date', { ascending: true })
+    .limit(5);
+
+  if (matchesError) throw matchesError;
+  
+  if (!matches || matches.length === 0) return [];
+
+  const matchIds = matches.map(m => m.id);
+  
+  const { data: statuses, error: statusesError } = await supabase
     .from('player_statuses')
-    .select('status')
+    .select('match_id, status')
+    .eq('player_id', playerId)
+    .in('match_id', matchIds);
+
+  if (statusesError) throw statusesError;
+
+  return matches.map(match => ({
+    ...match,
+    status: statuses?.find(s => s.match_id === match.id)?.status || 'UNKNOWN'
+  }));
+};
+
+const updateMatchStatus = async (playerId: number, matchId: number, status: PlayerStatus) => {
+  const { data: existingStatus } = await supabase
+    .from('player_statuses')
+    .select('*')
     .eq('player_id', playerId)
     .eq('match_id', matchId)
     .single();
 
-  if (error && error.code !== 'PGRST116') return null;
-  return data;
+  if (existingStatus) {
+    const { error } = await supabase
+      .from('player_statuses')
+      .update({ status })
+      .eq('player_id', playerId)
+      .eq('match_id', matchId);
+    if (error) throw error;
+  } else {
+    const { error } = await supabase
+      .from('player_statuses')
+      .insert({ player_id: playerId, match_id: matchId, status });
+    if (error) throw error;
+  }
+};
+
+const updateTrainingStatus = async (playerId: number, trainingId: number, status: TrainingAttendanceStatus) => {
+  const { data: existingStatus } = await supabase
+    .from('training_statuses')
+    .select('*')
+    .eq('player_id', playerId)
+    .eq('training_id', trainingId)
+    .single();
+
+  if (existingStatus) {
+    const { error } = await supabase
+      .from('training_statuses')
+      .update({ status })
+      .eq('player_id', playerId)
+      .eq('training_id', trainingId);
+    if (error) throw error;
+  } else {
+    const { error } = await supabase
+      .from('training_statuses')
+      .insert({ player_id: playerId, training_id: trainingId, status });
+    if (error) throw error;
+  }
 };
 
 const fetchTrainingPresence = async (playerId: number, trainingId: number) => {
@@ -94,6 +158,8 @@ const fetchEventPresence = async (playerId: number, eventId: number) => {
 
 const Index = () => {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   const { data: myPlayer } = useQuery({
     queryKey: ['myPlayer', user?.id],
@@ -101,9 +167,10 @@ const Index = () => {
     enabled: !!user,
   });
 
-  const { data: upcomingMatch } = useQuery({
-    queryKey: ['upcomingMatch'],
-    queryFn: fetchUpcomingMatch,
+  const { data: matchesWithPresence = [] } = useQuery({
+    queryKey: ['matchesWithPresence', myPlayer?.id],
+    queryFn: () => fetchMatchesWithPresence(myPlayer!.id),
+    enabled: !!myPlayer,
   });
 
   const { data: upcomingTraining } = useQuery({
@@ -114,12 +181,6 @@ const Index = () => {
   const { data: upcomingEvent } = useQuery({
     queryKey: ['upcomingEvent'],
     queryFn: fetchUpcomingEvent,
-  });
-
-  const { data: matchPresence } = useQuery({
-    queryKey: ['matchPresence', myPlayer?.id, upcomingMatch?.id],
-    queryFn: () => fetchMatchPresence(myPlayer!.id, upcomingMatch!.id),
-    enabled: !!myPlayer && !!upcomingMatch,
   });
 
   const { data: trainingPresence } = useQuery({
@@ -133,6 +194,62 @@ const Index = () => {
     queryFn: () => fetchEventPresence(myPlayer!.id, upcomingEvent!.id),
     enabled: !!myPlayer && !!upcomingEvent,
   });
+
+  const matchStatusMutation = useMutation({
+    mutationFn: ({ matchId, status }: { matchId: number, status: PlayerStatus }) =>
+      updateMatchStatus(myPlayer!.id, matchId, status),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['matchesWithPresence'] });
+      toast({
+        title: "Status bijgewerkt",
+        description: "Je aanwezigheid voor de wedstrijd is bijgewerkt.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Fout",
+        description: "Er is een fout opgetreden bij het bijwerken van je status.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const trainingStatusMutation = useMutation({
+    mutationFn: ({ status }: { status: TrainingAttendanceStatus }) =>
+      updateTrainingStatus(myPlayer!.id, upcomingTraining!.id, status),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['trainingPresence'] });
+      toast({
+        title: "Status bijgewerkt",
+        description: "Je aanwezigheid voor de training is bijgewerkt.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Fout",
+        description: "Er is een fout opgetreden bij het bijwerken van je status.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleMatchStatusChange = (matchId: number, status: PlayerStatus) => {
+    matchStatusMutation.mutate({ matchId, status });
+  };
+
+  const handleTrainingStatusChange = (status: TrainingAttendanceStatus) => {
+    trainingStatusMutation.mutate({ status });
+  };
+
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return 'Datum onbekend';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('nl-NL', {
+      weekday: 'short',
+      day: 'numeric',
+      month: 'short'
+    });
+  };
 
   if (!user) {
     return null; // This will be handled by ProtectedRoute
@@ -170,30 +287,59 @@ const Index = () => {
                   <Trophy className="h-6 w-6 text-primary" />
                   <CardTitle className="text-xl">Mijn Wedstrijden</CardTitle>
                 </div>
-                {upcomingMatch && (
-                  matchPresence && matchPresence.status !== 'UNKNOWN' ? (
-                    <CheckCircle className="h-5 w-5 text-green-500" />
-                  ) : (
-                    <X className="h-5 w-5 text-red-500" />
-                  )
-                )}
               </div>
             </CardHeader>
             <CardContent>
-              <CardDescription className="mb-4">
-                {upcomingMatch ? (
-                  matchPresence && matchPresence.status !== 'UNKNOWN' ? (
-                    "Aanwezigheid ingesteld voor volgende wedstrijd"
-                  ) : (
-                    "Nog geen aanwezigheid ingesteld voor volgende wedstrijd"
-                  )
-                ) : (
-                  "Geen komende wedstrijden"
-                )}
-              </CardDescription>
-              <Button asChild className="w-full">
-                <Link to="/my-matches">Bekijk Wedstrijden</Link>
-              </Button>
+              {matchesWithPresence.length > 0 ? (
+                <div className="space-y-3">
+                  {matchesWithPresence.map((match) => (
+                    <div key={match.id} className="border rounded-lg p-3 bg-secondary/20">
+                      <div className="flex justify-between items-center mb-2">
+                        <div>
+                          <p className="font-medium text-sm">{match.opponent}</p>
+                          <p className="text-xs text-muted-foreground">{formatDate(match.match_date)}</p>
+                        </div>
+                        <div className="flex gap-1">
+                          <Button 
+                            variant='outline'
+                            size="sm" 
+                            onClick={() => handleMatchStatusChange(match.id, match.status === 'IN' ? 'UNKNOWN' : 'IN')}
+                            className={cn("text-lg w-8 h-8 p-0", match.status === 'IN' && "ring-2 ring-primary")}
+                          >
+                            🍆
+                          </Button>
+                          <Button 
+                            variant='outline'
+                            size="sm" 
+                            onClick={() => handleMatchStatusChange(match.id, match.status === 'MAYBE' ? 'UNKNOWN' : 'MAYBE')}
+                            className={cn("text-lg w-8 h-8 p-0", match.status === 'MAYBE' && "ring-2 ring-yellow-400")}
+                          >
+                            ❓
+                          </Button>
+                          <Button 
+                            variant='outline'
+                            size="sm" 
+                            onClick={() => handleMatchStatusChange(match.id, match.status === 'OUT' ? 'UNKNOWN' : 'OUT')}
+                            className={cn("text-lg w-8 h-8 p-0", match.status === 'OUT' && "ring-2 ring-destructive")}
+                          >
+                            ❌
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  <Button asChild className="w-full mt-3">
+                    <Link to="/my-matches">Alle Wedstrijden</Link>
+                  </Button>
+                </div>
+              ) : (
+                <div>
+                  <CardDescription className="mb-4">Geen komende wedstrijden</CardDescription>
+                  <Button asChild className="w-full">
+                    <Link to="/my-matches">Bekijk Wedstrijden</Link>
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -215,20 +361,54 @@ const Index = () => {
               </div>
             </CardHeader>
             <CardContent>
-              <CardDescription className="mb-4">
-                {upcomingTraining ? (
-                  trainingPresence && trainingPresence.status !== 'UNKNOWN' ? (
-                    "Aanwezigheid ingesteld voor volgende training"
-                  ) : (
-                    "Nog geen aanwezigheid ingesteld voor volgende training"
-                  )
-                ) : (
-                  "Geen komende trainingen"
-                )}
-              </CardDescription>
-              <Button asChild className="w-full">
-                <Link to="/my-training">Bekijk Trainingen</Link>
-              </Button>
+              {upcomingTraining ? (
+                <div className="space-y-3">
+                  <div className="border rounded-lg p-3 bg-secondary/20">
+                    <div className="flex justify-between items-center mb-2">
+                      <div>
+                        <p className="font-medium text-sm">Volgende Training</p>
+                        <p className="text-xs text-muted-foreground">
+                          {new Date(upcomingTraining.training_at).toLocaleDateString('nl-NL', {
+                            weekday: 'short',
+                            day: 'numeric',
+                            month: 'short',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </p>
+                      </div>
+                      <div className="flex gap-1">
+                        <Button 
+                          variant='outline'
+                          size="sm" 
+                          onClick={() => handleTrainingStatusChange(trainingPresence?.status === 'YES' ? 'UNKNOWN' : 'YES')}
+                          className={cn("text-lg w-8 h-8 p-0", trainingPresence?.status === 'YES' && "ring-2 ring-primary")}
+                        >
+                          🍆
+                        </Button>
+                        <Button 
+                          variant='outline'
+                          size="sm" 
+                          onClick={() => handleTrainingStatusChange(trainingPresence?.status === 'NO' ? 'UNKNOWN' : 'NO')}
+                          className={cn("text-lg w-8 h-8 p-0", trainingPresence?.status === 'NO' && "ring-2 ring-destructive")}
+                        >
+                          ❌
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                  <Button asChild className="w-full">
+                    <Link to="/my-training">Alle Trainingen</Link>
+                  </Button>
+                </div>
+              ) : (
+                <div>
+                  <CardDescription className="mb-4">Geen komende trainingen</CardDescription>
+                  <Button asChild className="w-full">
+                    <Link to="/my-training">Bekijk Trainingen</Link>
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
 
