@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Calendar, Trophy, Users, CheckCircle, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
@@ -158,6 +158,7 @@ const fetchEventPresence = async (playerId: number, eventId: number) => {
 
 const Index = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -280,7 +281,10 @@ const Index = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Mijn Trainingen */}
-          <Card className="hover:shadow-lg transition-shadow">
+          <Card 
+            className="hover:shadow-lg transition-shadow cursor-pointer"
+            onClick={() => upcomingTraining && navigate(`/training/${upcomingTraining.id}`)}
+          >
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -313,7 +317,7 @@ const Index = () => {
                           })}
                         </p>
                       </div>
-                      <div className="flex gap-1">
+                      <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
                         <Button 
                           variant='outline'
                           size="sm" 
@@ -333,16 +337,20 @@ const Index = () => {
                       </div>
                     </div>
                   </div>
-                  <Button asChild className="w-full">
-                    <Link to="/my-training">Alle Trainingen</Link>
-                  </Button>
+                  <div onClick={(e) => e.stopPropagation()}>
+                    <Button asChild className="w-full">
+                      <Link to="/my-training">Alle Trainingen</Link>
+                    </Button>
+                  </div>
                 </div>
               ) : (
                 <div>
                   <CardDescription className="mb-4">Geen komende trainingen</CardDescription>
-                  <Button asChild className="w-full">
-                    <Link to="/my-training">Bekijk Trainingen</Link>
-                  </Button>
+                  <div onClick={(e) => e.stopPropagation()}>
+                    <Button asChild className="w-full">
+                      <Link to="/my-training">Bekijk Trainingen</Link>
+                    </Button>
+                  </div>
                 </div>
               )}
             </CardContent>
@@ -362,13 +370,17 @@ const Index = () => {
               {matchesWithPresence.length > 0 ? (
                 <div className="space-y-3">
                   {matchesWithPresence.map((match) => (
-                    <div key={match.id} className="border rounded-lg p-3 bg-secondary/20">
+                    <div 
+                      key={match.id} 
+                      className="border rounded-lg p-3 bg-secondary/20 cursor-pointer hover:bg-secondary/30 transition-colors"
+                      onClick={() => navigate(`/match/${match.id}`)}
+                    >
                       <div className="flex justify-between items-center mb-2">
                         <div>
                           <p className="font-medium text-sm">{match.opponent}</p>
                           <p className="text-xs text-muted-foreground">{formatDate(match.match_date)}</p>
                         </div>
-                        <div className="flex gap-1">
+                        <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
                           <Button 
                             variant='outline'
                             size="sm" 
@@ -397,23 +409,30 @@ const Index = () => {
                       </div>
                     </div>
                   ))}
-                  <Button asChild className="w-full mt-3">
-                    <Link to="/my-matches">Alle Wedstrijden</Link>
-                  </Button>
+                  <div onClick={(e) => e.stopPropagation()}>
+                    <Button asChild className="w-full mt-3">
+                      <Link to="/my-matches">Alle Wedstrijden</Link>
+                    </Button>
+                  </div>
                 </div>
               ) : (
                 <div>
                   <CardDescription className="mb-4">Geen komende wedstrijden</CardDescription>
-                  <Button asChild className="w-full">
-                    <Link to="/my-matches">Bekijk Wedstrijden</Link>
-                  </Button>
+                  <div onClick={(e) => e.stopPropagation()}>
+                    <Button asChild className="w-full">
+                      <Link to="/my-matches">Bekijk Wedstrijden</Link>
+                    </Button>
+                  </div>
                 </div>
               )}
             </CardContent>
           </Card>
 
           {/* Mijn Evenementen */}
-          <Card className="hover:shadow-lg transition-shadow">
+          <Card 
+            className="hover:shadow-lg transition-shadow cursor-pointer"
+            onClick={() => upcomingEvent && navigate(`/event/${upcomingEvent.id}`)}
+          >
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -441,9 +460,11 @@ const Index = () => {
                   "Geen komende evenementen"
                 )}
               </CardDescription>
-              <Button asChild className="w-full">
-                <Link to="/my-events">Bekijk Evenementen</Link>
-              </Button>
+              <div onClick={(e) => e.stopPropagation()}>
+                <Button asChild className="w-full">
+                  <Link to="/my-events">Bekijk Evenementen</Link>
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </div>
