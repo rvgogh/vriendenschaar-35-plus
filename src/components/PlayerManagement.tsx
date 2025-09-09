@@ -16,8 +16,15 @@ interface Player {
   knvb_member: boolean;
 }
 
+interface UserProfile {
+  id: string;
+  email: string;
+  display_name: string;
+}
+
 const PlayerManagement = () => {
   const [players, setPlayers] = useState<Player[]>([]);
+  const [availableUsers, setAvailableUsers] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -26,53 +33,38 @@ const PlayerManagement = () => {
 
   const fetchData = async () => {
     try {
-      // Fetch all players with their linked user email addresses
+      // Fetch all players
       const { data: playersData, error: playersError } = await supabase
         .from('players')
-        .select(`
-          *,
-          user_email:user_id (
-            email:raw_user_meta_data->email
-          )
-        `)
+        .select('*')
         .order('name');
 
-      if (playersError) {
-        console.error('Players error:', playersError);
-        // Fallback: fetch players without email data
-        const { data: fallbackData, error: fallbackError } = await supabase
-          .from('players')
-          .select('*')
-          .order('name');
-        
-        if (fallbackError) throw fallbackError;
-        setPlayers(fallbackData || []);
-      } else {
-        // Since we can't directly join with auth.users, we'll need to fetch emails separately
-        const playersWithEmails = await Promise.all(
-          (playersData || []).map(async (player) => {
-            if (player.user_id) {
-              try {
-                // We can't query auth.users directly, so we'll show the user_id for now
-                // In a real app, you'd typically have a profiles table
-                return {
-                  ...player,
-                  user_email: `User ID: ${player.user_id}`
-                };
-              } catch (error) {
-                console.error('Error fetching user email:', error);
-                return {
-                  ...player,
-                  user_email: `User ID: ${player.user_id}`
-                };
-              }
-            }
-            return player;
-          })
-        );
-        
-        setPlayers(playersWithEmails);
-      }
+      if (playersError) throw playersError;
+
+      // Fetch all available users from profiles
+      const { data: usersData, error: usersError } = await supabase
+        .from('profiles')
+        .select('id, email, display_name')
+        .order('display_name');
+
+      if (usersError) throw usersError;
+
+      // Get linked user emails for players
+      const playersWithEmails = await Promise.all(
+        (playersData || []).map(async (player) => {
+          if (player.user_id) {
+            const linkedUser = usersData?.find(user => user.id === player.user_id);
+            return {
+              ...player,
+              user_email: linkedUser?.email || 'Email niet beschikbaar'
+            };
+          }
+          return player;
+        })
+      );
+      
+      setPlayers(playersWithEmails);
+      setAvailableUsers(usersData || []);
     } catch (error) {
       console.error('Error fetching data:', error);
       toast.error('Kon data niet laden');
@@ -100,6 +92,19 @@ const PlayerManagement = () => {
 
   const unlinkPlayer = async (playerId: number) => {
     await updatePlayerUserLink(playerId, null);
+  };
+
+  const linkPlayerToUser = async (playerId: number, userId: string) => {
+    await updatePlayerUserLink(playerId, userId);
+  };
+
+  const getAvailableUsersForPlayer = (playerId: number) => {
+    // Show only users that are not already linked to other players
+    const linkedUserIds = players
+      .filter(p => p.id !== playerId && p.user_id)
+      .map(p => p.user_id);
+    
+    return availableUsers.filter(user => !linkedUserIds.includes(user.id));
   };
 
   if (loading) {
@@ -157,23 +162,36 @@ const PlayerManagement = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="flex gap-2">
-                {player.user_id && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => unlinkPlayer(player.id)}
-                  >
-                    Ontkoppel Account
-                  </Button>
+              <div className="space-y-3">
+                {!player.user_id && (
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Koppel aan gebruiker:</label>
+                    <Select onValueChange={(userId) => linkPlayerToUser(player.id, userId)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecteer een gebruiker..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {getAvailableUsersForPlayer(player.id).map((user) => (
+                          <SelectItem key={user.id} value={user.id}>
+                            {user.display_name} ({user.email})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 )}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled
-                >
-                  Handmatig Koppelen (Binnenkort beschikbaar)
-                </Button>
+                
+                <div className="flex gap-2">
+                  {player.user_id && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => unlinkPlayer(player.id)}
+                    >
+                      Ontkoppel Account
+                    </Button>
+                  )}
+                </div>
               </div>
             </CardContent>
           </Card>
