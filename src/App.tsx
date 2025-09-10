@@ -9,13 +9,6 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import Index from "./pages/Index";
-import OldHomepage from "./pages/OldHomepage";
-import MatchesPage from "./pages/MatchesPage";
-import EventsPage from "./pages/EventsPage";
-import TrainingsPage from "./pages/TrainingsPage";
-import MatchPage from "./pages/MatchPage";
-import EventPage from "./pages/EventPage";
-import TrainingPage from "./pages/TrainingPage";
 import MyTrainingPage from "./pages/MyTrainingPage";
 import MyMatchesPage from "./pages/MyMatchesPage";
 import MyEventsPage from "./pages/MyEventsPage";
@@ -56,32 +49,9 @@ const App = () => (
                             <Index />
                           </ProtectedRoute>
                         } />
-                        <Route path="/legacy/matches" element={
-                          <ProtectedRoute>
-                            <MatchesPage />
-                          </ProtectedRoute>
-                        } />
-                        <Route path="/legacy/events" element={
-                          <ProtectedRoute>
-                            <EventsPage />
-                          </ProtectedRoute>
-                        } />
-                        <Route path="/legacy/trainings" element={
-                          <ProtectedRoute>
-                            <TrainingsPage />
-                          </ProtectedRoute>
-                        } />
-                        <Route path="/match/:id" element={<MatchPage />} />
-                        <Route path="/event/:id" element={<EventPage />} />
-                        <Route path="/training/:id" element={<TrainingPage />} />
                         <Route path="/admin" element={
                           <ProtectedRoute>
                             <AdminPage />
-                          </ProtectedRoute>
-                        } />
-                        <Route path="/old-homepage" element={
-                          <ProtectedRoute>
-                            <OldHomepage />
                           </ProtectedRoute>
                         } />
                         <Route path="/my-training" element={
