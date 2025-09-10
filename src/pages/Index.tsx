@@ -283,7 +283,7 @@ const Index = () => {
           {/* Mijn Trainingen */}
           <Card 
             className="hover:shadow-lg transition-shadow cursor-pointer"
-            onClick={() => upcomingTraining && navigate(`/training/${upcomingTraining.id}`)}
+            onClick={() => navigate('/my-training')}
           >
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
@@ -373,7 +373,7 @@ const Index = () => {
                     <div 
                       key={match.id} 
                       className="border rounded-lg p-3 bg-secondary/20 cursor-pointer hover:bg-secondary/30 transition-colors"
-                      onClick={() => navigate(`/match/${match.id}`)}
+                      onClick={() => navigate('/my-matches')}
                     >
                       <div className="flex justify-between items-center mb-2">
                         <div>
