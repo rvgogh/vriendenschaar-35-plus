@@ -7,34 +7,17 @@ import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/sonner";
 import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Calendar, Clock, UserCheck } from "lucide-react";
-import LoginButton from "@/components/LoginButton";
+import { Calendar, UserCheck } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useState } from "react";
 import { generateICalForMatches, downloadICalFile } from "@/utils/icalExport";
-import { useToast } from "@/hooks/use-toast";
+import { PageHeader } from "@/components/PageHeader";
+import { AttendanceButtons } from "@/components/AttendanceButtons";
+import { StatusOverview, StatusCount } from "@/components/StatusOverview";
+import { EmptyState } from "@/components/EmptyState";
+import { useMyPlayer, useUpcomingMatches } from "@/hooks/useData";
+import { formatDateLong, formatTime } from "@/lib/datetime";
 
-const fetchMyPlayer = async (userId: string) => {
-  const { data: player, error } = await supabase
-    .from("players")
-    .select("*")
-    .eq("user_id", userId)
-    .single();
-  
-  if (error) throw error;
-  return player;
-};
-
-const fetchUpcomingMatches = async () => {
-  const { data: matches, error } = await supabase
-    .from("matches")
-    .select("*")
-    .gte("match_date", new Date().toISOString().split('T')[0])
-    .order("match_date", { ascending: true });
-  
-  if (error) throw error;
-  return matches;
-};
 
 const fetchPlayersWithMatchStatus = async (matchId: number): Promise<PlayerWithStatus[]> => {
   const { data: players, error: playersError } = await supabase
@@ -71,23 +54,6 @@ const MatchCard = ({ match, myPlayer, onStatusChange }: {
     queryFn: () => fetchPlayersWithMatchStatus(match.id),
   });
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const dateStr = new Intl.DateTimeFormat('nl-NL', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    }).format(date);
-    
-    return dateStr;
-  };
-
-  const formatTime = (timeString: string | null) => {
-    if (!timeString) return '';
-    return timeString.substring(0, 5);
-  };
-
   const myStatus = players?.find(p => p.id === myPlayer?.id)?.status || "UNKNOWN";
   const inCount = players?.filter(p => p.status === 'IN').length || 0;
   const outCount = players?.filter(p => p.status === 'OUT').length || 0;
@@ -102,6 +68,41 @@ const MatchCard = ({ match, myPlayer, onStatusChange }: {
     UNKNOWN: players?.filter(p => p.status === 'UNKNOWN').sort((a, b) => a.name.localeCompare(b.name)) || []
   };
 
+  const statusCounts: StatusCount[] = [
+    {
+      status: 'IN',
+      count: inCount,
+      players: playersByStatus.IN,
+      emoji: '🍆',
+      label: 'Aanwezig',
+      color: 'text-green-600'
+    },
+    {
+      status: 'MAYBE',
+      count: maybeCount,
+      players: playersByStatus.MAYBE,
+      emoji: '❓',
+      label: 'Misschien',
+      color: 'text-orange-500'
+    },
+    {
+      status: 'OUT',
+      count: outCount,
+      players: playersByStatus.OUT,
+      emoji: '❌',
+      label: 'Afwezig',
+      color: 'text-red-600'
+    },
+    {
+      status: 'UNKNOWN',
+      count: unknownCount,
+      players: playersByStatus.UNKNOWN,
+      emoji: '➖',
+      label: 'Niet gereageerd',
+      color: 'text-gray-600'
+    }
+  ];
+
   return (
     <Card className="mb-6 bg-secondary/50">
       <CardHeader>
@@ -110,7 +111,7 @@ const MatchCard = ({ match, myPlayer, onStatusChange }: {
           <div>
             <div className="text-xl">{match.opponent}</div>
             <div className="text-lg text-muted-foreground font-normal">
-              {match.match_date ? formatDate(match.match_date) : 'Datum onbekend'}
+              {match.match_date ? formatDateLong(match.match_date) : 'Datum onbekend'}
               {match.start_time && ` om ${formatTime(match.start_time)}`}
             </div>
           </div>
@@ -129,141 +130,22 @@ const MatchCard = ({ match, myPlayer, onStatusChange }: {
             <h4 className="text-sm font-semibold mb-3 text-muted-foreground">Mijn status</h4>
             <div className="flex items-center justify-between p-3 bg-card rounded-lg border">
               <span className="font-medium">{myPlayer.name}</span>
-              <div className="flex gap-2">
-                <Button 
-                  variant='outline'
-                  size="sm" 
-                  onClick={() => onStatusChange(match.id, myStatus === 'IN' ? 'UNKNOWN' : 'IN')}
-                  className={cn("text-2xl w-12", myStatus === 'IN' && "ring-2 ring-primary")}
-                >
-                  🍆
-                </Button>
-                <Button 
-                  variant='outline'
-                  size="sm" 
-                  onClick={() => onStatusChange(match.id, myStatus === 'MAYBE' ? 'UNKNOWN' : 'MAYBE')}
-                  className={cn("text-2xl w-12", myStatus === 'MAYBE' && "ring-2 ring-orange-500")}
-                >
-                  ❓
-                </Button>
-                <Button 
-                  variant='outline'
-                  size="sm" 
-                  onClick={() => onStatusChange(match.id, myStatus === 'OUT' ? 'UNKNOWN' : 'OUT')}
-                  className={cn("text-2xl w-12", myStatus === 'OUT' && "ring-2 ring-destructive")}
-                >
-                  ❌
-                </Button>
-              </div>
+              <AttendanceButtons
+                variant="match"
+                currentStatus={myStatus}
+                onStatusChange={(status) => onStatusChange(match.id, status as PlayerStatus)}
+              />
             </div>
           </div>
         )}
 
-        {/* Combined Status Overview and Players */}
+        {/* Status Overview */}
         <div className="border-t pt-4">
-          <h4 className="text-sm font-semibold mb-3 text-muted-foreground">Statusoverzicht</h4>
-          <div className="grid grid-cols-4 gap-4 text-center text-sm">
-            <div 
-              className={cn(
-                "space-y-1 cursor-pointer rounded-lg p-2 transition-colors",
-                isMobile && selectedStatus === 'IN' && "bg-muted/50",
-                isMobile && "hover:bg-muted/30"
-              )}
-              onClick={() => isMobile && setSelectedStatus('IN')}
-            >
-              <div className="text-xl">🍆</div>
-              <div className="font-semibold text-green-600">{inCount}</div>
-              <div className="text-muted-foreground">Aanwezig</div>
-              {!isMobile && playersByStatus.IN.length > 0 && (
-                <div className="mt-2 space-y-1">
-                  {playersByStatus.IN.map((player) => (
-                    <div key={player.id} className="text-xs text-foreground font-medium">
-                      {player.name}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-            <div 
-              className={cn(
-                "space-y-1 cursor-pointer rounded-lg p-2 transition-colors",
-                isMobile && selectedStatus === 'MAYBE' && "bg-muted/50",
-                isMobile && "hover:bg-muted/30"
-              )}
-              onClick={() => isMobile && setSelectedStatus('MAYBE')}
-            >
-              <div className="text-xl">❓</div>
-              <div className="font-semibold text-orange-500">{maybeCount}</div>
-              <div className="text-muted-foreground">Misschien</div>
-              {!isMobile && playersByStatus.MAYBE.length > 0 && (
-                <div className="mt-2 space-y-1">
-                  {playersByStatus.MAYBE.map((player) => (
-                    <div key={player.id} className="text-xs text-foreground font-medium">
-                      {player.name}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-            <div 
-              className={cn(
-                "space-y-1 cursor-pointer rounded-lg p-2 transition-colors",
-                isMobile && selectedStatus === 'OUT' && "bg-muted/50",
-                isMobile && "hover:bg-muted/30"
-              )}
-              onClick={() => isMobile && setSelectedStatus('OUT')}
-            >
-              <div className="text-xl">❌</div>
-              <div className="font-semibold text-red-600">{outCount}</div>
-              <div className="text-muted-foreground">Afwezig</div>
-              {!isMobile && playersByStatus.OUT.length > 0 && (
-                <div className="mt-2 space-y-1">
-                  {playersByStatus.OUT.map((player) => (
-                    <div key={player.id} className="text-xs text-foreground font-medium">
-                      {player.name}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-            <div 
-              className={cn(
-                "space-y-1 cursor-pointer rounded-lg p-2 transition-colors",
-                isMobile && selectedStatus === 'UNKNOWN' && "bg-muted/50",
-                isMobile && "hover:bg-muted/30"
-              )}
-              onClick={() => isMobile && setSelectedStatus('UNKNOWN')}
-            >
-              <div className="text-xl">➖</div>
-              <div className="font-semibold text-gray-600">{unknownCount}</div>
-              <div className="text-muted-foreground">Niet gereageerd</div>
-              {!isMobile && playersByStatus.UNKNOWN.length > 0 && (
-                <div className="mt-2 space-y-1">
-                  {playersByStatus.UNKNOWN.map((player) => (
-                    <div key={player.id} className="text-xs text-foreground font-medium">
-                      {player.name}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-          
-          {/* Mobile Player List */}
-          {isMobile && playersByStatus[selectedStatus].length > 0 && (
-            <div className="mt-4 p-3 bg-muted/30 rounded-lg">
-              <h5 className="text-sm font-medium mb-2">
-                {selectedStatus === 'IN' ? 'Aanwezig' : selectedStatus === 'MAYBE' ? 'Misschien' : selectedStatus === 'OUT' ? 'Afwezig' : 'Niet gereageerd'}
-              </h5>
-              <div className="space-y-1">
-                {playersByStatus[selectedStatus].map((player) => (
-                  <div key={player.id} className="text-sm text-foreground">
-                    {player.name}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+          <StatusOverview
+            statusCounts={statusCounts}
+            selectedStatus={selectedStatus}
+            onStatusSelect={(status) => setSelectedStatus(status as PlayerStatus)}
+          />
         </div>
       </CardContent>
     </Card>
@@ -273,18 +155,9 @@ const MatchCard = ({ match, myPlayer, onStatusChange }: {
 const MyMatchesPage = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const { toast: uiToast } = useToast();
 
-  const { data: myPlayer } = useQuery({
-    queryKey: ["myPlayer", user?.id],
-    queryFn: () => fetchMyPlayer(user!.id),
-    enabled: !!user?.id,
-  });
-
-  const { data: matches, isLoading } = useQuery({
-    queryKey: ["upcomingMatches"],
-    queryFn: fetchUpcomingMatches,
-  });
+  const { data: myPlayer } = useMyPlayer(user?.id);
+  const { data: matches, isLoading } = useUpcomingMatches();
 
   const updateStatusMutation = useMutation({
     mutationFn: async ({ matchId, status }: { matchId: number, status: PlayerStatus }) => {
@@ -297,7 +170,7 @@ const MyMatchesPage = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["matchPlayers"] });
-      queryClient.invalidateQueries({ queryKey: ["matches"] });
+      queryClient.invalidateQueries({ queryKey: ["upcomingMatches"] });
       queryClient.invalidateQueries({ queryKey: ["matchPresence"] });
       toast.success("Status bijgewerkt!");
     },
@@ -312,74 +185,42 @@ const MyMatchesPage = () => {
 
   const handleICalExport = () => {
     if (!matches || matches.length === 0) {
-      uiToast({
-        title: "Geen wedstrijden",
-        description: "Er zijn nog geen wedstrijden om te exporteren.",
-        variant: "destructive"
-      });
+      toast.error("Er zijn nog geen wedstrijden om te exporteren.");
       return;
     }
 
     const iCalContent = generateICalForMatches(matches);
     downloadICalFile(iCalContent, 'mijn-wedstrijden.ics');
     
-    uiToast({
-      title: "Export gelukt",
-      description: "De wedstrijden zijn geëxporteerd naar je agenda.",
-    });
+    toast.success("De wedstrijden zijn geëxporteerd naar je agenda.");
   };
 
   if (!myPlayer) {
     return (
       <div className="container mx-auto px-4 py-8 max-w-[800px]">
-        <header className="mb-8 flex justify-between items-start">
-          <Button asChild variant="outline">
-            <Link to="/" className="flex items-center gap-2">
-              <ArrowLeft className="h-4 w-4" />
-              Terug
-            </Link>
-          </Button>
-          <LoginButton />
-        </header>
-        <Card>
-          <CardContent className="p-8 text-center">
-            <p className="text-muted-foreground">
-              Er is geen speler gekoppeld aan jouw account. Neem contact op met de beheerder.
-            </p>
-          </CardContent>
-        </Card>
+        <PageHeader 
+          title="Mijn Wedstrijden" 
+          subtitle="Beheer je aanwezigheid voor aankomende wedstrijden"
+        />
+        <EmptyState message="Er is geen speler gekoppeld aan jouw account. Neem contact op met de beheerder." />
       </div>
     );
   }
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-[800px]">
-      <header className="mb-8 flex justify-between items-start">
-        <Button asChild variant="outline">
-          <Link to="/" className="flex items-center gap-2">
-            <ArrowLeft className="h-4 w-4" />
-            Terug
-          </Link>
-        </Button>
-        <LoginButton />
-      </header>
-
-      <main>
-        <div className="mb-8 flex justify-between items-start">
-          <div>
-            <h1 className="text-3xl font-bold text-primary mb-2">Mijn Wedstrijden</h1>
-            <p className="text-muted-foreground">
-              Beheer je aanwezigheid voor aankomende wedstrijden
-            </p>
-          </div>
-          {matches && matches.length > 0 && (
+      <PageHeader 
+        title="Mijn Wedstrijden" 
+        subtitle="Beheer je aanwezigheid voor aankomende wedstrijden"
+        actions={matches && matches.length > 0 ? (
             <Button onClick={handleICalExport} variant="outline" className="flex items-center gap-2">
               <Calendar className="h-4 w-4" />
               Exporteer naar agenda
             </Button>
-          )}
-        </div>
+        ) : undefined}
+      />
 
+      <main>
         {isLoading ? (
           <div>Wedstrijden laden...</div>
         ) : matches && matches.length > 0 ? (
@@ -394,13 +235,7 @@ const MyMatchesPage = () => {
             ))}
           </div>
         ) : (
-          <Card>
-            <CardContent className="p-8 text-center">
-              <p className="text-muted-foreground">
-                Er zijn momenteel geen aankomende wedstrijden.
-              </p>
-            </CardContent>
-          </Card>
+          <EmptyState message="Er zijn momenteel geen aankomende wedstrijden." />
         )}
       </main>
     </div>

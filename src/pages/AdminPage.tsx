@@ -7,19 +7,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Shield, Users, Settings, Home, Trophy, Calendar, Dumbbell } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { PageLoading } from '@/components/PageLoading';
 
 const AdminPage = () => {
   const { role, loading } = useUserRole();
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p>Laden...</p>
-        </div>
-      </div>
-    );
+    return <PageLoading message="Laden..." />;
   }
 
   if (role !== 'superuser') {

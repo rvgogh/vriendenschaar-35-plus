@@ -7,32 +7,16 @@ import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/sonner";
 import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Calendar, Clock } from "lucide-react";
-import LoginButton from "@/components/LoginButton";
+import { Calendar } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useState } from "react";
+import { PageHeader } from "@/components/PageHeader";
+import { AttendanceButtons } from "@/components/AttendanceButtons";
+import { StatusOverview, StatusCount } from "@/components/StatusOverview";
+import { EmptyState } from "@/components/EmptyState";
+import { useMyPlayer, useUpcomingTrainings } from "@/hooks/useData";
+import { formatDateTime } from "@/lib/datetime";
 
-const fetchMyPlayer = async (userId: string) => {
-  const { data: player, error } = await supabase
-    .from("players")
-    .select("*")
-    .eq("user_id", userId)
-    .single();
-  
-  if (error) throw error;
-  return player;
-};
-
-const fetchUpcomingTrainings = async () => {
-  const { data: trainings, error } = await supabase
-    .from("trainings")
-    .select("*")
-    .gte("training_at", new Date().toISOString())
-    .order("training_at", { ascending: true });
-  
-  if (error) throw error;
-  return trainings;
-};
 
 const fetchPlayersWithTrainingStatus = async (trainingId: number): Promise<PlayerWithTrainingStatus[]> => {
   const { data: players, error: playersError } = await supabase
@@ -68,23 +52,6 @@ const TrainingCard = ({ training, myPlayer, onStatusChange }: {
     queryFn: () => fetchPlayersWithTrainingStatus(training.id),
   });
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const dateStr = new Intl.DateTimeFormat('nl-NL', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    }).format(date);
-    
-    const timeStr = new Intl.DateTimeFormat('nl-NL', {
-      hour: '2-digit',
-      minute: '2-digit',
-    }).format(date);
-    
-    return `${dateStr} om ${timeStr}`;
-  };
-
   const myStatus = players?.find(p => p.id === myPlayer?.id)?.status || "UNKNOWN";
   const yesCount = players?.filter(p => p.status === 'YES').length || 0;
   const noCount = players?.filter(p => p.status === 'NO').length || 0;
@@ -97,6 +64,33 @@ const TrainingCard = ({ training, myPlayer, onStatusChange }: {
     UNKNOWN: players?.filter(p => p.status === 'UNKNOWN').sort((a, b) => a.name.localeCompare(b.name)) || []
   };
 
+  const statusCounts: StatusCount[] = [
+    {
+      status: 'YES',
+      count: yesCount,
+      players: playersByStatus.YES,
+      emoji: '🍆',
+      label: 'Aanwezig',
+      color: 'text-green-600'
+    },
+    {
+      status: 'NO',
+      count: noCount,
+      players: playersByStatus.NO,
+      emoji: '❌',
+      label: 'Afwezig',
+      color: 'text-red-600'
+    },
+    {
+      status: 'UNKNOWN',
+      count: unknownCount,
+      players: playersByStatus.UNKNOWN,
+      emoji: '❓',
+      label: 'Niet gereageerd',
+      color: 'text-gray-600'
+    }
+  ];
+
   return (
     <Card className="mb-6 bg-secondary/50">
       <CardHeader>
@@ -105,7 +99,7 @@ const TrainingCard = ({ training, myPlayer, onStatusChange }: {
           <div>
             <div className="text-xl">Training</div>
             <div className="text-lg text-muted-foreground font-normal">
-              {formatDate(training.training_at)}
+              {formatDateTime(training.training_at)}
             </div>
           </div>
         </CardTitle>
@@ -117,112 +111,22 @@ const TrainingCard = ({ training, myPlayer, onStatusChange }: {
             <h4 className="text-sm font-semibold mb-3 text-muted-foreground">Mijn aanwezigheid</h4>
             <div className="flex items-center justify-between p-3 bg-card rounded-lg border">
               <span className="font-medium">{myPlayer.name}</span>
-              <div className="flex gap-2">
-                <Button 
-                  variant='outline'
-                  size="sm" 
-                  onClick={() => onStatusChange(training.id, myStatus === 'YES' ? 'UNKNOWN' : 'YES')}
-                  className={cn("text-2xl w-12", myStatus === 'YES' && "ring-2 ring-primary")}
-                >
-                  🍆
-                </Button>
-                <Button 
-                  variant='outline'
-                  size="sm" 
-                  onClick={() => onStatusChange(training.id, myStatus === 'NO' ? 'UNKNOWN' : 'NO')}
-                  className={cn("text-2xl w-12", myStatus === 'NO' && "ring-2 ring-destructive")}
-                >
-                  ❌
-                </Button>
-              </div>
+              <AttendanceButtons
+                variant="training"
+                currentStatus={myStatus}
+                onStatusChange={(status) => onStatusChange(training.id, status as TrainingAttendanceStatus)}
+              />
             </div>
           </div>
         )}
 
-        {/* Combined Status Overview and Players */}
+        {/* Status Overview */}
         <div className="border-t pt-4">
-          <h4 className="text-sm font-semibold mb-3 text-muted-foreground">Aanwezigheidsoverzicht</h4>
-          <div className="grid grid-cols-3 gap-4 text-center text-sm">
-            <div 
-              className={cn(
-                "space-y-1 cursor-pointer rounded-lg p-2 transition-colors",
-                isMobile && selectedStatus === 'YES' && "bg-muted/50",
-                isMobile && "hover:bg-muted/30"
-              )}
-              onClick={() => isMobile && setSelectedStatus('YES')}
-            >
-              <div className="text-xl">🍆</div>
-              <div className="font-semibold text-green-600">{yesCount}</div>
-              <div className="text-muted-foreground">Aanwezig</div>
-              {!isMobile && playersByStatus.YES.length > 0 && (
-                <div className="mt-2 space-y-1">
-                  {playersByStatus.YES.map((player) => (
-                    <div key={player.id} className="text-xs text-foreground font-medium">
-                      {player.name}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-            <div 
-              className={cn(
-                "space-y-1 cursor-pointer rounded-lg p-2 transition-colors",
-                isMobile && selectedStatus === 'NO' && "bg-muted/50",
-                isMobile && "hover:bg-muted/30"
-              )}
-              onClick={() => isMobile && setSelectedStatus('NO')}
-            >
-              <div className="text-xl">❌</div>
-              <div className="font-semibold text-red-600">{noCount}</div>
-              <div className="text-muted-foreground">Afwezig</div>
-              {!isMobile && playersByStatus.NO.length > 0 && (
-                <div className="mt-2 space-y-1">
-                  {playersByStatus.NO.map((player) => (
-                    <div key={player.id} className="text-xs text-foreground font-medium">
-                      {player.name}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-            <div 
-              className={cn(
-                "space-y-1 cursor-pointer rounded-lg p-2 transition-colors",
-                isMobile && selectedStatus === 'UNKNOWN' && "bg-muted/50",
-                isMobile && "hover:bg-muted/30"
-              )}
-              onClick={() => isMobile && setSelectedStatus('UNKNOWN')}
-            >
-              <div className="text-xl">❓</div>
-              <div className="font-semibold text-gray-600">{unknownCount}</div>
-              <div className="text-muted-foreground">Niet gereageerd</div>
-              {!isMobile && playersByStatus.UNKNOWN.length > 0 && (
-                <div className="mt-2 space-y-1">
-                  {playersByStatus.UNKNOWN.map((player) => (
-                    <div key={player.id} className="text-xs text-foreground font-medium">
-                      {player.name}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-          
-          {/* Mobile Player List */}
-          {isMobile && playersByStatus[selectedStatus].length > 0 && (
-            <div className="mt-4 p-3 bg-muted/30 rounded-lg">
-              <h5 className="text-sm font-medium mb-2">
-                {selectedStatus === 'YES' ? 'Aanwezig' : selectedStatus === 'NO' ? 'Afwezig' : 'Niet gereageerd'}
-              </h5>
-              <div className="space-y-1">
-                {playersByStatus[selectedStatus].map((player) => (
-                  <div key={player.id} className="text-sm text-foreground">
-                    {player.name}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+          <StatusOverview
+            statusCounts={statusCounts}
+            selectedStatus={selectedStatus}
+            onStatusSelect={(status) => setSelectedStatus(status as TrainingAttendanceStatus)}
+          />
         </div>
       </CardContent>
     </Card>
@@ -233,16 +137,8 @@ const MyTrainingPage = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
-  const { data: myPlayer } = useQuery({
-    queryKey: ["myPlayer", user?.id],
-    queryFn: () => fetchMyPlayer(user!.id),
-    enabled: !!user?.id,
-  });
-
-  const { data: trainings, isLoading } = useQuery({
-    queryKey: ["upcomingTrainings"],
-    queryFn: fetchUpcomingTrainings,
-  });
+  const { data: myPlayer } = useMyPlayer(user?.id);
+  const { data: trainings, isLoading } = useUpcomingTrainings();
 
   const updateStatusMutation = useMutation({
     mutationFn: async ({ trainingId, status }: { trainingId: number, status: TrainingAttendanceStatus }) => {
@@ -255,7 +151,7 @@ const MyTrainingPage = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["trainingPlayers"] });
-      queryClient.invalidateQueries({ queryKey: ["trainings"] });
+      queryClient.invalidateQueries({ queryKey: ["upcomingTrainings"] });
       queryClient.invalidateQueries({ queryKey: ["trainingPresence"] });
       toast.success("Aanwezigheid bijgewerkt!");
     },
@@ -271,46 +167,23 @@ const MyTrainingPage = () => {
   if (!myPlayer) {
     return (
       <div className="container mx-auto px-4 py-8 max-w-[800px]">
-        <header className="mb-8 flex justify-between items-start">
-          <Button asChild variant="outline">
-            <Link to="/" className="flex items-center gap-2">
-              <ArrowLeft className="h-4 w-4" />
-              Terug
-            </Link>
-          </Button>
-          <LoginButton />
-        </header>
-        <Card>
-          <CardContent className="p-8 text-center">
-            <p className="text-muted-foreground">
-              Er is geen speler gekoppeld aan jouw account. Neem contact op met de beheerder.
-            </p>
-          </CardContent>
-        </Card>
+        <PageHeader 
+          title="Mijn Trainingen" 
+          subtitle="Beheer je aanwezigheid voor aankomende trainingen"
+        />
+        <EmptyState message="Er is geen speler gekoppeld aan jouw account. Neem contact op met de beheerder." />
       </div>
     );
   }
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-[800px]">
-      <header className="mb-8 flex justify-between items-start">
-        <Button asChild variant="outline">
-          <Link to="/" className="flex items-center gap-2">
-            <ArrowLeft className="h-4 w-4" />
-            Terug
-          </Link>
-        </Button>
-        <LoginButton />
-      </header>
+      <PageHeader 
+        title="Mijn Trainingen" 
+        subtitle="Beheer je aanwezigheid voor aankomende trainingen"
+      />
 
       <main>
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-primary mb-2">Mijn Trainingen</h1>
-          <p className="text-muted-foreground">
-            Beheer je aanwezigheid voor aankomende trainingen
-          </p>
-        </div>
-
         {isLoading ? (
           <div>Trainingen laden...</div>
         ) : trainings && trainings.length > 0 ? (
@@ -325,13 +198,7 @@ const MyTrainingPage = () => {
             ))}
           </div>
         ) : (
-          <Card>
-            <CardContent className="p-8 text-center">
-              <p className="text-muted-foreground">
-                Er zijn momenteel geen aankomende trainingen.
-              </p>
-            </CardContent>
-          </Card>
+          <EmptyState message="Er zijn momenteel geen aankomende trainingen." />
         )}
       </main>
     </div>

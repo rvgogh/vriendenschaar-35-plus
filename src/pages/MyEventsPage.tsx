@@ -7,30 +7,14 @@ import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/sonner";
 import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Calendar, Clock, MapPin, UtensilsCrossed } from "lucide-react";
-import LoginButton from "@/components/LoginButton";
+import { Calendar, MapPin, UtensilsCrossed } from "lucide-react";
+import { PageHeader } from "@/components/PageHeader";
+import { AttendanceButtons } from "@/components/AttendanceButtons";
+import { StatusOverview, StatusCount } from "@/components/StatusOverview";
+import { EmptyState } from "@/components/EmptyState";
+import { useMyPlayer, useUpcomingEvents } from "@/hooks/useData";
+import { formatDateLong, formatTime } from "@/lib/datetime";
 
-const fetchMyPlayer = async (userId: string) => {
-  const { data: player, error } = await supabase
-    .from("players")
-    .select("*")
-    .eq("user_id", userId)
-    .single();
-  
-  if (error) throw error;
-  return player;
-};
-
-const fetchUpcomingEvents = async () => {
-  const { data: events, error } = await supabase
-    .from("events")
-    .select("*")
-    .gte("event_date", new Date().toISOString().split('T')[0])
-    .order("event_date", { ascending: true });
-  
-  if (error) throw error;
-  return events;
-};
 
 const fetchPlayersWithEventStatus = async (eventId: number): Promise<PlayerWithEventStatus[]> => {
   const { data: players, error: playersError } = await supabase
@@ -63,23 +47,6 @@ const EventCard = ({ event, myPlayer, onStatusChange }: {
     queryFn: () => fetchPlayersWithEventStatus(event.id),
   });
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const dateStr = new Intl.DateTimeFormat('nl-NL', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    }).format(date);
-    
-    return dateStr;
-  };
-
-  const formatTime = (timeString: string | null) => {
-    if (!timeString) return '';
-    return timeString.substring(0, 5);
-  };
-
   const myStatus = players?.find(p => p.id === myPlayer?.id)?.status || "UNKNOWN";
   const yesCount = players?.filter(p => p.status === 'YES').length || 0;
   const noCount = players?.filter(p => p.status === 'NO').length || 0;
@@ -88,13 +55,48 @@ const EventCard = ({ event, myPlayer, onStatusChange }: {
 
   const berrySchotels = Math.ceil(yesCount / 4);
 
-  // Sort players by status and then alphabetically
-  const sortedPlayers = players?.slice().sort((a, b) => {
-    const statusOrder = { 'YES': 0, 'MAYBE': 1, 'NO': 2, 'UNKNOWN': 3 };
-    const statusDiff = statusOrder[a.status] - statusOrder[b.status];
-    if (statusDiff !== 0) return statusDiff;
-    return a.name.localeCompare(b.name);
-  }) || [];
+  // Group players by status for mobile support
+  const playersByStatus = {
+    YES: players?.filter(p => p.status === 'YES').sort((a, b) => a.name.localeCompare(b.name)) || [],
+    MAYBE: players?.filter(p => p.status === 'MAYBE').sort((a, b) => a.name.localeCompare(b.name)) || [],
+    NO: players?.filter(p => p.status === 'NO').sort((a, b) => a.name.localeCompare(b.name)) || [],
+    UNKNOWN: players?.filter(p => p.status === 'UNKNOWN').sort((a, b) => a.name.localeCompare(b.name)) || []
+  };
+
+  const statusCounts: StatusCount[] = [
+    {
+      status: 'YES',
+      count: yesCount,
+      players: playersByStatus.YES,
+      emoji: '🍆',
+      label: 'Ja',
+      color: 'text-green-600'
+    },
+    {
+      status: 'MAYBE',
+      count: maybeCount,
+      players: playersByStatus.MAYBE,
+      emoji: '❓',
+      label: 'Misschien',
+      color: 'text-orange-500'
+    },
+    {
+      status: 'NO',
+      count: noCount,
+      players: playersByStatus.NO,
+      emoji: '❌',
+      label: 'Nee',
+      color: 'text-red-600'
+    },
+    {
+      status: 'UNKNOWN',
+      count: unknownCount,
+      players: playersByStatus.UNKNOWN,
+      emoji: '➖',
+      label: 'Niet gereageerd',
+      color: 'text-gray-600'
+    }
+  ];
 
   return (
     <Card className="mb-6 bg-secondary/50">
@@ -107,7 +109,7 @@ const EventCard = ({ event, myPlayer, onStatusChange }: {
               <div className="text-sm text-muted-foreground italic mb-1">{event.subtitle}</div>
             )}
             <div className="text-lg text-muted-foreground font-normal">
-              {event.event_date ? formatDate(event.event_date) : 'Datum onbekend'}
+              {event.event_date ? formatDateLong(event.event_date) : 'Datum onbekend'}
               {event.event_time && ` om ${formatTime(event.event_time)}`}
             </div>
             {event.location && (
@@ -129,61 +131,18 @@ const EventCard = ({ event, myPlayer, onStatusChange }: {
             <h4 className="text-sm font-semibold mb-3 text-muted-foreground">Mijn aanwezigheid</h4>
             <div className="flex items-center justify-between p-3 bg-card rounded-lg border">
               <span className="font-medium">{myPlayer.name}</span>
-              <div className="flex gap-2">
-                <Button 
-                  variant='outline'
-                  size="sm" 
-                  onClick={() => onStatusChange(event.id, myStatus === 'YES' ? 'UNKNOWN' : 'YES')}
-                  className={cn("text-2xl w-12", myStatus === 'YES' && "ring-2 ring-primary")}
-                >
-                  🍆
-                </Button>
-                <Button 
-                  variant='outline'
-                  size="sm" 
-                  onClick={() => onStatusChange(event.id, myStatus === 'MAYBE' ? 'UNKNOWN' : 'MAYBE')}
-                  className={cn("text-2xl w-12", myStatus === 'MAYBE' && "ring-2 ring-orange-500")}
-                >
-                  ❓
-                </Button>
-                <Button 
-                  variant='outline'
-                  size="sm" 
-                  onClick={() => onStatusChange(event.id, myStatus === 'NO' ? 'UNKNOWN' : 'NO')}
-                  className={cn("text-2xl w-12", myStatus === 'NO' && "ring-2 ring-destructive")}
-                >
-                  ❌
-                </Button>
-              </div>
+              <AttendanceButtons
+                variant="event"
+                currentStatus={myStatus}
+                onStatusChange={(status) => onStatusChange(event.id, status as EventAttendanceStatus)}
+              />
             </div>
           </div>
         )}
 
         {/* Status Overview */}
         <div className="border-t pt-4">
-          <h4 className="text-sm font-semibold mb-3 text-muted-foreground">Aanwezigheidsoverzicht</h4>
-          <div className="grid grid-cols-4 gap-4 text-center text-sm">
-            <div className="space-y-1">
-              <div className="text-xl">🍆</div>
-              <div className="font-semibold text-green-600">{yesCount}</div>
-              <div className="text-muted-foreground">Ja</div>
-            </div>
-            <div className="space-y-1">
-              <div className="text-xl">❓</div>
-              <div className="font-semibold text-orange-500">{maybeCount}</div>
-              <div className="text-muted-foreground">Misschien</div>
-            </div>
-            <div className="space-y-1">
-              <div className="text-xl">❌</div>
-              <div className="font-semibold text-red-600">{noCount}</div>
-              <div className="text-muted-foreground">Nee</div>
-            </div>
-            <div className="space-y-1">
-              <div className="text-xl">➖</div>
-              <div className="font-semibold text-gray-600">{unknownCount}</div>
-              <div className="text-muted-foreground">Niet gereageerd</div>
-            </div>
-          </div>
+          <StatusOverview statusCounts={statusCounts} />
 
           {yesCount > 0 && (
             <div className="flex items-center justify-center gap-2 text-sm text-primary font-semibold pt-4 border-t mt-4">
@@ -197,7 +156,12 @@ const EventCard = ({ event, myPlayer, onStatusChange }: {
         <div className="border-t pt-4">
           <h4 className="text-sm font-semibold mb-3 text-muted-foreground">Alle spelers</h4>
           <div className="space-y-2 max-h-40 overflow-y-auto">
-            {sortedPlayers.map((player) => (
+            {players?.slice().sort((a, b) => {
+              const statusOrder = { 'YES': 0, 'MAYBE': 1, 'NO': 2, 'UNKNOWN': 3 };
+              const statusDiff = statusOrder[a.status] - statusOrder[b.status];
+              if (statusDiff !== 0) return statusDiff;
+              return a.name.localeCompare(b.name);
+            }).map((player) => (
               <div key={player.id} className="flex items-center justify-between text-sm p-2 bg-muted/30 rounded">
                 <span>{player.name}</span>
                 <span className="text-lg">
@@ -216,16 +180,8 @@ const MyEventsPage = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
-  const { data: myPlayer } = useQuery({
-    queryKey: ["myPlayer", user?.id],
-    queryFn: () => fetchMyPlayer(user!.id),
-    enabled: !!user?.id,
-  });
-
-  const { data: events, isLoading } = useQuery({
-    queryKey: ["upcomingEvents"],
-    queryFn: fetchUpcomingEvents,
-  });
+  const { data: myPlayer } = useMyPlayer(user?.id);
+  const { data: events, isLoading } = useUpcomingEvents();
 
   const updateStatusMutation = useMutation({
     mutationFn: async ({ eventId, status }: { eventId: number, status: EventAttendanceStatus }) => {
@@ -238,7 +194,7 @@ const MyEventsPage = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["eventPlayers"] });
-      queryClient.invalidateQueries({ queryKey: ["events"] });
+      queryClient.invalidateQueries({ queryKey: ["upcomingEvents"] });
       queryClient.invalidateQueries({ queryKey: ["eventPresence"] });
       toast.success("Aanwezigheid bijgewerkt!");
     },
@@ -254,46 +210,23 @@ const MyEventsPage = () => {
   if (!myPlayer) {
     return (
       <div className="container mx-auto px-4 py-8 max-w-[800px]">
-        <header className="mb-8 flex justify-between items-start">
-          <Button asChild variant="outline">
-            <Link to="/" className="flex items-center gap-2">
-              <ArrowLeft className="h-4 w-4" />
-              Terug
-            </Link>
-          </Button>
-          <LoginButton />
-        </header>
-        <Card>
-          <CardContent className="p-8 text-center">
-            <p className="text-muted-foreground">
-              Er is geen speler gekoppeld aan jouw account. Neem contact op met de beheerder.
-            </p>
-          </CardContent>
-        </Card>
+        <PageHeader 
+          title="Mijn Evenementen" 
+          subtitle="Beheer je aanwezigheid voor aankomende evenementen"
+        />
+        <EmptyState message="Er is geen speler gekoppeld aan jouw account. Neem contact op met de beheerder." />
       </div>
     );
   }
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-[800px]">
-      <header className="mb-8 flex justify-between items-start">
-        <Button asChild variant="outline">
-          <Link to="/" className="flex items-center gap-2">
-            <ArrowLeft className="h-4 w-4" />
-            Terug
-          </Link>
-        </Button>
-        <LoginButton />
-      </header>
+      <PageHeader 
+        title="Mijn Evenementen" 
+        subtitle="Beheer je aanwezigheid voor aankomende evenementen"
+      />
 
       <main>
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-primary mb-2">Mijn Evenementen</h1>
-          <p className="text-muted-foreground">
-            Beheer je aanwezigheid voor aankomende evenementen
-          </p>
-        </div>
-
         {isLoading ? (
           <div>Evenementen laden...</div>
         ) : events && events.length > 0 ? (
@@ -308,13 +241,7 @@ const MyEventsPage = () => {
             ))}
           </div>
         ) : (
-          <Card>
-            <CardContent className="p-8 text-center">
-              <p className="text-muted-foreground">
-                Er zijn momenteel geen aankomende evenementen.
-              </p>
-            </CardContent>
-          </Card>
+          <EmptyState message="Er zijn momenteel geen aankomende evenementen." />
         )}
       </main>
     </div>

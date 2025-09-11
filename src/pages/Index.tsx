@@ -6,57 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
 import { Calendar, Trophy, Users, CheckCircle, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "@/components/ui/sonner";
 import { PlayerStatus, TrainingAttendanceStatus } from "@/types";
+import { useMyPlayer, useUpcomingMatches, useUpcomingTrainings, useUpcomingEvents } from "@/hooks/useData";
+import { formatDate } from "@/lib/datetime";
 
-const fetchMyPlayer = async (userId: string) => {
-  const { data, error } = await supabase
-    .from('players')
-    .select('*')
-    .eq('user_id', userId)
-    .single();
-
-  if (error) throw error;
-  return data;
-};
-
-const fetchUpcomingMatches = async () => {
-  const { data, error } = await supabase
-    .from('matches')
-    .select('*')
-    .gte('match_date', new Date().toISOString())
-    .order('match_date', { ascending: true })
-    .limit(5);
-
-  if (error) throw error;
-  return data || [];
-};
-
-const fetchUpcomingTraining = async () => {
-  const { data, error } = await supabase
-    .from('trainings')
-    .select('*')
-    .gte('training_at', new Date().toISOString())
-    .order('training_at', { ascending: true })
-    .limit(1)
-    .single();
-
-  if (error && error.code !== 'PGRST116') throw error;
-  return data;
-};
-
-const fetchUpcomingEvent = async () => {
-  const { data, error } = await supabase
-    .from('events')
-    .select('*')
-    .gte('event_date', new Date().toISOString().split('T')[0])
-    .order('event_date', { ascending: true })
-    .limit(1)
-    .single();
-
-  if (error && error.code !== 'PGRST116') throw error;
-  return data;
-};
 
 const fetchMatchesWithPresence = async (playerId: number) => {
   const { data: matches, error: matchesError } = await supabase
@@ -160,13 +114,11 @@ const Index = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { toast } = useToast();
 
-  const { data: myPlayer } = useQuery({
-    queryKey: ['myPlayer', user?.id],
-    queryFn: () => fetchMyPlayer(user!.id),
-    enabled: !!user,
-  });
+  const { data: myPlayer } = useMyPlayer(user?.id);
+  const { data: upcomingMatches = [] } = useUpcomingMatches();
+  const { data: upcomingTrainings = [] } = useUpcomingTrainings();
+  const { data: upcomingEvents = [] } = useUpcomingEvents();
 
   const { data: matchesWithPresence = [] } = useQuery({
     queryKey: ['matchesWithPresence', myPlayer?.id],
@@ -174,15 +126,8 @@ const Index = () => {
     enabled: !!myPlayer,
   });
 
-  const { data: upcomingTraining } = useQuery({
-    queryKey: ['upcomingTraining'],
-    queryFn: fetchUpcomingTraining,
-  });
-
-  const { data: upcomingEvent } = useQuery({
-    queryKey: ['upcomingEvent'],
-    queryFn: fetchUpcomingEvent,
-  });
+  const upcomingTraining = upcomingTrainings[0];
+  const upcomingEvent = upcomingEvents[0];
 
   const { data: trainingPresence } = useQuery({
     queryKey: ['trainingPresence', myPlayer?.id, upcomingTraining?.id],
@@ -201,17 +146,10 @@ const Index = () => {
       updateMatchStatus(myPlayer!.id, matchId, status),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['matchesWithPresence'] });
-      toast({
-        title: "Status bijgewerkt",
-        description: "Je aanwezigheid voor de wedstrijd is bijgewerkt.",
-      });
+      toast.success("Je aanwezigheid voor de wedstrijd is bijgewerkt.");
     },
     onError: () => {
-      toast({
-        title: "Fout",
-        description: "Er is een fout opgetreden bij het bijwerken van je status.",
-        variant: "destructive",
-      });
+      toast.error("Er is een fout opgetreden bij het bijwerken van je status.");
     },
   });
 
@@ -220,17 +158,10 @@ const Index = () => {
       updateTrainingStatus(myPlayer!.id, upcomingTraining!.id, status),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['trainingPresence'] });
-      toast({
-        title: "Status bijgewerkt",
-        description: "Je aanwezigheid voor de training is bijgewerkt.",
-      });
+      toast.success("Je aanwezigheid voor de training is bijgewerkt.");
     },
     onError: () => {
-      toast({
-        title: "Fout",
-        description: "Er is een fout opgetreden bij het bijwerken van je status.",
-        variant: "destructive",
-      });
+      toast.error("Er is een fout opgetreden bij het bijwerken van je status.");
     },
   });
 
@@ -242,15 +173,6 @@ const Index = () => {
     trainingStatusMutation.mutate({ status });
   };
 
-  const formatDate = (dateString: string | null) => {
-    if (!dateString) return 'Datum onbekend';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('nl-NL', {
-      weekday: 'short',
-      day: 'numeric',
-      month: 'short'
-    });
-  };
 
   if (!user) {
     return null; // This will be handled by ProtectedRoute
