@@ -147,28 +147,6 @@ const MatchCard = ({ match, myPlayer, onStatusChange }: {
             onStatusSelect={(status) => setSelectedStatus(status as PlayerStatus)}
           />
         </div>
-
-        {/* All Players List - Desktop Only */}
-        {!isMobile && (
-          <div className="border-t pt-4">
-            <h4 className="text-sm font-semibold mb-3 text-muted-foreground">Alle spelers</h4>
-            <div className="space-y-2 max-h-60 overflow-y-auto">
-              {players?.slice().sort((a, b) => {
-                const statusOrder = { 'IN': 0, 'MAYBE': 1, 'OUT': 2, 'UNKNOWN': 3 };
-                const statusDiff = statusOrder[a.status] - statusOrder[b.status];
-                if (statusDiff !== 0) return statusDiff;
-                return a.name.localeCompare(b.name);
-              }).map((player) => (
-                <div key={player.id} className="flex items-center justify-between text-sm p-2 bg-muted/30 rounded">
-                  <span>{player.name}</span>
-                  <span className="text-lg">
-                    {player.status === 'IN' ? '🍆' : player.status === 'MAYBE' ? '❓' : player.status === 'OUT' ? '❌' : '➖'}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
       </CardContent>
     </Card>
   );

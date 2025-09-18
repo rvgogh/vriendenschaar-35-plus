@@ -153,26 +153,24 @@ const EventCard = ({ event, myPlayer, onStatusChange }: {
         </div>
 
         {/* All Players List */}
-        {!isMobile && (
-          <div className="border-t pt-4">
-            <h4 className="text-sm font-semibold mb-3 text-muted-foreground">Alle spelers</h4>
-            <div className="space-y-2 max-h-60 overflow-y-auto">
-              {players?.slice().sort((a, b) => {
-                const statusOrder = { 'YES': 0, 'MAYBE': 1, 'NO': 2, 'UNKNOWN': 3 };
-                const statusDiff = statusOrder[a.status] - statusOrder[b.status];
-                if (statusDiff !== 0) return statusDiff;
-                return a.name.localeCompare(b.name);
-              }).map((player) => (
-                <div key={player.id} className="flex items-center justify-between text-sm p-2 bg-muted/30 rounded">
-                  <span>{player.name}</span>
-                  <span className="text-lg">
-                    {player.status === 'YES' ? '🍆' : player.status === 'MAYBE' ? '❓' : player.status === 'NO' ? '❌' : '➖'}
-                  </span>
-                </div>
-              ))}
-            </div>
+        <div className="border-t pt-4">
+          <h4 className="text-sm font-semibold mb-3 text-muted-foreground">Alle spelers</h4>
+          <div className="space-y-2 max-h-40 overflow-y-auto">
+            {players?.slice().sort((a, b) => {
+              const statusOrder = { 'YES': 0, 'MAYBE': 1, 'NO': 2, 'UNKNOWN': 3 };
+              const statusDiff = statusOrder[a.status] - statusOrder[b.status];
+              if (statusDiff !== 0) return statusDiff;
+              return a.name.localeCompare(b.name);
+            }).map((player) => (
+              <div key={player.id} className="flex items-center justify-between text-sm p-2 bg-muted/30 rounded">
+                <span>{player.name}</span>
+                <span className="text-lg">
+                  {player.status === 'YES' ? '🍆' : player.status === 'MAYBE' ? '❓' : player.status === 'NO' ? '❌' : '➖'}
+                </span>
+              </div>
+            ))}
           </div>
-        )}
+        </div>
       </CardContent>
     </Card>
   );
