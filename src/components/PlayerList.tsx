@@ -8,7 +8,7 @@ const fetchPlayersWithStatus = async (matchId: number): Promise<PlayerWithStatus
     // Fetch only KNVB member players
     const { data: players, error: playersError } = await supabase
         .from("players")
-        .select("id, name, knvb_member")
+        .select("*")
         .eq("knvb_member", true)
         .order('name', { ascending: true });
     if (playersError) throw playersError;

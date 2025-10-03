@@ -23,10 +23,12 @@ export const useUpcomingMatches = () => {
   return useQuery({
     queryKey: ["upcomingMatches"],
     queryFn: async () => {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
       const { data, error } = await supabase
         .from("matches")
         .select("*")
-        .gte("match_date", new Date().toISOString().split('T')[0])
+        .gte("match_date", today.toISOString())
         .order("match_date", { ascending: true });
       if (error) throw error;
       return data as Match[];

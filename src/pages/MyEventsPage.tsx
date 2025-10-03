@@ -8,6 +8,7 @@ import { toast } from "@/components/ui/sonner";
 import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
 import { Calendar, MapPin, UtensilsCrossed } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { PageHeader } from "@/components/PageHeader";
 import { AttendanceButtons } from "@/components/AttendanceButtons";
 import { StatusOverview, StatusCount } from "@/components/StatusOverview";
@@ -42,6 +43,7 @@ const EventCard = ({ event, myPlayer, onStatusChange }: {
   myPlayer: any;
   onStatusChange: (eventId: number, status: EventAttendanceStatus) => void;
 }) => {
+  const isMobile = useIsMobile();
   const { data: players } = useQuery({
     queryKey: ["eventPlayers", event.id],
     queryFn: () => fetchPlayersWithEventStatus(event.id),
