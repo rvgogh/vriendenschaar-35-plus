@@ -13,10 +13,12 @@ import { formatDate } from "@/lib/datetime";
 
 
 const fetchMatchesWithPresence = async (playerId: number) => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
   const { data: matches, error: matchesError } = await supabase
     .from('matches')
     .select('*')
-    .gte('match_date', new Date().toISOString())
+    .gte('match_date', today.toISOString())
     .order('match_date', { ascending: true })
     .limit(5);
 
