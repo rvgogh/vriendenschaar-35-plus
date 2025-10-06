@@ -49,7 +49,6 @@ export const StatusOverview = ({
           >
             <div className="text-lg">{emoji}</div>
             <div className={cn("font-semibold text-sm", color)}>{count}</div>
-            <div className="text-muted-foreground text-xs truncate">{label}</div>
             {!isMobile && players.length > 0 && (
               <div className="mt-2 space-y-1">
                 {players.map((player) => (
