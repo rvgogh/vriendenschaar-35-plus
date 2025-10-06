@@ -41,15 +41,15 @@ export const StatusOverview = ({
           <div 
             key={status}
             className={cn(
-              "space-y-1 cursor-pointer rounded-lg p-2 transition-colors min-w-0",
+              "space-y-0.5 cursor-pointer rounded-lg p-1.5 transition-colors min-w-0",
               isMobile && currentSelectedStatus === status && "bg-muted/50",
               isMobile && "hover:bg-muted/30"
             )}
             onClick={() => isMobile && handleStatusSelect(status)}
           >
-            <div className="text-xl">{emoji}</div>
-            <div className={cn("font-semibold", color)}>{count}</div>
-            <div className="text-muted-foreground text-xs sm:text-sm truncate">{label}</div>
+            <div className="text-lg">{emoji}</div>
+            <div className={cn("font-semibold text-sm", color)}>{count}</div>
+            <div className="text-muted-foreground text-xs truncate">{label}</div>
             {!isMobile && players.length > 0 && (
               <div className="mt-2 space-y-1">
                 {players.map((player) => (
