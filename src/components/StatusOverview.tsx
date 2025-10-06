@@ -36,7 +36,7 @@ export const StatusOverview = ({
     <div className={cn("space-y-4", className)}>
       <h4 className="text-sm font-semibold text-muted-foreground">Aanwezigheidsoverzicht</h4>
       
-      <div className={`grid gap-3 text-center text-sm ${statusCounts.length === 3 ? 'grid-cols-3' : 'grid-cols-2 sm:grid-cols-4'}`}>
+      <div className={`grid gap-2 text-center text-sm ${statusCounts.length === 3 ? 'grid-cols-3' : 'grid-cols-2 sm:grid-cols-4'}`}>
         {statusCounts.map(({ status, count, players, emoji, label, color }) => (
           <div 
             key={status}
