@@ -21,9 +21,9 @@ export const PageHeader = ({
 }: PageHeaderProps) => {
   return (
     <header className="mb-8 flex justify-between items-start">
-      <div className="flex items-center gap-4">
+      <div className="flex flex-col gap-4">
         {showBackButton && (
-          <Button asChild variant="outline">
+          <Button asChild variant="outline" className="w-fit">
             <Link to={backTo} className="flex items-center gap-2">
               <ArrowLeft className="h-4 w-4" />
               {backLabel}
