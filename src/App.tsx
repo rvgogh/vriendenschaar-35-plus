@@ -35,7 +35,9 @@ const App = () => (
                     <AppSidebar />
                     <main className="flex-1">
                       <header className="h-16 flex items-center justify-between border-b px-4">
-                        <SidebarTrigger />
+                        <div className="flex items-center gap-2">
+                          <SidebarTrigger />
+                        </div>
                         <div className="flex items-center gap-2">
                           <LoginButton />
                           <ThemeToggle />

@@ -1,7 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
-import LoginButton from "./LoginButton";
 
 interface PageHeaderProps {
   title: string;
@@ -38,10 +37,7 @@ export const PageHeader = ({
           )}
         </div>
       </div>
-      <div className="flex items-center gap-2">
-        {actions}
-        <LoginButton />
-      </div>
+      {actions && <div className="flex items-center gap-2">{actions}</div>}
     </header>
   );
 };

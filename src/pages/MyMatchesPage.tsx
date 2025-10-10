@@ -231,16 +231,21 @@ const MyMatchesPage = () => {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-[800px]">
-      <PageHeader 
-        title="Mijn Wedstrijden" 
-        subtitle="Beheer je aanwezigheid voor aankomende wedstrijden"
-        actions={matches && matches.length > 0 ? (
+      <div>
+        <PageHeader 
+          title="Mijn Wedstrijden" 
+          subtitle="Beheer je aanwezigheid voor aankomende wedstrijden"
+          showBackButton={false}
+        />
+        {matches && matches.length > 0 && (
+          <div className="mb-6">
             <Button onClick={handleICalExport} variant="outline" className="flex items-center gap-2">
               <Calendar className="h-4 w-4" />
               Exporteer naar agenda
             </Button>
-        ) : undefined}
-      />
+          </div>
+        )}
+      </div>
 
       <main>
         {isLoading ? (

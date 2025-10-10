@@ -200,6 +200,7 @@ const MyTrainingPage = () => {
       <PageHeader 
         title="Mijn Trainingen" 
         subtitle="Beheer je aanwezigheid voor aankomende trainingen"
+        showBackButton={false}
       />
 
       <main>
