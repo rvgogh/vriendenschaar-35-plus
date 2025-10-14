@@ -299,8 +299,8 @@ const Index = () => {
                       className="border rounded-lg p-3 bg-secondary/20 cursor-pointer hover:bg-secondary/30 transition-colors"
                       onClick={() => navigate('/my-matches')}
                     >
-                      <div className="flex justify-between items-center mb-2">
-                        <div>
+                      <div className="flex flex-wrap gap-2 items-center mb-2">
+                        <div className="flex-1 min-w-0">
                           <p className="font-medium text-sm">{match.opponent}</p>
                           <p className="text-xs text-muted-foreground">{formatDate(match.match_date)}</p>
                         </div>
