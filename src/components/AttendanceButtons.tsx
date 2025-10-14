@@ -60,7 +60,7 @@ export const AttendanceButtons = ({
           onClick={() => onStatusChange(currentStatus === status ? "UNKNOWN" : status)}
           className={cn(
             "text-2xl w-12",
-            currentStatus === status && ringColor
+            currentStatus === status && `ring-2 ${ringColor}`
           )}
           aria-label={`${label} - ${currentStatus === status ? 'Verwijder status' : `Stel in op ${label}`}`}
           aria-pressed={currentStatus === status}
