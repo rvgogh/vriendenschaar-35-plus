@@ -80,6 +80,24 @@ export type Database = {
         }
         Relationships: []
       }
+      key_holder: {
+        Row: {
+          id: number
+          player_id: number
+          updated_at: string
+        }
+        Insert: {
+          id?: number
+          player_id: number
+          updated_at?: string
+        }
+        Update: {
+          id?: number
+          player_id?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       matches: {
         Row: {
           arrival_time: string | null

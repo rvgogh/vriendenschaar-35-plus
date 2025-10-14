@@ -10,6 +10,7 @@ import { toast } from "@/components/ui/sonner";
 import { PlayerStatus, TrainingAttendanceStatus } from "@/types";
 import { useMyPlayer, useUpcomingMatches, useUpcomingTrainings, useUpcomingEvents } from "@/hooks/useData";
 import { formatDate } from "@/lib/datetime";
+import KeyHolderCard from "@/components/KeyHolderCard";
 
 
 const fetchMatchesWithPresence = async (playerId: number) => {
@@ -203,9 +204,12 @@ const Index = () => {
           <p className="text-muted-foreground">Bekijk je aanwezigheid voor komende activiteiten</p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+          {/* Sleutelbeheerder */}
+          <KeyHolderCard />
+
           {/* Mijn Trainingen */}
-          <Card 
+          <Card
             className="hover:shadow-lg transition-shadow cursor-pointer"
             onClick={() => navigate('/my-training')}
           >
