@@ -11,6 +11,7 @@ import { PlayerStatus, TrainingAttendanceStatus } from "@/types";
 import { useMyPlayer, useUpcomingMatches, useUpcomingTrainings, useUpcomingEvents } from "@/hooks/useData";
 import { formatDate } from "@/lib/datetime";
 import KeyHolderCard from "@/components/KeyHolderCard";
+import TrainingStatusIndicator from "@/components/TrainingStatusIndicator";
 
 
 const fetchMatchesWithPresence = async (playerId: number) => {
@@ -113,6 +114,34 @@ const fetchEventPresence = async (playerId: number, eventId: number) => {
   return data;
 };
 
+const fetchTrainingStatusCounts = async (trainingId: number) => {
+  const { data: statuses, error: statusesError } = await supabase
+    .from("training_statuses")
+    .select("status")
+    .eq("training_id", trainingId);
+
+  if (statusesError) return { yesCount: 0 };
+
+  const yesCount = (statuses || []).filter(s => s.status === 'YES').length;
+  return { yesCount };
+};
+
+const fetchMatchStatusCounts = async (matchId: number) => {
+  const { data: statuses, error } = await supabase
+    .from("player_statuses")
+    .select(`
+      status,
+      players!inner(knvb_member)
+    `)
+    .eq("match_id", matchId)
+    .eq("players.knvb_member", true);
+
+  if (error) return { inCount: 0 };
+
+  const inCount = (statuses || []).filter(s => s.status === 'IN').length;
+  return { inCount };
+};
+
 const Index = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -142,6 +171,25 @@ const Index = () => {
     queryKey: ['eventPresence', myPlayer?.id, upcomingEvent?.id],
     queryFn: () => fetchEventPresence(myPlayer!.id, upcomingEvent!.id),
     enabled: !!myPlayer && !!upcomingEvent,
+  });
+
+  const { data: trainingStatusCounts } = useQuery({
+    queryKey: ['trainingStatusCounts', upcomingTraining?.id],
+    queryFn: () => fetchTrainingStatusCounts(upcomingTraining!.id),
+    enabled: !!upcomingTraining,
+  });
+
+  const { data: matchStatusCountsMap } = useQuery({
+    queryKey: ['matchStatusCountsMap', matchesWithPresence],
+    queryFn: async () => {
+      const countsMap = new Map();
+      for (const match of matchesWithPresence) {
+        const counts = await fetchMatchStatusCounts(match.id);
+        countsMap.set(match.id, counts);
+      }
+      return countsMap;
+    },
+    enabled: matchesWithPresence.length > 0,
   });
 
   const matchStatusMutation = useMutation({
@@ -264,6 +312,14 @@ const Index = () => {
                         </Button>
                       </div>
                     </div>
+                    <div className="mt-2 pt-2 border-t">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-muted-foreground">
+                          {trainingStatusCounts?.yesCount || 0} speler(s) aanwezig
+                        </span>
+                        <TrainingStatusIndicator yesCount={trainingStatusCounts?.yesCount || 0} />
+                      </div>
+                    </div>
                   </div>
                   <div onClick={(e) => e.stopPropagation()}>
                     <Button asChild className="w-full">
@@ -297,46 +353,69 @@ const Index = () => {
             <CardContent>
               {matchesWithPresence.length > 0 ? (
                 <div className="space-y-3">
-                  {matchesWithPresence.map((match) => (
-                    <div 
-                      key={match.id} 
-                      className="border rounded-lg p-3 bg-secondary/20 cursor-pointer hover:bg-secondary/30 transition-colors"
-                      onClick={() => navigate('/my-matches')}
-                    >
-                      <div className="flex flex-wrap gap-2 items-center mb-2">
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium text-sm">{match.opponent}</p>
-                          <p className="text-xs text-muted-foreground">{formatDate(match.match_date)}</p>
+                  {matchesWithPresence.map((match) => {
+                    const matchCounts = matchStatusCountsMap?.get(match.id) || { inCount: 0 };
+                    const inCount = matchCounts.inCount;
+                    const needed = 7;
+                    const hasEnough = inCount >= needed;
+                    
+                    return (
+                      <div 
+                        key={match.id} 
+                        className="border rounded-lg p-3 bg-secondary/20 cursor-pointer hover:bg-secondary/30 transition-colors"
+                        onClick={() => navigate('/my-matches')}
+                      >
+                        <div className="flex flex-wrap gap-2 items-center mb-2">
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-sm">{match.opponent}</p>
+                            <p className="text-xs text-muted-foreground">{formatDate(match.match_date)}</p>
+                          </div>
+                          <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
+                            <Button 
+                              variant='outline'
+                              size="sm" 
+                              onClick={() => handleMatchStatusChange(match.id, match.status === 'IN' ? 'UNKNOWN' : 'IN')}
+                              className={cn("text-lg w-8 h-8 p-0", match.status === 'IN' && "ring-2 ring-primary")}
+                            >
+                              🍆
+                            </Button>
+                            <Button 
+                              variant='outline'
+                              size="sm" 
+                              onClick={() => handleMatchStatusChange(match.id, match.status === 'MAYBE' ? 'UNKNOWN' : 'MAYBE')}
+                              className={cn("text-lg w-8 h-8 p-0", match.status === 'MAYBE' && "ring-2 ring-yellow-400")}
+                            >
+                              ❓
+                            </Button>
+                            <Button 
+                              variant='outline'
+                              size="sm" 
+                              onClick={() => handleMatchStatusChange(match.id, match.status === 'OUT' ? 'UNKNOWN' : 'OUT')}
+                              className={cn("text-lg w-8 h-8 p-0", match.status === 'OUT' && "ring-2 ring-destructive")}
+                            >
+                              ❌
+                            </Button>
+                          </div>
                         </div>
-                        <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
-                          <Button 
-                            variant='outline'
-                            size="sm" 
-                            onClick={() => handleMatchStatusChange(match.id, match.status === 'IN' ? 'UNKNOWN' : 'IN')}
-                            className={cn("text-lg w-8 h-8 p-0", match.status === 'IN' && "ring-2 ring-primary")}
-                          >
-                            🍆
-                          </Button>
-                          <Button 
-                            variant='outline'
-                            size="sm" 
-                            onClick={() => handleMatchStatusChange(match.id, match.status === 'MAYBE' ? 'UNKNOWN' : 'MAYBE')}
-                            className={cn("text-lg w-8 h-8 p-0", match.status === 'MAYBE' && "ring-2 ring-yellow-400")}
-                          >
-                            ❓
-                          </Button>
-                          <Button 
-                            variant='outline'
-                            size="sm" 
-                            onClick={() => handleMatchStatusChange(match.id, match.status === 'OUT' ? 'UNKNOWN' : 'OUT')}
-                            className={cn("text-lg w-8 h-8 p-0", match.status === 'OUT' && "ring-2 ring-destructive")}
-                          >
-                            ❌
-                          </Button>
+                        <div className="mt-2 pt-2 border-t">
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm text-muted-foreground">
+                              {inCount} speler(s) beschikbaar
+                            </span>
+                            {hasEnough ? (
+                              <div className="text-xs font-medium text-green-600 dark:text-green-400">
+                                Wedstrijd gaat door!
+                              </div>
+                            ) : (
+                              <div className="text-xs font-medium text-red-600 dark:text-red-400">
+                                Nog {needed - inCount} speler(s) nodig
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                   <div onClick={(e) => e.stopPropagation()}>
                     <Button asChild className="w-full mt-3">
                       <Link to="/my-matches">Alle Wedstrijden</Link>
