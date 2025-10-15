@@ -19,13 +19,18 @@ const AuthPage = () => {
   const [searchParams] = useSearchParams();
 
   useEffect(() => {
-    const type = searchParams.get('type');
+    // Check hash parameters for password recovery
+    const hashParams = new URLSearchParams(window.location.hash.substring(1));
+    const accessToken = hashParams.get('access_token');
+    const type = hashParams.get('type');
     
-    // If user comes from password reset email, show update password form
-    if (type === 'recovery') {
+    // If user comes from password reset email (Supabase redirects with hash params)
+    if (type === 'recovery' && accessToken) {
       setIsUpdatePassword(true);
       setIsForgotPassword(false);
       setIsLogin(false);
+      toast.info('Voer je nieuwe wachtwoord in');
+      return;
     }
     
     // Handle email verification redirect
