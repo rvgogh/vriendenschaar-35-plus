@@ -10,13 +10,23 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
+  const [isUpdatePassword, setIsUpdatePassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
   useEffect(() => {
+    const type = searchParams.get('type');
+    
+    // If user comes from password reset email, show update password form
+    if (type === 'recovery') {
+      setIsUpdatePassword(true);
+      setIsForgotPassword(false);
+      setIsLogin(false);
+    }
     
     // Handle email verification redirect
     const handleEmailVerification = async () => {
@@ -104,7 +114,7 @@ const AuthPage = () => {
     setLoading(true);
 
     try {
-      const redirectUrl = 'https://vriendenschaar-35-plus.lovable.app/';
+      const redirectUrl = 'https://vriendenschaar-35-plus.lovable.app/auth';
       
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: redirectUrl
@@ -122,12 +132,37 @@ const AuthPage = () => {
     }
   };
 
+  const handleUpdatePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword
+      });
+
+      if (error) throw error;
+
+      toast.success('Wachtwoord succesvol gewijzigd! Je kunt nu inloggen.');
+      setIsUpdatePassword(false);
+      setIsLogin(true);
+      setNewPassword('');
+      navigate('/');
+    } catch (error: any) {
+      toast.error(error.message || 'Kon wachtwoord niet wijzigen');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const getTitle = () => {
+    if (isUpdatePassword) return 'Nieuw wachtwoord instellen';
     if (isForgotPassword) return 'Wachtwoord vergeten';
     return isLogin ? 'Inloggen' : 'Registreren';
   };
 
   const getDescription = () => {
+    if (isUpdatePassword) return 'Voer je nieuwe wachtwoord in';
     if (isForgotPassword) return 'Voer je email in om je wachtwoord te resetten';
     return isLogin 
       ? 'Log in met je account om door te gaan' 
@@ -135,6 +170,7 @@ const AuthPage = () => {
   };
 
   const getSubmitHandler = () => {
+    if (isUpdatePassword) return handleUpdatePassword;
     if (isForgotPassword) return handleForgotPassword;
     return isLogin ? handleLogin : handleRegister;
   };
@@ -152,34 +188,51 @@ const AuthPage = () => {
         </CardHeader>
         <CardContent>
           <form onSubmit={getSubmitHandler()} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
-            
-            {!isForgotPassword && (
+            {isUpdatePassword ? (
               <div className="space-y-2">
-                <Label htmlFor="password">Wachtwoord</Label>
+                <Label htmlFor="newPassword">Nieuw wachtwoord</Label>
                 <Input
-                  id="password"
+                  id="newPassword"
                   type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
                   required
                   minLength={6}
+                  placeholder="Minimaal 6 karakters"
                 />
               </div>
+            ) : (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                </div>
+                
+                {!isForgotPassword && (
+                  <div className="space-y-2">
+                    <Label htmlFor="password">Wachtwoord</Label>
+                    <Input
+                      id="password"
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      minLength={6}
+                    />
+                  </div>
+                )}
+              </>
             )}
-
 
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? 'Bezig...' : (
+                isUpdatePassword ? 'Wachtwoord wijzigen' :
                 isForgotPassword ? 'Reset wachtwoord' : 
                 (isLogin ? 'Inloggen' : 'Registreren')
               )}
@@ -187,7 +240,7 @@ const AuthPage = () => {
           </form>
 
           <div className="mt-4 text-center space-y-2">
-            {!isForgotPassword && (
+            {!isForgotPassword && !isUpdatePassword && (
               <>
                 {isLogin && (
                   <Button
