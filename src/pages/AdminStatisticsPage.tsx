@@ -28,10 +28,70 @@ const COLORS = {
 const AdminStatisticsPage = () => {
   const { role, loading: roleLoading } = useUserRole();
 
-  // Fetch all attendance data
-  const { data: matchStats, isLoading: matchLoading } = useQuery({
-    queryKey: ['matchStatistics'],
+  // Fetch past matches
+  const { data: pastMatches, isLoading: matchesLoading } = useQuery({
+    queryKey: ['pastMatches'],
     queryFn: async () => {
+      const { data, error } = await supabase
+        .from('matches')
+        .select('id')
+        .lt('match_date', new Date().toISOString())
+        .order('match_date', { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+    enabled: role === 'superuser',
+  });
+
+  // Fetch past trainings
+  const { data: pastTrainings, isLoading: trainingsLoading } = useQuery({
+    queryKey: ['pastTrainings'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('trainings')
+        .select('id')
+        .lt('training_at', new Date().toISOString())
+        .order('training_at', { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+    enabled: role === 'superuser',
+  });
+
+  // Fetch past events
+  const { data: pastEvents, isLoading: eventsLoading } = useQuery({
+    queryKey: ['pastEvents'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('events')
+        .select('id')
+        .lt('event_date', new Date().toISOString().split('T')[0])
+        .order('event_date', { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+    enabled: role === 'superuser',
+  });
+
+  // Fetch all players
+  const { data: allPlayers, isLoading: playersLoading } = useQuery({
+    queryKey: ['allPlayers'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('players')
+        .select('id, name')
+        .order('name');
+      if (error) throw error;
+      return data;
+    },
+    enabled: role === 'superuser',
+  });
+
+  // Fetch match statuses for past matches
+  const { data: matchStats, isLoading: matchStatsLoading } = useQuery({
+    queryKey: ['matchStatistics', pastMatches],
+    queryFn: async () => {
+      if (!pastMatches?.length) return [];
       const { data, error } = await supabase
         .from('player_statuses')
         .select(`
@@ -39,16 +99,19 @@ const AdminStatisticsPage = () => {
           player_id,
           match_id,
           players!inner(name)
-        `);
+        `)
+        .in('match_id', pastMatches.map(m => m.id));
       if (error) throw error;
       return data;
     },
-    enabled: role === 'superuser',
+    enabled: role === 'superuser' && !!pastMatches,
   });
 
-  const { data: trainingStats, isLoading: trainingLoading } = useQuery({
-    queryKey: ['trainingStatistics'],
+  // Fetch training statuses for past trainings
+  const { data: trainingStats, isLoading: trainingStatsLoading } = useQuery({
+    queryKey: ['trainingStatistics', pastTrainings],
     queryFn: async () => {
+      if (!pastTrainings?.length) return [];
       const { data, error } = await supabase
         .from('training_statuses')
         .select(`
@@ -56,16 +119,19 @@ const AdminStatisticsPage = () => {
           player_id,
           training_id,
           players!inner(name)
-        `);
+        `)
+        .in('training_id', pastTrainings.map(t => t.id));
       if (error) throw error;
       return data;
     },
-    enabled: role === 'superuser',
+    enabled: role === 'superuser' && !!pastTrainings,
   });
 
-  const { data: eventStats, isLoading: eventLoading } = useQuery({
-    queryKey: ['eventStatistics'],
+  // Fetch event statuses for past events
+  const { data: eventStats, isLoading: eventStatsLoading } = useQuery({
+    queryKey: ['eventStatistics', pastEvents],
     queryFn: async () => {
+      if (!pastEvents?.length) return [];
       const { data, error } = await supabase
         .from('event_statuses')
         .select(`
@@ -73,11 +139,12 @@ const AdminStatisticsPage = () => {
           player_id,
           event_id,
           players!inner(name)
-        `);
+        `)
+        .in('event_id', pastEvents.map(e => e.id));
       if (error) throw error;
       return data;
     },
-    enabled: role === 'superuser',
+    enabled: role === 'superuser' && !!pastEvents,
   });
 
   if (roleLoading) {
@@ -88,32 +155,46 @@ const AdminStatisticsPage = () => {
     return <Navigate to="/" replace />;
   }
 
-  if (matchLoading || trainingLoading || eventLoading) {
+  if (matchesLoading || trainingsLoading || eventsLoading || playersLoading || matchStatsLoading || trainingStatsLoading || eventStatsLoading) {
     return <PageLoading message="Statistieken laden..." />;
   }
 
   // Calculate statistics
-  const calculateStatusCounts = (data: any[]) => {
+  const calculateStatusCounts = (data: any[], totalEvents: number, totalPlayers: number) => {
     const counts: Record<string, number> = {};
     data?.forEach(item => {
       counts[item.status] = (counts[item.status] || 0) + 1;
     });
+    
+    // Calculate UNKNOWN as total possible responses minus actual responses
+    const totalResponses = Object.values(counts).reduce((sum, count) => sum + count, 0);
+    const totalPossible = totalEvents * totalPlayers;
+    counts['UNKNOWN'] = totalPossible - totalResponses;
+    
     return Object.entries(counts).map(([name, value]) => ({ name, value }));
   };
 
-  const calculatePlayerAttendance = (data: any[], positiveStatuses: string[]) => {
+  const calculatePlayerAttendance = (
+    statusData: any[], 
+    allPlayers: any[], 
+    totalEvents: number,
+    positiveStatuses: string[]
+  ) => {
     const playerMap: Record<number, { name: string; total: number; attended: number }> = {};
     
-    data?.forEach(item => {
+    // Initialize all players with total count
+    allPlayers?.forEach(player => {
+      playerMap[player.id] = { 
+        name: player.name, 
+        total: totalEvents, 
+        attended: 0 
+      };
+    });
+    
+    // Count attended events
+    statusData?.forEach(item => {
       const playerId = item.player_id;
-      const playerName = item.players?.name || 'Unknown';
-      
-      if (!playerMap[playerId]) {
-        playerMap[playerId] = { name: playerName, total: 0, attended: 0 };
-      }
-      
-      playerMap[playerId].total += 1;
-      if (positiveStatuses.includes(item.status)) {
+      if (playerMap[playerId] && positiveStatuses.includes(item.status)) {
         playerMap[playerId].attended += 1;
       }
     });
@@ -128,13 +209,40 @@ const AdminStatisticsPage = () => {
       .sort((a, b) => b.percentage - a.percentage);
   };
 
-  const matchStatusData = calculateStatusCounts(matchStats || []);
-  const trainingStatusData = calculateStatusCounts(trainingStats || []);
-  const eventStatusData = calculateStatusCounts(eventStats || []);
+  const matchStatusData = calculateStatusCounts(
+    matchStats || [], 
+    pastMatches?.length || 0, 
+    allPlayers?.length || 0
+  );
+  const trainingStatusData = calculateStatusCounts(
+    trainingStats || [], 
+    pastTrainings?.length || 0, 
+    allPlayers?.length || 0
+  );
+  const eventStatusData = calculateStatusCounts(
+    eventStats || [], 
+    pastEvents?.length || 0, 
+    allPlayers?.length || 0
+  );
 
-  const matchPlayerAttendance = calculatePlayerAttendance(matchStats || [], ['IN']);
-  const trainingPlayerAttendance = calculatePlayerAttendance(trainingStats || [], ['YES']);
-  const eventPlayerAttendance = calculatePlayerAttendance(eventStats || [], ['YES']);
+  const matchPlayerAttendance = calculatePlayerAttendance(
+    matchStats || [], 
+    allPlayers || [], 
+    pastMatches?.length || 0,
+    ['IN']
+  );
+  const trainingPlayerAttendance = calculatePlayerAttendance(
+    trainingStats || [], 
+    allPlayers || [], 
+    pastTrainings?.length || 0,
+    ['YES']
+  );
+  const eventPlayerAttendance = calculatePlayerAttendance(
+    eventStats || [], 
+    allPlayers || [], 
+    pastEvents?.length || 0,
+    ['YES']
+  );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-secondary/5 to-accent/5">
