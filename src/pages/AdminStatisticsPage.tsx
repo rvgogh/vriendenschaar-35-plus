@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useUserRole } from '@/hooks/useUserRole';
 import { Navigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -7,6 +7,7 @@ import { PageLoading } from '@/components/PageLoading';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { BarChart3 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import {
   Table,
   TableBody,
@@ -17,16 +18,19 @@ import {
 } from "@/components/ui/table";
 
 const COLORS = {
-  IN: 'hsl(var(--chart-1))',
-  YES: 'hsl(var(--chart-1))',
-  OUT: 'hsl(var(--chart-2))',
-  NO: 'hsl(var(--chart-2))',
-  MAYBE: 'hsl(var(--chart-3))',
-  UNKNOWN: 'hsl(var(--chart-4))',
+  IN: 'hsl(142 71% 45%)',
+  YES: 'hsl(142 71% 45%)',
+  OUT: 'hsl(0 84% 60%)',
+  NO: 'hsl(0 84% 60%)',
+  MAYBE: 'hsl(45 93% 47%)',
+  UNKNOWN: 'hsl(215 20% 65%)',
 };
 
 const AdminStatisticsPage = () => {
   const { role, loading: roleLoading } = useUserRole();
+  const [showAllMatches, setShowAllMatches] = useState(false);
+  const [showAllTrainings, setShowAllTrainings] = useState(false);
+  const [showAllEvents, setShowAllEvents] = useState(false);
 
   // Fetch past matches
   const { data: pastMatches, isLoading: matchesLoading } = useQuery({
@@ -273,7 +277,7 @@ const AdminStatisticsPage = () => {
                     labelLine={false}
                     label={({ name, value }) => `${name}: ${value}`}
                     outerRadius={80}
-                    fill="#8884d8"
+                    fill="hsl(var(--foreground))"
                     dataKey="value"
                   >
                     {matchStatusData.map((entry, index) => (
@@ -301,7 +305,7 @@ const AdminStatisticsPage = () => {
                     labelLine={false}
                     label={({ name, value }) => `${name}: ${value}`}
                     outerRadius={80}
-                    fill="#8884d8"
+                    fill="hsl(var(--foreground))"
                     dataKey="value"
                   >
                     {trainingStatusData.map((entry, index) => (
@@ -329,7 +333,7 @@ const AdminStatisticsPage = () => {
                     labelLine={false}
                     label={({ name, value }) => `${name}: ${value}`}
                     outerRadius={80}
-                    fill="#8884d8"
+                    fill="hsl(var(--foreground))"
                     dataKey="value"
                   >
                     {eventStatusData.map((entry, index) => (
@@ -348,7 +352,7 @@ const AdminStatisticsPage = () => {
           <Card>
             <CardHeader>
               <CardTitle>Wedstrijd Aanwezigheid per Speler</CardTitle>
-              <CardDescription>Top spelers op basis van aanwezigheid percentage</CardDescription>
+              <CardDescription>Spelers op basis van aanwezigheid percentage</CardDescription>
             </CardHeader>
             <CardContent>
               <Table>
@@ -360,7 +364,7 @@ const AdminStatisticsPage = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {matchPlayerAttendance.slice(0, 10).map((player) => (
+                  {(showAllMatches ? matchPlayerAttendance : matchPlayerAttendance.slice(0, 10)).map((player) => (
                     <TableRow key={player.name}>
                       <TableCell className="font-medium">{player.name}</TableCell>
                       <TableCell className="text-right">{player.percentage}%</TableCell>
@@ -369,13 +373,23 @@ const AdminStatisticsPage = () => {
                   ))}
                 </TableBody>
               </Table>
+              {matchPlayerAttendance.length > 10 && (
+                <div className="mt-4 text-center">
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowAllMatches(!showAllMatches)}
+                  >
+                    {showAllMatches ? 'Toon minder' : 'Toon alle spelers'}
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
               <CardTitle>Training Aanwezigheid per Speler</CardTitle>
-              <CardDescription>Top spelers op basis van aanwezigheid percentage</CardDescription>
+              <CardDescription>Spelers op basis van aanwezigheid percentage</CardDescription>
             </CardHeader>
             <CardContent>
               <Table>
@@ -387,7 +401,7 @@ const AdminStatisticsPage = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {trainingPlayerAttendance.slice(0, 10).map((player) => (
+                  {(showAllTrainings ? trainingPlayerAttendance : trainingPlayerAttendance.slice(0, 10)).map((player) => (
                     <TableRow key={player.name}>
                       <TableCell className="font-medium">{player.name}</TableCell>
                       <TableCell className="text-right">{player.percentage}%</TableCell>
@@ -396,13 +410,23 @@ const AdminStatisticsPage = () => {
                   ))}
                 </TableBody>
               </Table>
+              {trainingPlayerAttendance.length > 10 && (
+                <div className="mt-4 text-center">
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowAllTrainings(!showAllTrainings)}
+                  >
+                    {showAllTrainings ? 'Toon minder' : 'Toon alle spelers'}
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
               <CardTitle>Evenement Aanwezigheid per Speler</CardTitle>
-              <CardDescription>Top spelers op basis van aanwezigheid percentage</CardDescription>
+              <CardDescription>Spelers op basis van aanwezigheid percentage</CardDescription>
             </CardHeader>
             <CardContent>
               <Table>
@@ -414,7 +438,7 @@ const AdminStatisticsPage = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {eventPlayerAttendance.slice(0, 10).map((player) => (
+                  {(showAllEvents ? eventPlayerAttendance : eventPlayerAttendance.slice(0, 10)).map((player) => (
                     <TableRow key={player.name}>
                       <TableCell className="font-medium">{player.name}</TableCell>
                       <TableCell className="text-right">{player.percentage}%</TableCell>
@@ -423,34 +447,57 @@ const AdminStatisticsPage = () => {
                   ))}
                 </TableBody>
               </Table>
+              {eventPlayerAttendance.length > 10 && (
+                <div className="mt-4 text-center">
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowAllEvents(!showAllEvents)}
+                  >
+                    {showAllEvents ? 'Toon minder' : 'Toon alle spelers'}
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
 
-        {/* Bar Chart Comparison */}
+        {/* Stacked Bar Chart - Total Attendance */}
         <Card>
           <CardHeader>
-            <CardTitle>Top 10 Spelers - Aanwezigheid Percentage</CardTitle>
-            <CardDescription>Vergelijking van aanwezigheid percentages tussen wedstrijden, trainingen en evenementen</CardDescription>
+            <CardTitle>Totale Aanwezigheid per Speler</CardTitle>
+            <CardDescription>Gecombineerde aanwezigheid voor wedstrijden, trainingen en evenementen (gesorteerd van hoog naar laag)</CardDescription>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={400}>
+            <ResponsiveContainer width="100%" height={600}>
               <BarChart
-                data={matchPlayerAttendance.slice(0, 10).map((player, i) => ({
-                  name: player.name,
-                  Wedstrijden: player.percentage,
-                  Trainingen: trainingPlayerAttendance.find(p => p.name === player.name)?.percentage || 0,
-                  Evenementen: eventPlayerAttendance.find(p => p.name === player.name)?.percentage || 0,
-                }))}
+                data={allPlayers?.map(player => {
+                  const matchData = matchPlayerAttendance.find(p => p.name === player.name);
+                  const trainingData = trainingPlayerAttendance.find(p => p.name === player.name);
+                  const eventData = eventPlayerAttendance.find(p => p.name === player.name);
+                  
+                  const matchAttended = matchData?.attended || 0;
+                  const trainingAttended = trainingData?.attended || 0;
+                  const eventAttended = eventData?.attended || 0;
+                  
+                  return {
+                    name: player.name,
+                    Wedstrijden: matchAttended,
+                    Trainingen: trainingAttended,
+                    Evenementen: eventAttended,
+                    total: matchAttended + trainingAttended + eventAttended
+                  };
+                }).sort((a, b) => b.total - a.total) || []}
+                layout="vertical"
+                margin={{ left: 100 }}
               >
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" angle={-45} textAnchor="end" height={100} />
-                <YAxis label={{ value: 'Aanwezigheid %', angle: -90, position: 'insideLeft' }} />
+                <XAxis type="number" label={{ value: 'Aantal Aanwezigheden', position: 'insideBottom', offset: -5 }} />
+                <YAxis type="category" dataKey="name" width={90} />
                 <Tooltip />
                 <Legend />
-                <Bar dataKey="Wedstrijden" fill="hsl(var(--chart-1))" />
-                <Bar dataKey="Trainingen" fill="hsl(var(--chart-2))" />
-                <Bar dataKey="Evenementen" fill="hsl(var(--chart-3))" />
+                <Bar dataKey="Wedstrijden" stackId="a" fill="hsl(221 83% 53%)" />
+                <Bar dataKey="Trainingen" stackId="a" fill="hsl(142 71% 45%)" />
+                <Bar dataKey="Evenementen" stackId="a" fill="hsl(280 65% 60%)" />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
