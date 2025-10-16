@@ -13,6 +13,7 @@ import MyMatchesPage from "./pages/MyMatchesPage";
 import MyEventsPage from "./pages/MyEventsPage";
 import AuthPage from "./pages/AuthPage";
 import AdminPage from "./pages/AdminPage";
+import AdminStatisticsPage from "./pages/AdminStatisticsPage";
 import NotFound from "./pages/NotFound";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import LoginButton from "@/components/LoginButton";
@@ -52,6 +53,11 @@ const App = () => (
                         <Route path="/admin" element={
                           <ProtectedRoute>
                             <AdminPage />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/admin/statistics" element={
+                          <ProtectedRoute>
+                            <AdminStatisticsPage />
                           </ProtectedRoute>
                         } />
                         <Route path="/my-training" element={

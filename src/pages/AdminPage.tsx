@@ -5,7 +5,7 @@ import { Navigate } from 'react-router-dom';
 import PlayerManagement from '@/components/PlayerManagement';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Shield, Users, Settings, Home, Trophy, Calendar, Dumbbell } from 'lucide-react';
+import { Shield, Users, Settings, Home, Trophy, Calendar, Dumbbell, BarChart3 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { PageLoading } from '@/components/PageLoading';
 
@@ -68,6 +68,24 @@ const AdminPage = () => {
               <p className="text-xs text-muted-foreground">
                 Volledige toegang
               </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Statistieken</CardTitle>
+              <BarChart3 className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">Aanwezigheid</div>
+              <p className="text-xs text-muted-foreground mb-2">
+                Speler statistieken
+              </p>
+              <Button asChild size="sm" className="w-full">
+                <Link to="/admin/statistics">
+                  Bekijk Statistieken
+                </Link>
+              </Button>
             </CardContent>
           </Card>
         </div>
