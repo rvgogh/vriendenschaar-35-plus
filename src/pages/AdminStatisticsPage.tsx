@@ -83,7 +83,7 @@ const AdminStatisticsPage = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('players')
-        .select('id, name')
+        .select('id, name, knvb_member')
         .order('name');
       if (error) throw error;
       return data;
@@ -213,10 +213,13 @@ const AdminStatisticsPage = () => {
       .sort((a, b) => b.percentage - a.percentage);
   };
 
+  // Count KNVB members for match stats only
+  const knvbMemberCount = allPlayers?.filter(p => p.knvb_member).length || 0;
+  
   const matchStatusData = calculateStatusCounts(
     matchStats || [], 
     pastMatches?.length || 0, 
-    allPlayers?.length || 0
+    knvbMemberCount
   );
   const trainingStatusData = calculateStatusCounts(
     trainingStats || [], 
@@ -229,9 +232,12 @@ const AdminStatisticsPage = () => {
     allPlayers?.length || 0
   );
 
+  // Only KNVB members for match attendance
+  const knvbPlayers = allPlayers?.filter(p => p.knvb_member) || [];
+  
   const matchPlayerAttendance = calculatePlayerAttendance(
     matchStats || [], 
-    allPlayers || [], 
+    knvbPlayers, 
     pastMatches?.length || 0,
     ['IN']
   );
@@ -475,7 +481,8 @@ const AdminStatisticsPage = () => {
                   const trainingData = trainingPlayerAttendance.find(p => p.name === player.name);
                   const eventData = eventPlayerAttendance.find(p => p.name === player.name);
                   
-                  const matchAttended = matchData?.attended || 0;
+                  // Only count match attendance for KNVB members
+                  const matchAttended = player.knvb_member ? (matchData?.attended || 0) : 0;
                   const trainingAttended = trainingData?.attended || 0;
                   const eventAttended = eventData?.attended || 0;
                   

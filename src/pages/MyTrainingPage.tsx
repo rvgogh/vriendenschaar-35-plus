@@ -19,7 +19,6 @@ const fetchPlayersWithTrainingStatus = async (trainingId: number): Promise<Playe
   const { data: players, error: playersError } = await supabase
     .from("players")
     .select("*")
-    .eq("knvb_member", true)
     .order('name', { ascending: true });
   if (playersError) throw playersError;
 
