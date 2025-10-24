@@ -294,11 +294,11 @@ const AdminStatisticsPage = () => {
                   };
                 }).sort((a, b) => b.total - a.total) || []}
                 layout="vertical"
-                margin={{ left: 120 }}
+                margin={{ left: 5, right: 20, top: 5, bottom: 5 }}
               >
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis type="number" label={{ value: 'Aantal Aanwezigheden', position: 'insideBottom', offset: -5 }} />
-                <YAxis type="category" dataKey="name" width={110} interval={0} />
+                <YAxis type="category" dataKey="name" width={90} interval={0} tick={{ fontSize: 12 }} />
                 <Tooltip />
                 <Legend />
                 <Bar dataKey="Wedstrijden" stackId="a" fill="hsl(221 83% 53%)" />
