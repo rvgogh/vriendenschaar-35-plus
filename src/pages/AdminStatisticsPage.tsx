@@ -266,92 +266,48 @@ const AdminStatisticsPage = () => {
         </div>
 
 
-        {/* Status Distribution Charts */}
-        <div className="grid gap-6 md:grid-cols-3 mb-8">
-          <Card>
-            <CardHeader>
-              <CardTitle>Wedstrijd Status</CardTitle>
-              <CardDescription>Verdeling van aanwezigheid statussen</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={matchStatusData}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={({ name, value }) => `${name}: ${value}`}
-                    outerRadius={80}
-                    fill="hsl(var(--foreground))"
-                    dataKey="value"
-                  >
-                    {matchStatusData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[entry.name as keyof typeof COLORS] || COLORS.UNKNOWN} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Training Status</CardTitle>
-              <CardDescription>Verdeling van aanwezigheid statussen</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={trainingStatusData}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={({ name, value }) => `${name}: ${value}`}
-                    outerRadius={80}
-                    fill="hsl(var(--foreground))"
-                    dataKey="value"
-                  >
-                    {trainingStatusData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[entry.name as keyof typeof COLORS] || COLORS.UNKNOWN} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Evenement Status</CardTitle>
-              <CardDescription>Verdeling van aanwezigheid statussen</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={eventStatusData}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={({ name, value }) => `${name}: ${value}`}
-                    outerRadius={80}
-                    fill="hsl(var(--foreground))"
-                    dataKey="value"
-                  >
-                    {eventStatusData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[entry.name as keyof typeof COLORS] || COLORS.UNKNOWN} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        </div>
+        {/* Stacked Bar Chart - Total Attendance */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle>Totale Aanwezigheid per Speler</CardTitle>
+            <CardDescription>Gecombineerde aanwezigheid voor wedstrijden, trainingen en evenementen (gesorteerd van hoog naar laag)</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={600}>
+              <BarChart
+                data={allPlayers?.map(player => {
+                  const matchData = matchPlayerAttendance.find(p => p.name === player.name);
+                  const trainingData = trainingPlayerAttendance.find(p => p.name === player.name);
+                  const eventData = eventPlayerAttendance.find(p => p.name === player.name);
+                  
+                  // Only count match attendance for KNVB members
+                  const matchAttended = player.knvb_member ? (matchData?.attended || 0) : 0;
+                  const trainingAttended = trainingData?.attended || 0;
+                  const eventAttended = eventData?.attended || 0;
+                  
+                  return {
+                    name: player.name,
+                    Wedstrijden: matchAttended,
+                    Trainingen: trainingAttended,
+                    Evenementen: eventAttended,
+                    total: matchAttended + trainingAttended + eventAttended
+                  };
+                }).sort((a, b) => b.total - a.total) || []}
+                layout="vertical"
+                margin={{ left: 120 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis type="number" label={{ value: 'Aantal Aanwezigheden', position: 'insideBottom', offset: -5 }} />
+                <YAxis type="category" dataKey="name" width={110} interval={0} />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="Wedstrijden" stackId="a" fill="hsl(221 83% 53%)" />
+                <Bar dataKey="Trainingen" stackId="a" fill="hsl(142 71% 45%)" />
+                <Bar dataKey="Evenementen" stackId="a" fill="hsl(280 65% 60%)" />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
 
         {/* Player Attendance Tables */}
         <div className="grid gap-6 md:grid-cols-3 mb-8">
@@ -467,48 +423,92 @@ const AdminStatisticsPage = () => {
           </Card>
         </div>
 
-        {/* Stacked Bar Chart - Total Attendance */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Totale Aanwezigheid per Speler</CardTitle>
-            <CardDescription>Gecombineerde aanwezigheid voor wedstrijden, trainingen en evenementen (gesorteerd van hoog naar laag)</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={600}>
-              <BarChart
-                data={allPlayers?.map(player => {
-                  const matchData = matchPlayerAttendance.find(p => p.name === player.name);
-                  const trainingData = trainingPlayerAttendance.find(p => p.name === player.name);
-                  const eventData = eventPlayerAttendance.find(p => p.name === player.name);
-                  
-                  // Only count match attendance for KNVB members
-                  const matchAttended = player.knvb_member ? (matchData?.attended || 0) : 0;
-                  const trainingAttended = trainingData?.attended || 0;
-                  const eventAttended = eventData?.attended || 0;
-                  
-                  return {
-                    name: player.name,
-                    Wedstrijden: matchAttended,
-                    Trainingen: trainingAttended,
-                    Evenementen: eventAttended,
-                    total: matchAttended + trainingAttended + eventAttended
-                  };
-                }).sort((a, b) => b.total - a.total) || []}
-                layout="vertical"
-                margin={{ left: 100 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis type="number" label={{ value: 'Aantal Aanwezigheden', position: 'insideBottom', offset: -5 }} />
-                <YAxis type="category" dataKey="name" width={90} />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="Wedstrijden" stackId="a" fill="hsl(221 83% 53%)" />
-                <Bar dataKey="Trainingen" stackId="a" fill="hsl(142 71% 45%)" />
-                <Bar dataKey="Evenementen" stackId="a" fill="hsl(280 65% 60%)" />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
+        {/* Status Distribution Charts */}
+        <div className="grid gap-6 md:grid-cols-3 mb-8">
+          <Card>
+            <CardHeader>
+              <CardTitle>Wedstrijd Status</CardTitle>
+              <CardDescription>Verdeling van aanwezigheid statussen</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={matchStatusData}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, value }) => `${name}: ${value}`}
+                    outerRadius={80}
+                    fill="hsl(var(--foreground))"
+                    dataKey="value"
+                  >
+                    {matchStatusData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[entry.name as keyof typeof COLORS] || COLORS.UNKNOWN} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Training Status</CardTitle>
+              <CardDescription>Verdeling van aanwezigheid statussen</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={trainingStatusData}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, value }) => `${name}: ${value}`}
+                    outerRadius={80}
+                    fill="hsl(var(--foreground))"
+                    dataKey="value"
+                  >
+                    {trainingStatusData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[entry.name as keyof typeof COLORS] || COLORS.UNKNOWN} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Evenement Status</CardTitle>
+              <CardDescription>Verdeling van aanwezigheid statussen</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={eventStatusData}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, value }) => `${name}: ${value}`}
+                    outerRadius={80}
+                    fill="hsl(var(--foreground))"
+                    dataKey="value"
+                  >
+                    {eventStatusData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[entry.name as keyof typeof COLORS] || COLORS.UNKNOWN} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );
