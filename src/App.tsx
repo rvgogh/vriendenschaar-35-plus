@@ -18,6 +18,7 @@ import NotFound from "./pages/NotFound";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import LoginButton from "@/components/LoginButton";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { NotificationPrompt } from "@/components/NotificationPrompt";
 
 const queryClient = new QueryClient();
 
@@ -27,6 +28,7 @@ const App = () => (
       <AuthProvider>
         <TooltipProvider>
           <Toaster />
+          <NotificationPrompt />
           <BrowserRouter>
             <Routes>
               <Route path="/auth" element={<AuthPage />} />

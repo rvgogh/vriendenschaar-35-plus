@@ -1,1 +1,4 @@
 project_id = "ocsmgsowzecxetmhsgqo"
+
+[functions.send-training-reminders]
+verify_jwt = false
