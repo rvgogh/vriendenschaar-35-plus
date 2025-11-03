@@ -148,11 +148,18 @@ const AuthPage = () => {
 
       if (error) throw error;
 
-      toast.success('Wachtwoord succesvol gewijzigd! Je kunt nu inloggen.');
+      // Wait for session to refresh after password update
+      await supabase.auth.refreshSession();
+
+      toast.success('Wachtwoord succesvol gewijzigd!');
       setIsUpdatePassword(false);
       setIsLogin(true);
       setNewPassword('');
-      navigate('/');
+      
+      // Small delay to ensure auth state is updated
+      setTimeout(() => {
+        navigate('/');
+      }, 500);
     } catch (error: any) {
       toast.error(error.message || 'Kon wachtwoord niet wijzigen');
     } finally {
