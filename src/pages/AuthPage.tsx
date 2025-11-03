@@ -22,14 +22,26 @@ const AuthPage = () => {
     // Check hash parameters for password recovery
     const hashParams = new URLSearchParams(window.location.hash.substring(1));
     const accessToken = hashParams.get('access_token');
+    const refreshToken = hashParams.get('refresh_token');
     const type = hashParams.get('type');
     
     // If user comes from password reset email (Supabase redirects with hash params)
-    if (type === 'recovery' && accessToken) {
-      setIsUpdatePassword(true);
-      setIsForgotPassword(false);
-      setIsLogin(false);
-      toast.info('Voer je nieuwe wachtwoord in');
+    if (type === 'recovery' && accessToken && refreshToken) {
+      // First, set the session using the recovery tokens
+      supabase.auth.setSession({
+        access_token: accessToken,
+        refresh_token: refreshToken
+      }).then(({ error }) => {
+        if (error) {
+          console.error('Session set error:', error);
+          toast.error('Sessie kon niet worden ingesteld: ' + error.message);
+        } else {
+          setIsUpdatePassword(true);
+          setIsForgotPassword(false);
+          setIsLogin(false);
+          toast.info('Voer je nieuwe wachtwoord in');
+        }
+      });
       return;
     }
     
@@ -142,25 +154,21 @@ const AuthPage = () => {
     setLoading(true);
 
     try {
-      const { error } = await supabase.auth.updateUser({
+      const { data, error } = await supabase.auth.updateUser({
         password: newPassword
       });
 
       if (error) throw error;
 
-      // Wait for session to refresh after password update
-      await supabase.auth.refreshSession();
-
       toast.success('Wachtwoord succesvol gewijzigd!');
-      setIsUpdatePassword(false);
-      setIsLogin(true);
-      setNewPassword('');
       
-      // Small delay to ensure auth state is updated
-      setTimeout(() => {
-        navigate('/');
-      }, 500);
+      // Clear the hash from URL to remove recovery tokens
+      window.history.replaceState(null, '', window.location.pathname);
+      
+      // Navigate immediately - the user is already authenticated
+      navigate('/');
     } catch (error: any) {
+      console.error('Password update error:', error);
       toast.error(error.message || 'Kon wachtwoord niet wijzigen');
     } finally {
       setLoading(false);
