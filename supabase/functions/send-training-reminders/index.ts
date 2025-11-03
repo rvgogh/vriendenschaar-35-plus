@@ -18,6 +18,21 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // Verify authentication using secret
+    const authHeader = req.headers.get('authorization');
+    const expectedSecret = Deno.env.get('CRON_SECRET');
+    
+    if (!authHeader || authHeader !== `Bearer ${expectedSecret}`) {
+      console.error('Unauthorized access attempt to send-training-reminders');
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }), 
+        { 
+          status: 401,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
+    }
+
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
