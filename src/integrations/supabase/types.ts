@@ -104,6 +104,7 @@ export type Database = {
           id: number
           match_date: string | null
           opponent: string
+          season_id: number | null
           start_time: string | null
         }
         Insert: {
@@ -111,6 +112,7 @@ export type Database = {
           id?: number
           match_date?: string | null
           opponent: string
+          season_id?: number | null
           start_time?: string | null
         }
         Update: {
@@ -118,9 +120,18 @@ export type Database = {
           id?: number
           match_date?: string | null
           opponent?: string
+          season_id?: number | null
           start_time?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "matches_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       player_statuses: {
         Row: {
@@ -230,6 +241,33 @@ export type Database = {
         }
         Relationships: []
       }
+      seasons: {
+        Row: {
+          created_at: string
+          end_date: string
+          id: number
+          name: string
+          start_date: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          end_date: string
+          id?: never
+          name: string
+          start_date: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          end_date?: string
+          id?: never
+          name?: string
+          start_date?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       training_statuses: {
         Row: {
           player_id: number
@@ -266,17 +304,28 @@ export type Database = {
       trainings: {
         Row: {
           id: number
+          season_id: number | null
           training_at: string
         }
         Insert: {
           id?: number
+          season_id?: number | null
           training_at: string
         }
         Update: {
           id?: number
+          season_id?: number | null
           training_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "trainings_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
