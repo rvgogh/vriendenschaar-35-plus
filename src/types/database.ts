@@ -6,6 +6,7 @@ export type Match = Tables<'matches'>;
 export type Training = Tables<'trainings'>;
 export type Event = Tables<'events'>;
 export type Profile = Tables<'profiles'>;
+export type Season = Tables<'seasons'>;
 
 // Enum types
 export type PlayerStatus = Enums<'player_status'>;

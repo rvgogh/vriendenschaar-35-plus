@@ -16,6 +16,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Season } from '@/types/database';
 
 const COLORS = {
   IN: 'hsl(142 71% 45%)',
@@ -31,16 +39,37 @@ const AdminStatisticsPage = () => {
   const [showAllMatches, setShowAllMatches] = useState(false);
   const [showAllTrainings, setShowAllTrainings] = useState(false);
   const [showAllEvents, setShowAllEvents] = useState(false);
+  const [selectedSeasonId, setSelectedSeasonId] = useState<string>('all');
+
+  // Fetch all seasons
+  const { data: seasons, isLoading: seasonsLoading } = useQuery({
+    queryKey: ['seasons'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('seasons')
+        .select('*')
+        .order('start_date', { ascending: false });
+      if (error) throw error;
+      return data as Season[];
+    },
+    enabled: role === 'superuser',
+  });
 
   // Fetch past matches
   const { data: pastMatches, isLoading: matchesLoading } = useQuery({
-    queryKey: ['pastMatches'],
+    queryKey: ['pastMatches', selectedSeasonId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('matches')
         .select('id')
         .lt('match_date', new Date().toISOString())
         .order('match_date', { ascending: false });
+      
+      if (selectedSeasonId !== 'all') {
+        query = query.eq('season_id', parseInt(selectedSeasonId));
+      }
+      
+      const { data, error } = await query;
       if (error) throw error;
       return data;
     },
@@ -49,13 +78,19 @@ const AdminStatisticsPage = () => {
 
   // Fetch past trainings
   const { data: pastTrainings, isLoading: trainingsLoading } = useQuery({
-    queryKey: ['pastTrainings'],
+    queryKey: ['pastTrainings', selectedSeasonId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('trainings')
         .select('id')
         .lt('training_at', new Date().toISOString())
         .order('training_at', { ascending: false });
+      
+      if (selectedSeasonId !== 'all') {
+        query = query.eq('season_id', parseInt(selectedSeasonId));
+      }
+      
+      const { data, error } = await query;
       if (error) throw error;
       return data;
     },
@@ -64,13 +99,20 @@ const AdminStatisticsPage = () => {
 
   // Fetch past events
   const { data: pastEvents, isLoading: eventsLoading } = useQuery({
-    queryKey: ['pastEvents'],
+    queryKey: ['pastEvents', selectedSeasonId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('events')
         .select('id')
         .lt('event_date', new Date().toISOString().split('T')[0])
         .order('event_date', { ascending: false });
+      
+      if (selectedSeasonId !== 'all') {
+        // @ts-ignore - season_id column exists but types not yet regenerated
+        query = query.eq('season_id', parseInt(selectedSeasonId));
+      }
+      
+      const { data, error } = await query;
       if (error) throw error;
       return data;
     },
@@ -159,7 +201,7 @@ const AdminStatisticsPage = () => {
     return <Navigate to="/" replace />;
   }
 
-  if (matchesLoading || trainingsLoading || eventsLoading || playersLoading || matchStatsLoading || trainingStatsLoading || eventStatsLoading) {
+  if (matchesLoading || trainingsLoading || eventsLoading || playersLoading || matchStatsLoading || trainingStatsLoading || eventStatsLoading || seasonsLoading) {
     return <PageLoading message="Statistieken laden..." />;
   }
 
@@ -264,6 +306,29 @@ const AdminStatisticsPage = () => {
           </div>
           <p className="text-muted-foreground">Overzicht van speler aanwezigheid voor wedstrijden, trainingen en evenementen</p>
         </div>
+
+        {/* Season Selector */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle>Filter op Seizoen</CardTitle>
+            <CardDescription>Selecteer een seizoen om de statistieken te filteren</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Select value={selectedSeasonId} onValueChange={setSelectedSeasonId}>
+              <SelectTrigger className="w-full md:w-[300px] bg-background">
+                <SelectValue placeholder="Selecteer een seizoen" />
+              </SelectTrigger>
+              <SelectContent className="bg-popover z-50">
+                <SelectItem value="all">Alle seizoenen</SelectItem>
+                {seasons?.map((season) => (
+                  <SelectItem key={season.id} value={season.id.toString()}>
+                    {season.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </CardContent>
+        </Card>
 
 
         {/* Stacked Bar Chart - Total Attendance */}
