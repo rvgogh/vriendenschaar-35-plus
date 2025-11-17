@@ -21,7 +21,7 @@ interface TrainingListProps {
 const fetchTrainings = async (): Promise<TrainingWithCount[]> => {
     const { data: trainings, error: trainingsError } = await supabase
         .from("trainings")
-        .select(`id, training_at`)
+        .select(`id, training_at, season_id`)
         .order('training_at', { ascending: true });
 
     if (trainingsError) throw trainingsError;
