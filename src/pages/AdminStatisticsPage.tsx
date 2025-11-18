@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useUserRole } from '@/hooks/useUserRole';
+import { useAuth } from '@/hooks/useAuth';
 import { Navigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -36,6 +37,7 @@ const COLORS = {
 
 const AdminStatisticsPage = () => {
   const { role, loading: roleLoading } = useUserRole();
+  const { user } = useAuth();
   const [showAllMatches, setShowAllMatches] = useState(false);
   const [showAllTrainings, setShowAllTrainings] = useState(false);
   const [showAllEvents, setShowAllEvents] = useState(false);
@@ -52,7 +54,7 @@ const AdminStatisticsPage = () => {
       if (error) throw error;
       return data as Season[];
     },
-    enabled: role === 'superuser',
+    enabled: !!user,
   });
 
   // Fetch past matches
@@ -73,7 +75,7 @@ const AdminStatisticsPage = () => {
       if (error) throw error;
       return data;
     },
-    enabled: role === 'superuser',
+    enabled: !!user,
   });
 
   // Fetch past trainings
@@ -94,7 +96,7 @@ const AdminStatisticsPage = () => {
       if (error) throw error;
       return data;
     },
-    enabled: role === 'superuser',
+    enabled: !!user,
   });
 
   // Fetch past events
@@ -116,7 +118,7 @@ const AdminStatisticsPage = () => {
       if (error) throw error;
       return data;
     },
-    enabled: role === 'superuser',
+    enabled: !!user,
   });
 
   // Fetch all players
@@ -130,7 +132,7 @@ const AdminStatisticsPage = () => {
       if (error) throw error;
       return data;
     },
-    enabled: role === 'superuser',
+    enabled: !!user,
   });
 
   // Fetch match statuses for past matches
@@ -150,7 +152,7 @@ const AdminStatisticsPage = () => {
       if (error) throw error;
       return data;
     },
-    enabled: role === 'superuser' && !!pastMatches,
+    enabled: !!user && !!pastMatches,
   });
 
   // Fetch training statuses for past trainings
@@ -170,7 +172,7 @@ const AdminStatisticsPage = () => {
       if (error) throw error;
       return data;
     },
-    enabled: role === 'superuser' && !!pastTrainings,
+    enabled: !!user && !!pastTrainings,
   });
 
   // Fetch event statuses for past events
@@ -190,14 +192,14 @@ const AdminStatisticsPage = () => {
       if (error) throw error;
       return data;
     },
-    enabled: role === 'superuser' && !!pastEvents,
+    enabled: !!user && !!pastEvents,
   });
 
   if (roleLoading) {
     return <PageLoading message="Laden..." />;
   }
 
-  if (role !== 'superuser') {
+  if (!user) {
     return <Navigate to="/" replace />;
   }
 
