@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useUserRole } from '@/hooks/useUserRole';
 import { useAuth } from '@/hooks/useAuth';
 import { Navigate } from 'react-router-dom';
@@ -41,7 +41,7 @@ const AdminStatisticsPage = () => {
   const [showAllMatches, setShowAllMatches] = useState(false);
   const [showAllTrainings, setShowAllTrainings] = useState(false);
   const [showAllEvents, setShowAllEvents] = useState(false);
-  const [selectedSeasonId, setSelectedSeasonId] = useState<string>('all');
+  const [selectedSeasonId, setSelectedSeasonId] = useState<string>('');
 
   // Fetch all seasons
   const { data: seasons, isLoading: seasonsLoading } = useQuery({
@@ -57,6 +57,13 @@ const AdminStatisticsPage = () => {
     enabled: !!user,
   });
 
+  // Set default season to the most recent one
+  useEffect(() => {
+    if (seasons && seasons.length > 0 && !selectedSeasonId) {
+      setSelectedSeasonId(seasons[seasons.length - 1].id.toString());
+    }
+  }, [seasons, selectedSeasonId]);
+
   // Fetch past matches
   const { data: pastMatches, isLoading: matchesLoading } = useQuery({
     queryKey: ['pastMatches', selectedSeasonId],
@@ -67,7 +74,7 @@ const AdminStatisticsPage = () => {
         .lt('match_date', new Date().toISOString())
         .order('match_date', { ascending: false });
       
-      if (selectedSeasonId !== 'all') {
+      if (selectedSeasonId) {
         query = query.eq('season_id', parseInt(selectedSeasonId));
       }
       
@@ -88,7 +95,7 @@ const AdminStatisticsPage = () => {
         .lt('training_at', new Date().toISOString())
         .order('training_at', { ascending: false });
       
-      if (selectedSeasonId !== 'all') {
+      if (selectedSeasonId) {
         query = query.eq('season_id', parseInt(selectedSeasonId));
       }
       
@@ -109,7 +116,7 @@ const AdminStatisticsPage = () => {
         .lt('event_date', new Date().toISOString().split('T')[0])
         .order('event_date', { ascending: false });
       
-      if (selectedSeasonId !== 'all') {
+      if (selectedSeasonId) {
         // @ts-ignore - season_id column exists but types not yet regenerated
         query = query.eq('season_id', parseInt(selectedSeasonId));
       }
@@ -321,7 +328,6 @@ const AdminStatisticsPage = () => {
                 <SelectValue placeholder="Selecteer een seizoen" />
               </SelectTrigger>
               <SelectContent className="bg-popover z-50">
-                <SelectItem value="all">Alle seizoenen</SelectItem>
                 {seasons?.map((season) => (
                   <SelectItem key={season.id} value={season.id.toString()}>
                     {season.name}
