@@ -18,11 +18,56 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // Verify authentication using secret
     const authHeader = req.headers.get('authorization');
     const expectedSecret = Deno.env.get('CRON_SECRET');
     
-    if (!authHeader || authHeader !== `Bearer ${expectedSecret}`) {
+    let isAuthorized = false;
+    let supabaseClient;
+
+    // Check if it's a cron job with secret
+    if (authHeader === `Bearer ${expectedSecret}`) {
+      isAuthorized = true;
+      supabaseClient = createClient(
+        Deno.env.get('SUPABASE_URL') ?? '',
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      );
+      console.log('Authenticated via CRON_SECRET');
+    } else if (authHeader?.startsWith('Bearer ')) {
+      // Check if it's an authenticated superuser
+      const jwt = authHeader.replace('Bearer ', '');
+      supabaseClient = createClient(
+        Deno.env.get('SUPABASE_URL') ?? '',
+        Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+        {
+          global: {
+            headers: { Authorization: authHeader }
+          }
+        }
+      );
+
+      // Verify the user is authenticated and is a superuser
+      const { data: { user }, error: userError } = await supabaseClient.auth.getUser(jwt);
+      
+      if (user && !userError) {
+        const { data: roleData, error: roleError } = await supabaseClient
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', user.id)
+          .single();
+
+        if (!roleError && roleData?.role === 'superuser') {
+          isAuthorized = true;
+          // Switch to service role client for sending notifications
+          supabaseClient = createClient(
+            Deno.env.get('SUPABASE_URL') ?? '',
+            Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+          );
+          console.log('Authenticated via JWT as superuser:', user.email);
+        }
+      }
+    }
+
+    if (!isAuthorized) {
       console.error('Unauthorized access attempt to send-training-reminders');
       return new Response(
         JSON.stringify({ error: 'Unauthorized' }), 
@@ -32,11 +77,6 @@ Deno.serve(async (req) => {
         }
       );
     }
-
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
 
     console.log('Checking for trainings in 2 days...');
 

@@ -1,16 +1,57 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useUserRole } from '@/hooks/useUserRole';
 import { Navigate } from 'react-router-dom';
 import PlayerManagement from '@/components/PlayerManagement';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Shield, Users, Settings, Home, Trophy, Calendar, Dumbbell, BarChart3 } from 'lucide-react';
+import { Shield, Users, Settings, Home, Trophy, Calendar, Dumbbell, BarChart3, Bell } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { PageLoading } from '@/components/PageLoading';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
 
 const AdminPage = () => {
   const { role, loading } = useUserRole();
+  const [isSendingTest, setIsSendingTest] = useState(false);
+
+  const handleTestNotification = async () => {
+    setIsSendingTest(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        toast({
+          title: 'Niet ingelogd',
+          description: 'Je moet ingelogd zijn om test notificaties te versturen',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      const { data, error } = await supabase.functions.invoke('send-training-reminders', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`
+        }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: 'Test notificaties verstuurd',
+        description: data.message || 'Notificaties zijn succesvol verstuurd naar alle geabonneerde gebruikers',
+      });
+    } catch (error) {
+      console.error('Error sending test notification:', error);
+      toast({
+        title: 'Fout',
+        description: 'Er ging iets mis bij het versturen van de test notificaties',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSendingTest(false);
+    }
+  };
 
   if (loading) {
     return <PageLoading message="Laden..." />;
@@ -85,6 +126,30 @@ const AdminPage = () => {
                 <Link to="/admin/statistics">
                   Bekijk Statistieken
                 </Link>
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Test Notifications Section */}
+        <div className="mb-8">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <Bell className="h-5 w-5 text-primary" />
+                <CardTitle>Test Notificaties</CardTitle>
+              </div>
+              <CardDescription>
+                Verstuur een test notificatie naar alle geabonneerde gebruikers
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button 
+                onClick={handleTestNotification} 
+                disabled={isSendingTest}
+                className="w-full sm:w-auto"
+              >
+                {isSendingTest ? 'Versturen...' : 'Test Notificatie Versturen'}
               </Button>
             </CardContent>
           </Card>
