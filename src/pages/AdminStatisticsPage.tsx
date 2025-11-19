@@ -57,10 +57,22 @@ const AdminStatisticsPage = () => {
     enabled: !!user,
   });
 
-  // Set default season to the most recent one
+  // Set default season to the current one based on date
   useEffect(() => {
     if (seasons && seasons.length > 0 && !selectedSeasonId) {
-      setSelectedSeasonId(seasons[seasons.length - 1].id.toString());
+      const today = new Date();
+      const currentSeason = seasons.find(season => {
+        const startDate = new Date(season.start_date);
+        const endDate = new Date(season.end_date);
+        return today >= startDate && today <= endDate;
+      });
+      
+      if (currentSeason) {
+        setSelectedSeasonId(currentSeason.id.toString());
+      } else {
+        // Fallback to most recent season if no current season found
+        setSelectedSeasonId(seasons[seasons.length - 1].id.toString());
+      }
     }
   }, [seasons, selectedSeasonId]);
 
