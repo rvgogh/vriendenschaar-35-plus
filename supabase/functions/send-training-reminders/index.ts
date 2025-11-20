@@ -1,9 +1,20 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.0';
+import * as webPush from 'https://esm.sh/web-push@3.6.7';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+// VAPID keys for Web Push
+const VAPID_PUBLIC_KEY = 'BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuBkr3qBUYIHBQFLXYp5Nksh8U';
+const VAPID_PRIVATE_KEY = Deno.env.get('VAPID_PRIVATE_KEY') || 'wcFXKH9s5YQWBJ8GSsKjLT_E1TEvh6Dzx1R1eTx6tqA';
+
+webPush.setVapidDetails(
+  'mailto:notifications@vriendenschaar35plus.nl',
+  VAPID_PUBLIC_KEY,
+  VAPID_PRIVATE_KEY
+);
 
 interface PushSubscription {
   user_id: string;
@@ -146,7 +157,7 @@ Deno.serve(async (req) => {
             minute: '2-digit',
           });
 
-          const payload = JSON.stringify({
+          const payload = {
             title: 'Training Herinnering',
             body: `Training op ${formattedDate} om ${formattedTime}. Vergeet niet je aanwezigheid aan te geven!`,
             icon: '/icon-192x192.png',
@@ -156,26 +167,30 @@ Deno.serve(async (req) => {
               url: '/my-training',
               trainingId: training.id,
             },
-          });
+          };
 
-          const response = await fetch(subscription.endpoint, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'TTL': '86400',
+          const pushSubscription = {
+            endpoint: subscription.endpoint,
+            keys: {
+              p256dh: subscription.p256dh,
+              auth: subscription.auth,
             },
-            body: payload,
-          });
+          };
 
-          if (response.ok) {
+          const response = await webPush.sendNotification(
+            pushSubscription,
+            JSON.stringify(payload)
+          );
+
+          if (response.statusCode === 201) {
             successCount++;
             console.log(`Notification sent to subscription ${subscription.id}`);
           } else {
             failureCount++;
-            console.error(`Failed to send notification: ${response.status} ${response.statusText}`);
+            console.error(`Failed to send notification: ${response.statusCode} ${response.body}`);
             
             // If subscription is no longer valid, delete it
-            if (response.status === 404 || response.status === 410) {
+            if (response.statusCode === 404 || response.statusCode === 410) {
               await supabaseClient
                 .from('push_subscriptions')
                 .delete()
