@@ -49,27 +49,26 @@ export const NotificationPrompt = () => {
   if (permission !== 'default') {
     return (
       <div className="fixed bottom-4 right-4 z-50">
-        {isSubscribed ? (
+        {permission === 'granted' && (
           <Button
             variant="outline"
             size="sm"
-            onClick={handleDisable}
+            onClick={isSubscribed ? handleDisable : handleEnable}
             className="gap-2"
           >
-            <BellOff className="h-4 w-4" />
-            Notificaties uit
+            {isSubscribed ? (
+              <>
+                <Bell className="h-4 w-4 text-green-600" />
+                Notificaties aan
+              </>
+            ) : (
+              <>
+                <BellOff className="h-4 w-4" />
+                Notificaties uit
+              </>
+            )}
           </Button>
-        ) : permission === 'granted' ? (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleEnable}
-            className="gap-2"
-          >
-            <Bell className="h-4 w-4" />
-            Notificaties aan
-          </Button>
-        ) : null}
+        )}
       </div>
     );
   }
