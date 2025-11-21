@@ -12,6 +12,21 @@ export const usePushNotifications = () => {
     if ('Notification' in window) {
       setPermission(Notification.permission);
     }
+    
+    // Check if user is already subscribed
+    const checkSubscription = async () => {
+      if ('serviceWorker' in navigator && 'Notification' in window && Notification.permission === 'granted') {
+        try {
+          const registration = await navigator.serviceWorker.ready;
+          const subscription = await registration.pushManager.getSubscription();
+          setIsSubscribed(!!subscription);
+        } catch (error) {
+          console.error('Error checking subscription:', error);
+        }
+      }
+    };
+    
+    checkSubscription();
   }, []);
 
   const requestPermission = async () => {
