@@ -66,9 +66,23 @@ Deno.serve(async (req) => {
     const authHeader = req.headers.get('authorization');
     const expectedSecret = Deno.env.get('CRON_SECRET');
     
-    // Check if this is a test request
-    const requestBody = req.method === 'POST' ? await req.json().catch(() => ({})) : {};
+    // Parse request body first
+    let requestBody: any = {};
+    try {
+      if (req.method === 'POST') {
+        const text = await req.text();
+        console.log('Raw request body:', text);
+        if (text) {
+          requestBody = JSON.parse(text);
+          console.log('Parsed request body:', JSON.stringify(requestBody));
+        }
+      }
+    } catch (e) {
+      console.error('Error parsing request body:', e);
+    }
+    
     const isTestMode = requestBody.test === true;
+    console.log('Test mode:', isTestMode);
     
     let isAuthorized = false;
     let supabaseClient;
