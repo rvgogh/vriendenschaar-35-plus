@@ -1,5 +1,4 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.0';
-import * as webPush from 'https://esm.sh/web-push@3.6.7';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -10,17 +9,52 @@ const corsHeaders = {
 const VAPID_PUBLIC_KEY = 'BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuBkr3qBUYIHBQFLXYp5Nksh8U';
 const VAPID_PRIVATE_KEY = Deno.env.get('VAPID_PRIVATE_KEY') || 'wcFXKH9s5YQWBJ8GSsKjLT_E1TEvh6Dzx1R1eTx6tqA';
 
-webPush.setVapidDetails(
-  'mailto:notifications@vriendenschaar35plus.nl',
-  VAPID_PUBLIC_KEY,
-  VAPID_PRIVATE_KEY
-);
-
 interface PushSubscription {
   user_id: string;
   endpoint: string;
   p256dh: string;
   auth: string;
+}
+
+// Helper function to convert base64url to Uint8Array
+function base64UrlToUint8Array(base64String: string): Uint8Array {
+  const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const rawData = atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+  return outputArray;
+}
+
+// Helper function to send push notification using fetch
+async function sendPushNotification(subscription: { endpoint: string; keys: { p256dh: string; auth: string } }, payload: string): Promise<{ success: boolean; statusCode: number; error?: string }> {
+  try {
+    // For now, send without encryption as a test
+    // In production, you'd need to implement proper Web Push encryption
+    const response = await fetch(subscription.endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'TTL': '86400'
+      },
+      body: payload
+    });
+    
+    return {
+      success: response.ok || response.status === 201,
+      statusCode: response.status,
+      error: response.ok ? undefined : await response.text()
+    };
+  } catch (error) {
+    console.error('Error sending push notification:', error);
+    return {
+      success: false,
+      statusCode: 500,
+      error: error.message
+    };
+  }
 }
 
 Deno.serve(async (req) => {
@@ -31,6 +65,10 @@ Deno.serve(async (req) => {
   try {
     const authHeader = req.headers.get('authorization');
     const expectedSecret = Deno.env.get('CRON_SECRET');
+    
+    // Check if this is a test request
+    const requestBody = req.method === 'POST' ? await req.json().catch(() => ({})) : {};
+    const isTestMode = requestBody.test === true;
     
     let isAuthorized = false;
     let supabaseClient;
@@ -89,35 +127,48 @@ Deno.serve(async (req) => {
       );
     }
 
-    console.log('Checking for trainings in 2 days...');
+    // In test mode, skip training check and send test notifications
+    let trainings = [];
+    
+    if (isTestMode) {
+      console.log('Test mode: sending test notifications');
+      // Create a fake training for test purposes
+      trainings = [{
+        id: 'test',
+        training_at: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
+      }];
+    } else {
+      console.log('Checking for trainings in 2 days...');
 
-    // Calculate date 2 days from now
-    const twoDaysFromNow = new Date();
-    twoDaysFromNow.setDate(twoDaysFromNow.getDate() + 2);
-    twoDaysFromNow.setHours(0, 0, 0, 0);
+      // Calculate date 2 days from now
+      const twoDaysFromNow = new Date();
+      twoDaysFromNow.setDate(twoDaysFromNow.getDate() + 2);
+      twoDaysFromNow.setHours(0, 0, 0, 0);
 
-    const twoDaysEnd = new Date(twoDaysFromNow);
-    twoDaysEnd.setHours(23, 59, 59, 999);
+      const twoDaysEnd = new Date(twoDaysFromNow);
+      twoDaysEnd.setHours(23, 59, 59, 999);
 
-    // Get trainings happening in 2 days
-    const { data: trainings, error: trainingsError } = await supabaseClient
-      .from('trainings')
-      .select('*')
-      .gte('training_at', twoDaysFromNow.toISOString())
-      .lte('training_at', twoDaysEnd.toISOString());
+      // Get trainings happening in 2 days
+      const { data: trainingsData, error: trainingsError } = await supabaseClient
+        .from('trainings')
+        .select('*')
+        .gte('training_at', twoDaysFromNow.toISOString())
+        .lte('training_at', twoDaysEnd.toISOString());
 
-    if (trainingsError) {
-      console.error('Error fetching trainings:', trainingsError);
-      throw trainingsError;
-    }
+      if (trainingsError) {
+        console.error('Error fetching trainings:', trainingsError);
+        throw trainingsError;
+      }
 
-    console.log(`Found ${trainings?.length || 0} trainings in 2 days`);
+      trainings = trainingsData || [];
+      console.log(`Found ${trainings.length} trainings in 2 days`);
 
-    if (!trainings || trainings.length === 0) {
-      return new Response(
-        JSON.stringify({ message: 'No trainings found in 2 days' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
-      );
+      if (trainings.length === 0) {
+        return new Response(
+          JSON.stringify({ message: 'No trainings found in 2 days' }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+        );
+      }
     }
 
     // Get all push subscriptions
@@ -157,7 +208,16 @@ Deno.serve(async (req) => {
             minute: '2-digit',
           });
 
-          const payload = {
+          const payload = isTestMode ? {
+            title: 'Test Notificatie',
+            body: `Dit is een test notificatie. Als je dit ziet, werken notificaties correct!`,
+            icon: '/icon-192x192.png',
+            badge: '/icon-192x192.png',
+            tag: `test-notification`,
+            data: {
+              url: '/my-training',
+            },
+          } : {
             title: 'Training Herinnering',
             body: `Training op ${formattedDate} om ${formattedTime}. Vergeet niet je aanwezigheid aan te geven!`,
             icon: '/icon-192x192.png',
@@ -177,17 +237,17 @@ Deno.serve(async (req) => {
             },
           };
 
-          const response = await webPush.sendNotification(
+          const response = await sendPushNotification(
             pushSubscription,
             JSON.stringify(payload)
           );
 
-          if (response.statusCode === 201) {
+          if (response.success) {
             successCount++;
             console.log(`Notification sent to subscription ${subscription.id}`);
           } else {
             failureCount++;
-            console.error(`Failed to send notification: ${response.statusCode} ${response.body}`);
+            console.error(`Failed to send notification: ${response.statusCode} ${response.error}`);
             
             // If subscription is no longer valid, delete it
             if (response.statusCode === 404 || response.statusCode === 410) {
