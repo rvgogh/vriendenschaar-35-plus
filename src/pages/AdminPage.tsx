@@ -32,6 +32,9 @@ const AdminPage = () => {
       const { data, error } = await supabase.functions.invoke('send-training-reminders', {
         headers: {
           Authorization: `Bearer ${session.access_token}`
+        },
+        body: {
+          test: true
         }
       });
 
