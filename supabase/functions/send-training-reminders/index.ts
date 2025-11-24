@@ -28,16 +28,71 @@ function base64UrlToUint8Array(base64String: string): Uint8Array {
   return outputArray;
 }
 
+// Helper function to create VAPID authorization header
+async function createVapidAuthHeader(endpoint: string): Promise<string> {
+  const urlParts = new URL(endpoint);
+  const audience = `${urlParts.protocol}//${urlParts.host}`;
+  
+  // Create JWT header and payload
+  const jwtHeader = {
+    typ: 'JWT',
+    alg: 'ES256'
+  };
+  
+  const jwtPayload = {
+    aud: audience,
+    exp: Math.floor(Date.now() / 1000) + 43200, // 12 hours from now
+    sub: 'mailto:noreply@example.com'
+  };
+  
+  // Encode header and payload
+  const encoder = new TextEncoder();
+  const headerEncoded = btoa(JSON.stringify(jwtHeader)).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+  const payloadEncoded = btoa(JSON.stringify(jwtPayload)).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+  
+  // Create signature using VAPID private key
+  const unsignedToken = `${headerEncoded}.${payloadEncoded}`;
+  const privateKeyBytes = base64UrlToUint8Array(VAPID_PRIVATE_KEY);
+  
+  // Import the private key
+  const key = await crypto.subtle.importKey(
+    'raw',
+    privateKeyBytes,
+    { name: 'ECDSA', namedCurve: 'P-256' },
+    false,
+    ['sign']
+  );
+  
+  // Sign the token
+  const signature = await crypto.subtle.sign(
+    { name: 'ECDSA', hash: 'SHA-256' },
+    key,
+    encoder.encode(unsignedToken)
+  );
+  
+  // Encode signature
+  const signatureArray = new Uint8Array(signature);
+  const signatureEncoded = btoa(String.fromCharCode(...signatureArray))
+    .replace(/=/g, '')
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_');
+  
+  return `${unsignedToken}.${signatureEncoded}`;
+}
+
 // Helper function to send push notification using fetch
 async function sendPushNotification(subscription: { endpoint: string; keys: { p256dh: string; auth: string } }, payload: string): Promise<{ success: boolean; statusCode: number; error?: string }> {
   try {
-    // For now, send without encryption as a test
-    // In production, you'd need to implement proper Web Push encryption
+    // Create VAPID authorization header
+    const vapidToken = await createVapidAuthHeader(subscription.endpoint);
+    
     const response = await fetch(subscription.endpoint, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'TTL': '86400'
+        'Content-Type': 'application/octet-stream',
+        'Content-Encoding': 'aes128gcm',
+        'TTL': '86400',
+        'Authorization': `vapid t=${vapidToken}, k=${VAPID_PUBLIC_KEY}`
       },
       body: payload
     });
