@@ -13,6 +13,7 @@ import { StatusOverview, StatusCount } from "@/components/StatusOverview";
 import { EmptyState } from "@/components/EmptyState";
 import { useMyPlayer, useUpcomingTrainings } from "@/hooks/useData";
 import { formatDateTime } from "@/lib/datetime";
+import { useGpsVerificationForMultipleTrainings } from "@/hooks/useGpsVerification";
 
 
 const fetchPlayersWithTrainingStatus = async (trainingId: number): Promise<PlayerWithTrainingStatus[]> => {
@@ -158,6 +159,11 @@ const MyTrainingPage = () => {
 
   const { data: myPlayer } = useMyPlayer(user?.id);
   const { data: trainings, isLoading } = useUpcomingTrainings();
+
+  // Auto-verify GPS when player visits the page and is at training location
+  const trainingIds = trainings?.map(t => t.id) || [];
+  useGpsVerificationForMultipleTrainings(trainingIds, myPlayer?.id || null, !!myPlayer);
+
 
   const updateStatusMutation = useMutation({
     mutationFn: async ({ trainingId, status }: { trainingId: number, status: TrainingAttendanceStatus }) => {
