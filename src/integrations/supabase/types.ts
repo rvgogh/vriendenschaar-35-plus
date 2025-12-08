@@ -268,21 +268,57 @@ export type Database = {
         }
         Relationships: []
       }
+      training_location: {
+        Row: {
+          id: number
+          latitude: number
+          longitude: number
+          name: string | null
+          radius_meters: number
+          updated_at: string
+        }
+        Insert: {
+          id?: number
+          latitude: number
+          longitude: number
+          name?: string | null
+          radius_meters?: number
+          updated_at?: string
+        }
+        Update: {
+          id?: number
+          latitude?: number
+          longitude?: number
+          name?: string | null
+          radius_meters?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       training_statuses: {
         Row: {
           player_id: number
           status: Database["public"]["Enums"]["training_status"]
           training_id: number
+          verified_at: string | null
+          verified_latitude: number | null
+          verified_longitude: number | null
         }
         Insert: {
           player_id: number
           status: Database["public"]["Enums"]["training_status"]
           training_id: number
+          verified_at?: string | null
+          verified_latitude?: number | null
+          verified_longitude?: number | null
         }
         Update: {
           player_id?: number
           status?: Database["public"]["Enums"]["training_status"]
           training_id?: number
+          verified_at?: string | null
+          verified_latitude?: number | null
+          verified_longitude?: number | null
         }
         Relationships: [
           {
