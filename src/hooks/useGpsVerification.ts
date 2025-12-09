@@ -132,7 +132,8 @@ export const useGpsVerification = (
 export const useGpsVerificationForMultipleTrainings = (
   trainingIds: number[],
   playerId: number | null,
-  enabled: boolean = true
+  enabled: boolean = true,
+  onVerificationSuccess?: () => void
 ) => {
   const queryClient = useQueryClient();
   const hasVerifiedRef = useRef<Set<number>>(new Set());
@@ -162,7 +163,9 @@ export const useGpsVerificationForMultipleTrainings = (
     onSuccess: (trainingId) => {
       hasVerifiedRef.current.add(trainingId);
       queryClient.invalidateQueries({ queryKey: ['trainingPlayers'] });
+      queryClient.invalidateQueries({ queryKey: ['trainingPresence'] });
       console.log(`Training ${trainingId} attendance verified via GPS`);
+      onVerificationSuccess?.();
     }
   });
 
