@@ -12,6 +12,7 @@ import { useMyPlayer, useUpcomingMatches, useUpcomingTrainings, useUpcomingEvent
 import { formatDate } from "@/lib/datetime";
 import KeyHolderCard from "@/components/KeyHolderCard";
 import TrainingStatusIndicator from "@/components/TrainingStatusIndicator";
+import { useGpsVerificationForMultipleTrainings } from "@/hooks/useGpsVerification";
 
 
 const fetchMatchesWithPresence = async (playerId: number) => {
@@ -160,6 +161,18 @@ const Index = () => {
 
   const upcomingTraining = upcomingTrainings[0];
   const upcomingEvent = upcomingEvents[0];
+
+  // GPS verification for upcoming trainings
+  const trainingIdsToVerify = upcomingTrainings
+    .filter(t => new Date(t.training_at) <= new Date(Date.now() + 2 * 60 * 60 * 1000)) // Within 2 hours
+    .map(t => t.id);
+  
+  useGpsVerificationForMultipleTrainings(
+    trainingIdsToVerify,
+    myPlayer?.id ?? null,
+    !!myPlayer,
+    () => toast.success("Aanwezigheid automatisch geregistreerd via GPS! 📍")
+  );
 
   const { data: trainingPresence } = useQuery({
     queryKey: ['trainingPresence', myPlayer?.id, upcomingTraining?.id],
