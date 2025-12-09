@@ -162,9 +162,17 @@ const Index = () => {
   const upcomingTraining = upcomingTrainings[0];
   const upcomingEvent = upcomingEvents[0];
 
-  // GPS verification for upcoming trainings
+  // GPS verification for today's trainings only
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  
   const trainingIdsToVerify = upcomingTrainings
-    .filter(t => new Date(t.training_at) <= new Date(Date.now() + 2 * 60 * 60 * 1000)) // Within 2 hours
+    .filter(t => {
+      const trainingDate = new Date(t.training_at);
+      return trainingDate >= today && trainingDate < tomorrow;
+    })
     .map(t => t.id);
   
   useGpsVerificationForMultipleTrainings(
