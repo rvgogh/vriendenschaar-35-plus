@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { TrainingAttendanceStatus, PlayerWithTrainingStatus, Training } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/components/ui/sonner";
-import { Calendar } from "lucide-react";
+import { Calendar, MapPin } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
@@ -14,9 +14,14 @@ import { EmptyState } from "@/components/EmptyState";
 import { useMyPlayer, useUpcomingTrainings } from "@/hooks/useData";
 import { formatDateTime } from "@/lib/datetime";
 import { useGpsVerificationForMultipleTrainings } from "@/hooks/useGpsVerification";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
+type PlayerWithTrainingStatusExtended = PlayerWithTrainingStatus & {
+  verified_at?: string | null;
+};
 
-const fetchPlayersWithTrainingStatus = async (trainingId: number): Promise<PlayerWithTrainingStatus[]> => {
+const fetchPlayersWithTrainingStatus = async (trainingId: number): Promise<PlayerWithTrainingStatusExtended[]> => {
   const { data: players, error: playersError } = await supabase
     .from("players")
     .select("*")
@@ -29,18 +34,49 @@ const fetchPlayersWithTrainingStatus = async (trainingId: number): Promise<Playe
     .eq("training_id", trainingId);
   if (statusesError) throw statusesError;
 
-  const statusMap = new Map((statuses || []).map(s => [s.player_id, s.status]));
+  const statusMap = new Map((statuses || []).map(s => [s.player_id, { status: s.status, verified_at: s.verified_at }]));
 
   return (players || []).map(p => ({
     ...p,
-    status: statusMap.get(p.id) || "UNKNOWN",
+    status: statusMap.get(p.id)?.status || "UNKNOWN",
+    verified_at: statusMap.get(p.id)?.verified_at || null,
   }));
 };
 
-const TrainingCard = ({ training, myPlayer, onStatusChange }: {
+const usePastTrainings = () => {
+  return useQuery({
+    queryKey: ["pastTrainings"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("trainings")
+        .select("*")
+        .lt("training_at", new Date().toISOString())
+        .order("training_at", { ascending: false })
+        .limit(10);
+      if (error) throw error;
+      return data as Training[];
+    },
+  });
+};
+
+const GpsVerifiedIcon = ({ verifiedAt }: { verifiedAt: string }) => (
+  <TooltipProvider>
+    <Tooltip>
+      <TooltipTrigger>
+        <MapPin className="h-4 w-4 text-green-600" />
+      </TooltipTrigger>
+      <TooltipContent>
+        <p>GPS geverifieerd op {new Date(verifiedAt).toLocaleString('nl-NL')}</p>
+      </TooltipContent>
+    </Tooltip>
+  </TooltipProvider>
+);
+
+const TrainingCard = ({ training, myPlayer, onStatusChange, isPast = false }: {
   training: Training;
   myPlayer: any;
   onStatusChange: (trainingId: number, status: TrainingAttendanceStatus) => void;
+  isPast?: boolean;
 }) => {
   const isMobile = useIsMobile();
   const [selectedStatus, setSelectedStatus] = useState<TrainingAttendanceStatus>('YES');
@@ -109,11 +145,17 @@ const TrainingCard = ({ training, myPlayer, onStatusChange }: {
             <h4 className="text-sm font-semibold mb-3 text-muted-foreground">Mijn status</h4>
             <div className="flex items-center justify-between p-3 bg-card rounded-lg border">
               <span className="font-medium">{myPlayer.name}</span>
-              <AttendanceButtons
-                variant="training"
-                currentStatus={myStatus}
-                onStatusChange={(status) => onStatusChange(training.id, status as TrainingAttendanceStatus)}
-              />
+              {isPast ? (
+                <span className="text-lg">
+                  {myStatus === 'YES' ? '🍆' : myStatus === 'NO' ? '❌' : '➖'}
+                </span>
+              ) : (
+                <AttendanceButtons
+                  variant="training"
+                  currentStatus={myStatus}
+                  onStatusChange={(status) => onStatusChange(training.id, status as TrainingAttendanceStatus)}
+                />
+              )}
             </div>
           </div>
         )}
@@ -139,7 +181,10 @@ const TrainingCard = ({ training, myPlayer, onStatusChange }: {
                 return a.name.localeCompare(b.name);
               }).map((player) => (
                 <div key={player.id} className="flex items-center justify-between text-sm p-2 bg-muted/30 rounded">
-                  <span>{player.name}</span>
+                  <div className="flex items-center gap-2">
+                    <span>{player.name}</span>
+                    {player.verified_at && <GpsVerifiedIcon verifiedAt={player.verified_at} />}
+                  </div>
                   <span className="text-lg">
                     {player.status === 'YES' ? '🍆' : player.status === 'NO' ? '❌' : '➖'}
                   </span>
@@ -159,6 +204,7 @@ const MyTrainingPage = () => {
 
   const { data: myPlayer } = useMyPlayer(user?.id);
   const { data: trainings, isLoading } = useUpcomingTrainings();
+  const { data: pastTrainings, isLoading: isPastLoading } = usePastTrainings();
 
   // Auto-verify GPS when player visits the page and is at training location
   const trainingIds = trainings?.map(t => t.id) || [];
@@ -204,28 +250,55 @@ const MyTrainingPage = () => {
     <div className="container mx-auto px-4 py-8 max-w-[800px]">
       <PageHeader 
         title="Mijn Trainingen" 
-        subtitle="Beheer je aanwezigheid voor aankomende trainingen"
+        subtitle="Beheer je aanwezigheid voor trainingen"
         showBackButton={false}
       />
 
-      <main>
-        {isLoading ? (
-          <div>Trainingen laden...</div>
-        ) : trainings && trainings.length > 0 ? (
-          <div className="space-y-6">
-            {trainings.map((training) => (
-              <TrainingCard
-                key={training.id}
-                training={training}
-                myPlayer={myPlayer}
-                onStatusChange={handleStatusChange}
-              />
-            ))}
-          </div>
-        ) : (
-          <EmptyState message="Er zijn momenteel geen aankomende trainingen." />
-        )}
-      </main>
+      <Tabs defaultValue="upcoming" className="w-full">
+        <TabsList className="grid w-full grid-cols-2 mb-6">
+          <TabsTrigger value="upcoming">Aankomend</TabsTrigger>
+          <TabsTrigger value="past">Afgelopen</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="upcoming">
+          {isLoading ? (
+            <div>Trainingen laden...</div>
+          ) : trainings && trainings.length > 0 ? (
+            <div className="space-y-6">
+              {trainings.map((training) => (
+                <TrainingCard
+                  key={training.id}
+                  training={training}
+                  myPlayer={myPlayer}
+                  onStatusChange={handleStatusChange}
+                />
+              ))}
+            </div>
+          ) : (
+            <EmptyState message="Er zijn momenteel geen aankomende trainingen." />
+          )}
+        </TabsContent>
+        
+        <TabsContent value="past">
+          {isPastLoading ? (
+            <div>Trainingen laden...</div>
+          ) : pastTrainings && pastTrainings.length > 0 ? (
+            <div className="space-y-6">
+              {pastTrainings.map((training) => (
+                <TrainingCard
+                  key={training.id}
+                  training={training}
+                  myPlayer={myPlayer}
+                  onStatusChange={handleStatusChange}
+                  isPast={true}
+                />
+              ))}
+            </div>
+          ) : (
+            <EmptyState message="Er zijn geen afgelopen trainingen." />
+          )}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
