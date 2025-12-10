@@ -5,15 +5,71 @@ import { Navigate } from 'react-router-dom';
 import PlayerManagement from '@/components/PlayerManagement';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Shield, Users, Settings, Home, Trophy, Calendar, Dumbbell, BarChart3, Bell } from 'lucide-react';
+import { Shield, Users, Settings, Home, Trophy, Calendar, Dumbbell, BarChart3, Bell, MapPin } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { PageLoading } from '@/components/PageLoading';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { useQuery } from '@tanstack/react-query';
 
 const AdminPage = () => {
   const { role, loading } = useUserRole();
   const [isSendingTest, setIsSendingTest] = useState(false);
+  const [isUpdatingLocation, setIsUpdatingLocation] = useState(false);
+
+  const { data: trainingLocation, refetch: refetchLocation } = useQuery({
+    queryKey: ['trainingLocation'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('training_location')
+        .select('*')
+        .eq('id', 1)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    }
+  });
+
+  const handleUpdateLocation = async () => {
+    setIsUpdatingLocation(true);
+    try {
+      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0
+        });
+      });
+
+      const { latitude, longitude } = position.coords;
+      
+      const { error } = await supabase
+        .from('training_location')
+        .update({ 
+          latitude, 
+          longitude,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', 1);
+
+      if (error) throw error;
+
+      await refetchLocation();
+      toast({
+        title: 'Locatie bijgewerkt',
+        description: `Nieuwe coördinaten: ${latitude.toFixed(6)}, ${longitude.toFixed(6)}`,
+      });
+    } catch (error: any) {
+      console.error('Error updating location:', error);
+      toast({
+        title: 'Fout',
+        description: error.message || 'Kon locatie niet bijwerken',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsUpdatingLocation(false);
+    }
+  };
 
   const handleTestNotification = async () => {
     setIsSendingTest(true);
@@ -153,6 +209,30 @@ const AdminPage = () => {
                 className="w-full sm:w-auto"
               >
                 {isSendingTest ? 'Versturen...' : 'Test Notificatie Versturen'}
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Training Location Section */}
+        <div className="mb-8">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <MapPin className="h-5 w-5 text-primary" />
+                <CardTitle>Training Locatie</CardTitle>
+              </div>
+              <CardDescription>
+                Huidige locatie: {trainingLocation ? `${trainingLocation.name} (${trainingLocation.latitude.toFixed(6)}, ${trainingLocation.longitude.toFixed(6)})` : 'Laden...'}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button 
+                onClick={handleUpdateLocation} 
+                disabled={isUpdatingLocation}
+                className="w-full sm:w-auto"
+              >
+                {isUpdatingLocation ? 'Locatie ophalen...' : 'Update naar mijn huidige locatie'}
               </Button>
             </CardContent>
           </Card>
