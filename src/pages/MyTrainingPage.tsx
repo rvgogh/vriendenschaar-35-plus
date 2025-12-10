@@ -102,7 +102,10 @@ const TrainingCard = ({ training, myPlayer, onStatusChange, isPast = false }: {
     {
       status: 'YES',
       count: yesCount,
-      players: playersByStatus.YES,
+      players: playersByStatus.YES.map(p => ({
+        ...p,
+        verified_at: p.verified_at
+      })),
       emoji: '🍆',
       label: 'Aanwezig',
       color: 'text-green-600'
