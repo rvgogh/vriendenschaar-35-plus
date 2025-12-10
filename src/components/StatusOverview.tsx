@@ -1,11 +1,13 @@
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useState } from "react";
+import { MapPin } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 export type StatusCount = {
   status: string;
   count: number;
-  players: Array<{ id: number; name: string }>;
+  players: Array<{ id: number; name: string; verified_at?: string | null }>;
   emoji: string;
   label: string;
   color: string;
@@ -17,6 +19,19 @@ interface StatusOverviewProps {
   onStatusSelect?: (status: string) => void;
   className?: string;
 }
+
+const GpsIcon = ({ verifiedAt }: { verifiedAt: string }) => (
+  <TooltipProvider>
+    <Tooltip>
+      <TooltipTrigger>
+        <MapPin className="h-3 w-3 text-green-600 inline ml-1" />
+      </TooltipTrigger>
+      <TooltipContent>
+        <p>GPS geverifieerd op {new Date(verifiedAt).toLocaleString('nl-NL')}</p>
+      </TooltipContent>
+    </Tooltip>
+  </TooltipProvider>
+);
 
 export const StatusOverview = ({ 
   statusCounts, 
@@ -52,8 +67,9 @@ export const StatusOverview = ({
             {!isMobile && players.length > 0 && (
               <div className="mt-2 space-y-1">
                 {players.map((player) => (
-                  <div key={player.id} className="text-xs text-foreground font-medium">
+                  <div key={player.id} className="text-xs text-foreground font-medium flex items-center justify-center">
                     {player.name}
+                    {player.verified_at && <GpsIcon verifiedAt={player.verified_at} />}
                   </div>
                 ))}
               </div>
@@ -70,8 +86,9 @@ export const StatusOverview = ({
           </h5>
           <div className="space-y-1">
             {selectedStatusData.players.map((player) => (
-              <div key={player.id} className="text-sm text-foreground">
+              <div key={player.id} className="text-sm text-foreground flex items-center">
                 {player.name}
+                {player.verified_at && <GpsIcon verifiedAt={player.verified_at} />}
               </div>
             ))}
           </div>
