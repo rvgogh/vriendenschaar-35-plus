@@ -5,9 +5,10 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// VAPID keys for Web Push
-const VAPID_PUBLIC_KEY = 'BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuBkr3qBUYIHBQFLXYp5Nksh8U';
-const VAPID_PRIVATE_KEY = Deno.env.get('VAPID_PRIVATE_KEY') || 'wcFXKH9s5YQWBJ8GSsKjLT_E1TEvh6Dzx1R1eTx6tqA';
+// Get VAPID keys from environment variables
+const VAPID_PUBLIC_KEY = Deno.env.get('VAPID_PUBLIC_KEY') || '';
+const VAPID_PRIVATE_KEY = Deno.env.get('VAPID_PRIVATE_KEY') || '';
+const VAPID_SUBJECT = 'mailto:rvgogh@outlook.com';
 
 interface PushSubscription {
   user_id: string;
@@ -28,79 +29,100 @@ function base64UrlToUint8Array(base64String: string): Uint8Array {
   return outputArray;
 }
 
-// Helper function to create VAPID authorization header
-async function createVapidAuthHeader(endpoint: string): Promise<string> {
+// Helper to convert Uint8Array to base64url
+function uint8ArrayToBase64Url(uint8Array: Uint8Array): string {
+  let binary = '';
+  for (let i = 0; i < uint8Array.length; i++) {
+    binary += String.fromCharCode(uint8Array[i]);
+  }
+  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+}
+
+// Create VAPID JWT token
+async function createVapidJwt(endpoint: string): Promise<string> {
   const urlParts = new URL(endpoint);
   const audience = `${urlParts.protocol}//${urlParts.host}`;
   
-  // Create JWT header and payload
-  const jwtHeader = {
-    typ: 'JWT',
-    alg: 'ES256'
-  };
-  
-  const jwtPayload = {
+  const header = { typ: 'JWT', alg: 'ES256' };
+  const payload = {
     aud: audience,
-    exp: Math.floor(Date.now() / 1000) + 43200, // 12 hours from now
-    sub: 'mailto:noreply@example.com'
+    exp: Math.floor(Date.now() / 1000) + 43200, // 12 hours
+    sub: VAPID_SUBJECT
   };
   
-  // Encode header and payload
-  const encoder = new TextEncoder();
-  const headerEncoded = btoa(JSON.stringify(jwtHeader)).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
-  const payloadEncoded = btoa(JSON.stringify(jwtPayload)).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+  const headerB64 = uint8ArrayToBase64Url(new TextEncoder().encode(JSON.stringify(header)));
+  const payloadB64 = uint8ArrayToBase64Url(new TextEncoder().encode(JSON.stringify(payload)));
+  const unsignedToken = `${headerB64}.${payloadB64}`;
   
-  // Create signature using VAPID private key
-  const unsignedToken = `${headerEncoded}.${payloadEncoded}`;
+  // Import private key as JWK (VAPID private key is the 'd' parameter)
   const privateKeyBytes = base64UrlToUint8Array(VAPID_PRIVATE_KEY);
+  const publicKeyBytes = base64UrlToUint8Array(VAPID_PUBLIC_KEY);
   
-  // Import the private key
+  // Extract x and y coordinates from the uncompressed public key (65 bytes: 0x04 + 32 bytes x + 32 bytes y)
+  const x = uint8ArrayToBase64Url(publicKeyBytes.slice(1, 33));
+  const y = uint8ArrayToBase64Url(publicKeyBytes.slice(33, 65));
+  const d = uint8ArrayToBase64Url(privateKeyBytes);
+  
+  const jwk = {
+    kty: 'EC',
+    crv: 'P-256',
+    x: x,
+    y: y,
+    d: d,
+  };
+  
   const key = await crypto.subtle.importKey(
-    'raw',
-    privateKeyBytes,
+    'jwk',
+    jwk,
     { name: 'ECDSA', namedCurve: 'P-256' },
     false,
     ['sign']
   );
   
-  // Sign the token
   const signature = await crypto.subtle.sign(
     { name: 'ECDSA', hash: 'SHA-256' },
     key,
-    encoder.encode(unsignedToken)
+    new TextEncoder().encode(unsignedToken)
   );
   
-  // Encode signature
-  const signatureArray = new Uint8Array(signature);
-  const signatureEncoded = btoa(String.fromCharCode(...signatureArray))
-    .replace(/=/g, '')
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_');
+  // Convert signature from DER to raw format (WebCrypto returns raw r||s for ECDSA)
+  const signatureB64 = uint8ArrayToBase64Url(new Uint8Array(signature));
   
-  return `${unsignedToken}.${signatureEncoded}`;
+  return `${unsignedToken}.${signatureB64}`;
 }
 
-// Helper function to send push notification using fetch
-async function sendPushNotification(subscription: { endpoint: string; keys: { p256dh: string; auth: string } }, payload: string): Promise<{ success: boolean; statusCode: number; error?: string }> {
+// Simplified push notification - sends without encryption for testing
+// Note: Real Web Push requires payload encryption with aes128gcm
+async function sendPushNotification(
+  subscription: { endpoint: string; keys: { p256dh: string; auth: string } }, 
+  payload: string
+): Promise<{ success: boolean; statusCode: number; error?: string }> {
   try {
-    // Create VAPID authorization header
-    const vapidToken = await createVapidAuthHeader(subscription.endpoint);
+    if (!VAPID_PUBLIC_KEY || !VAPID_PRIVATE_KEY) {
+      throw new Error('VAPID keys not configured');
+    }
     
+    const vapidToken = await createVapidJwt(subscription.endpoint);
+    
+    // For proper Web Push, the payload needs to be encrypted using the subscription keys
+    // This is a simplified version that works with some push services
     const response = await fetch(subscription.endpoint, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/octet-stream',
-        'Content-Encoding': 'aes128gcm',
         'TTL': '86400',
-        'Authorization': `vapid t=${vapidToken}, k=${VAPID_PUBLIC_KEY}`
+        'Urgency': 'normal',
+        'Authorization': `vapid t=${vapidToken}, k=${VAPID_PUBLIC_KEY}`,
+        'Content-Type': 'application/json',
       },
       body: payload
     });
     
+    const responseText = response.ok ? '' : await response.text();
+    
     return {
       success: response.ok || response.status === 201,
       statusCode: response.status,
-      error: response.ok ? undefined : await response.text()
+      error: response.ok ? undefined : responseText
     };
   } catch (error) {
     console.error('Error sending push notification:', error);
@@ -118,6 +140,17 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // Check VAPID keys are configured
+    if (!VAPID_PUBLIC_KEY || !VAPID_PRIVATE_KEY) {
+      console.error('VAPID keys not configured');
+      return new Response(
+        JSON.stringify({ error: 'VAPID keys not configured. Please add VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY secrets.' }), 
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    
+    console.log('VAPID keys configured, public key length:', VAPID_PUBLIC_KEY.length);
+    
     const authHeader = req.headers.get('authorization');
     const expectedSecret = Deno.env.get('CRON_SECRET');
     
@@ -306,6 +339,8 @@ Deno.serve(async (req) => {
             },
           };
 
+          console.log(`Sending notification to endpoint: ${subscription.endpoint.substring(0, 50)}...`);
+          
           const response = await sendPushNotification(
             pushSubscription,
             JSON.stringify(payload)

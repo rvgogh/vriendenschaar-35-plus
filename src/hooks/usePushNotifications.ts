@@ -3,6 +3,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { toast } from '@/hooks/use-toast';
 
+// VAPID public key - this is the public key, safe to include in client code
+const VAPID_PUBLIC_KEY = 'BBoX6n8HBuRRXi_1yhgLt9veqb91Y0lHSgapJWidtKJ9jNZ-HuigW77w2KQGxalBqr40BPd9Hu8MGA7hpWMpBTA';
+
 export const usePushNotifications = () => {
   const { user } = useAuth();
   const [permission, setPermission] = useState<NotificationPermission>('default');
@@ -90,12 +93,10 @@ export const usePushNotifications = () => {
       let subscription = await registration.pushManager.getSubscription();
       
       if (!subscription) {
-        // Create new subscription
+        // Create new subscription with the new VAPID public key
         subscription = await registration.pushManager.subscribe({
           userVisibleOnly: true,
-          applicationServerKey: urlBase64ToUint8Array(
-            'BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuBkr3qBUYIHBQFLXYp5Nksh8U'
-          ),
+          applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
         });
       }
 
