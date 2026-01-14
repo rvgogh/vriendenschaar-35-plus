@@ -90,15 +90,17 @@ export const usePushNotifications = () => {
     try {
       const registration = await navigator.serviceWorker.ready;
       
-      let subscription = await registration.pushManager.getSubscription();
-      
-      if (!subscription) {
-        // Create new subscription with the new VAPID public key
-        subscription = await registration.pushManager.subscribe({
-          userVisibleOnly: true,
-          applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
-        });
+      // Always unsubscribe first to ensure we create a fresh subscription with current VAPID key
+      let existingSubscription = await registration.pushManager.getSubscription();
+      if (existingSubscription) {
+        await existingSubscription.unsubscribe();
       }
+      
+      // Create new subscription with the current VAPID public key
+      const subscription = await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
+      });
 
       const subscriptionJson = subscription.toJSON();
 
