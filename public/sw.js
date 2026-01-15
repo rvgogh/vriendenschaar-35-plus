@@ -1,22 +1,46 @@
 self.addEventListener('push', function(event) {
-  if (!event.data) return;
+  console.log('[SW] Push event received');
+  
+  if (!event.data) {
+    console.log('[SW] No data in push event');
+    return;
+  }
 
-  const data = event.data.json();
+  let data;
+  try {
+    data = event.data.json();
+    console.log('[SW] Push data parsed:', data);
+  } catch (e) {
+    console.error('[SW] Failed to parse push data:', e);
+    console.log('[SW] Raw data text:', event.data.text());
+    // Try to show a fallback notification
+    data = {
+      title: 'VriendenschaarTraining',
+      body: 'Je hebt een nieuwe melding',
+    };
+  }
+
   const options = {
-    body: data.body,
+    body: data.body || 'Geen bericht',
     icon: data.icon || '/icon-192x192.png',
     badge: data.badge || '/icon-192x192.png',
-    tag: data.tag,
-    data: data.data,
+    tag: data.tag || 'default',
+    data: data.data || {},
     requireInteraction: true,
+    vibrate: [200, 100, 200],
   };
 
+  console.log('[SW] Showing notification with options:', options);
+
   event.waitUntil(
-    self.registration.showNotification(data.title, options)
+    self.registration.showNotification(data.title || 'Notificatie', options)
+      .then(() => console.log('[SW] Notification shown successfully'))
+      .catch((err) => console.error('[SW] Failed to show notification:', err))
   );
 });
 
 self.addEventListener('notificationclick', function(event) {
+  console.log('[SW] Notification clicked');
   event.notification.close();
 
   const url = event.notification.data?.url || '/';
