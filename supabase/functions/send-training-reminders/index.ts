@@ -413,6 +413,8 @@ Deno.serve(async (req) => {
     } else if (authHeader?.startsWith('Bearer ')) {
       // Check if it's an authenticated superuser
       const jwt = authHeader.replace('Bearer ', '');
+      console.log('JWT token received, length:', jwt.length);
+      
       supabaseClient = createClient(
         Deno.env.get('SUPABASE_URL') ?? '',
         Deno.env.get('SUPABASE_ANON_KEY') ?? '',
@@ -426,12 +428,16 @@ Deno.serve(async (req) => {
       // Verify the user is authenticated and is a superuser
       const { data: { user }, error: userError } = await supabaseClient.auth.getUser(jwt);
       
+      console.log('getUser result - user:', user?.email, 'error:', userError?.message);
+      
       if (user && !userError) {
         const { data: roleData, error: roleError } = await supabaseClient
           .from('user_roles')
           .select('role')
           .eq('user_id', user.id)
           .single();
+
+        console.log('Role check - role:', roleData?.role, 'error:', roleError?.message);
 
         if (!roleError && roleData?.role === 'superuser') {
           isAuthorized = true;
@@ -441,8 +447,14 @@ Deno.serve(async (req) => {
             Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
           );
           console.log('Authenticated via JWT as superuser:', user.email);
+        } else {
+          console.log('User is not a superuser');
         }
+      } else {
+        console.log('User authentication failed');
       }
+    } else {
+      console.log('No valid authorization header found:', authHeader ? 'present but invalid format' : 'missing');
     }
 
     if (!isAuthorized) {
