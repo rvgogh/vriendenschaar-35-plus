@@ -13,6 +13,7 @@ import { formatDate } from "@/lib/datetime";
 import KeyHolderCard from "@/components/KeyHolderCard";
 import TrainingStatusIndicator from "@/components/TrainingStatusIndicator";
 import { useGpsVerificationForMultipleTrainings } from "@/hooks/useGpsVerification";
+import GpsVerificationButton from "@/components/GpsVerificationButton";
 
 
 const fetchMatchesWithPresence = async (playerId: number) => {
@@ -163,17 +164,23 @@ const Index = () => {
   const upcomingEvent = upcomingEvents[0];
 
   // GPS verification for today's trainings only
+  const now = new Date();
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const tomorrow = new Date(today);
   tomorrow.setDate(tomorrow.getDate() + 1);
   
-  const trainingIdsToVerify = upcomingTrainings
-    .filter(t => {
-      const trainingDate = new Date(t.training_at);
-      return trainingDate >= today && trainingDate < tomorrow;
-    })
-    .map(t => t.id);
+  // Find today's training
+  const todaysTraining = upcomingTrainings.find(t => {
+    const trainingDate = new Date(t.training_at);
+    return trainingDate >= today && trainingDate < tomorrow;
+  });
+  
+  const trainingIdsToVerify = todaysTraining ? [todaysTraining.id] : [];
+  
+  // Check if GPS button should be visible (training day between 19:00 and 23:00)
+  const currentHour = now.getHours();
+  const showGpsButton = todaysTraining && currentHour >= 19 && currentHour < 23;
   
   useGpsVerificationForMultipleTrainings(
     trainingIdsToVerify,
@@ -272,6 +279,16 @@ const Index = () => {
           <h1 className="text-4xl font-bold text-primary mb-2">Welkom {myPlayer.name}</h1>
           <p className="text-muted-foreground">Bekijk je aanwezigheid voor komende activiteiten</p>
         </div>
+
+        {/* GPS Verification Button - visible on training days 19:00-23:00 */}
+        {showGpsButton && myPlayer && todaysTraining && (
+          <div className="mb-6">
+            <GpsVerificationButton 
+              trainingId={todaysTraining.id} 
+              playerId={myPlayer.id} 
+            />
+          </div>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
           {/* Statistieken - NEW */}
