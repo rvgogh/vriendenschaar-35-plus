@@ -14,6 +14,7 @@ import KeyHolderCard from "@/components/KeyHolderCard";
 import TrainingStatusIndicator from "@/components/TrainingStatusIndicator";
 import { useGpsVerificationForMultipleTrainings } from "@/hooks/useGpsVerification";
 import GpsVerificationButton from "@/components/GpsVerificationButton";
+import { useUserRole } from "@/hooks/useUserRole";
 
 
 const fetchMatchesWithPresence = async (playerId: number) => {
@@ -148,6 +149,7 @@ const Index = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { isSuperuser } = useUserRole();
 
   const { data: myPlayer } = useMyPlayer(user?.id);
   const { data: upcomingMatches = [] } = useUpcomingMatches();
@@ -178,9 +180,10 @@ const Index = () => {
   
   const trainingIdsToVerify = todaysTraining ? [todaysTraining.id] : [];
   
-  // Check if GPS button should be visible (training day between 19:00 and 23:00)
+  // Check if GPS button should be visible (training day between 19:00 and 23:00, or always for superusers)
   const currentHour = now.getHours();
-  const showGpsButton = todaysTraining && currentHour >= 19 && currentHour < 23;
+  const isWithinTimeWindow = currentHour >= 19 && currentHour < 23;
+  const showGpsButton = todaysTraining && (isWithinTimeWindow || isSuperuser);
   
   useGpsVerificationForMultipleTrainings(
     trainingIdsToVerify,
