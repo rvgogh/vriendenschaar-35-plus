@@ -149,7 +149,10 @@ const Index = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { isSuperuser } = useUserRole();
+  const { isSuperuser, loading: roleLoading } = useUserRole();
+
+  // Debug logging for GPS button visibility
+  console.log('useUserRole:', { isSuperuser, roleLoading });
 
   const { data: myPlayer } = useMyPlayer(user?.id);
   const { data: upcomingMatches = [] } = useUpcomingMatches();
@@ -184,6 +187,15 @@ const Index = () => {
   const currentHour = now.getHours();
   const isWithinTimeWindow = currentHour >= 19 && currentHour < 23;
   const showGpsButton = todaysTraining && (isWithinTimeWindow || isSuperuser);
+  
+  // Debug logging
+  console.log('GPS Button Debug:', { 
+    todaysTraining: todaysTraining?.id, 
+    currentHour, 
+    isWithinTimeWindow, 
+    isSuperuser, 
+    showGpsButton 
+  });
   
   useGpsVerificationForMultipleTrainings(
     trainingIdsToVerify,
