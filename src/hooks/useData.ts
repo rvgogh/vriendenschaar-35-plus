@@ -51,6 +51,27 @@ export const useUpcomingTrainings = () => {
   });
 };
 
+export const useTodaysTrainings = () => {
+  return useQuery({
+    queryKey: ["todaysTrainings"],
+    queryFn: async () => {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      
+      const { data, error } = await supabase
+        .from("trainings")
+        .select("*")
+        .gte("training_at", today.toISOString())
+        .lt("training_at", tomorrow.toISOString())
+        .order("training_at", { ascending: true });
+      if (error) throw error;
+      return data as Training[];
+    },
+  });
+};
+
 export const useUpcomingEvents = () => {
   return useQuery({
     queryKey: ["upcomingEvents"],
