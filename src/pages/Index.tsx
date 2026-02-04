@@ -8,7 +8,7 @@ import { Calendar, Trophy, Users, CheckCircle, X, BarChart3 } from "lucide-react
 import { cn } from "@/lib/utils";
 import { toast } from "@/components/ui/sonner";
 import { PlayerStatus, TrainingAttendanceStatus } from "@/types";
-import { useMyPlayer, useUpcomingMatches, useUpcomingTrainings, useUpcomingEvents } from "@/hooks/useData";
+import { useMyPlayer, useUpcomingMatches, useUpcomingTrainings, useUpcomingEvents, useTodaysTrainings } from "@/hooks/useData";
 import { formatDate } from "@/lib/datetime";
 import KeyHolderCard from "@/components/KeyHolderCard";
 import TrainingStatusIndicator from "@/components/TrainingStatusIndicator";
@@ -155,6 +155,7 @@ const Index = () => {
   const { data: upcomingMatches = [] } = useUpcomingMatches();
   const { data: upcomingTrainings = [] } = useUpcomingTrainings();
   const { data: upcomingEvents = [] } = useUpcomingEvents();
+  const { data: todaysTrainings = [] } = useTodaysTrainings();
 
   const { data: matchesWithPresence = [] } = useQuery({
     queryKey: ['matchesWithPresence', myPlayer?.id],
@@ -165,22 +166,12 @@ const Index = () => {
   const upcomingTraining = upcomingTrainings[0];
   const upcomingEvent = upcomingEvents[0];
 
-  // GPS verification for today's trainings only
-  const now = new Date();
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const tomorrow = new Date(today);
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  
-  // Find today's training
-  const todaysTraining = upcomingTrainings.find(t => {
-    const trainingDate = new Date(t.training_at);
-    return trainingDate >= today && trainingDate < tomorrow;
-  });
-  
+  // GPS verification for today's trainings - use todaysTrainings which includes trainings after their start time
+  const todaysTraining = todaysTrainings[0];
   const trainingIdsToVerify = todaysTraining ? [todaysTraining.id] : [];
   
   // Check if GPS button should be visible (training day between 19:00 and 23:00, or always for superusers)
+  const now = new Date();
   const currentHour = now.getHours();
   const isWithinTimeWindow = currentHour >= 19 && currentHour < 23;
   const showGpsButton = todaysTraining && (isWithinTimeWindow || isSuperuser);
