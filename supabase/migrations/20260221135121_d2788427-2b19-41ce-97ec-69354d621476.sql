@@ -1,0 +1,1 @@
+INSERT INTO players (name, knvb_member) VALUES ('Tim', false);
