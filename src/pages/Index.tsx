@@ -117,6 +117,40 @@ const fetchEventPresence = async (playerId: number, eventId: number) => {
   return data;
 };
 
+const updateEventStatus = async (playerId: number, eventId: number, status: EventAttendanceStatus) => {
+  const { data: existingStatus } = await supabase
+    .from('event_statuses')
+    .select('*')
+    .eq('player_id', playerId)
+    .eq('event_id', eventId)
+    .single();
+
+  if (existingStatus) {
+    const { error } = await supabase
+      .from('event_statuses')
+      .update({ status })
+      .eq('player_id', playerId)
+      .eq('event_id', eventId);
+    if (error) throw error;
+  } else {
+    const { error } = await supabase
+      .from('event_statuses')
+      .insert({ player_id: playerId, event_id: eventId, status });
+    if (error) throw error;
+  }
+};
+
+const fetchEventStatusCounts = async (eventId: number) => {
+  const { data: statuses, error } = await supabase
+    .from('event_statuses')
+    .select('status')
+    .eq('event_id', eventId);
+
+  if (error) return { yesCount: 0 };
+  const yesCount = (statuses || []).filter(s => s.status === 'YES').length;
+  return { yesCount };
+};
+
 const fetchTrainingStatusCounts = async (trainingId: number) => {
   const { data: statuses, error: statusesError } = await supabase
     .from("training_statuses")
