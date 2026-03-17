@@ -547,7 +547,7 @@ const Index = () => {
           {/* Mijn Evenementen */}
           <Card 
             className="hover:shadow-lg transition-shadow cursor-pointer"
-            onClick={() => upcomingEvent && navigate(`/event/${upcomingEvent.id}`)}
+            onClick={() => navigate('/my-events')}
           >
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
@@ -565,22 +565,76 @@ const Index = () => {
               </div>
             </CardHeader>
             <CardContent>
-              <CardDescription className="mb-4">
-                {upcomingEvent ? (
-                  eventPresence && eventPresence.status !== 'UNKNOWN' ? (
-                    "Aanwezigheid ingesteld voor volgend evenement"
-                  ) : (
-                    "Nog geen aanwezigheid ingesteld - ben je soms een feestbreker? 🎉"
-                  )
-                ) : (
-                  "Geen komende evenementen"
-                )}
-              </CardDescription>
-              <div onClick={(e) => e.stopPropagation()}>
-                <Button asChild className="w-full">
-                  <Link to="/my-events">Bekijk Evenementen</Link>
-                </Button>
-              </div>
+              {upcomingEvent ? (
+                <div className="space-y-3">
+                  <div className="border rounded-lg p-3 bg-secondary/20">
+                    <div className="flex justify-between items-center mb-2">
+                      <div>
+                        <p className="font-medium text-sm">{upcomingEvent.title}</p>
+                        {upcomingEvent.subtitle && (
+                          <p className="text-xs text-muted-foreground">{upcomingEvent.subtitle}</p>
+                        )}
+                        <p className="text-xs text-muted-foreground">
+                          {upcomingEvent.event_date && new Date(upcomingEvent.event_date + 'T00:00:00').toLocaleDateString('nl-NL', {
+                            weekday: 'short',
+                            day: 'numeric',
+                            month: 'short',
+                          })}
+                          {upcomingEvent.event_time && ` om ${upcomingEvent.event_time.slice(0, 5)}`}
+                        </p>
+                        {upcomingEvent.location && (
+                          <p className="text-xs text-muted-foreground">📍 {upcomingEvent.location}</p>
+                        )}
+                      </div>
+                      <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
+                        <Button 
+                          variant='outline'
+                          size="sm" 
+                          onClick={() => handleEventStatusChange(eventPresence?.status === 'YES' ? 'UNKNOWN' : 'YES')}
+                          className={cn("text-lg w-8 h-8 p-0", eventPresence?.status === 'YES' && "ring-2 ring-primary")}
+                        >
+                          🍆
+                        </Button>
+                        <Button 
+                          variant='outline'
+                          size="sm" 
+                          onClick={() => handleEventStatusChange(eventPresence?.status === 'MAYBE' ? 'UNKNOWN' : 'MAYBE')}
+                          className={cn("text-lg w-8 h-8 p-0", eventPresence?.status === 'MAYBE' && "ring-2 ring-yellow-400")}
+                        >
+                          ❓
+                        </Button>
+                        <Button 
+                          variant='outline'
+                          size="sm" 
+                          onClick={() => handleEventStatusChange(eventPresence?.status === 'NO' ? 'UNKNOWN' : 'NO')}
+                          className={cn("text-lg w-8 h-8 p-0", eventPresence?.status === 'NO' && "ring-2 ring-destructive")}
+                        >
+                          ❌
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="mt-2 pt-2 border-t">
+                      <span className="text-sm text-muted-foreground">
+                        {eventStatusCounts?.yesCount || 0} speler(s) aanwezig
+                      </span>
+                    </div>
+                  </div>
+                  <div onClick={(e) => e.stopPropagation()}>
+                    <Button asChild className="w-full">
+                      <Link to="/my-events">Alle Evenementen</Link>
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  <CardDescription className="mb-4">Geen komende evenementen</CardDescription>
+                  <div onClick={(e) => e.stopPropagation()}>
+                    <Button asChild className="w-full">
+                      <Link to="/my-events">Bekijk Evenementen</Link>
+                    </Button>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
