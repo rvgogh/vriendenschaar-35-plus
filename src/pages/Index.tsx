@@ -527,9 +527,6 @@ const Index = () => {
               </div>
             </CardContent>
           </Card>
-
-          {/* Sleutelbeheerder */}
-          <KeyHolderCard />
         </div>
       </div>
     </div>
