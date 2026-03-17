@@ -7,7 +7,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Calendar, Trophy, Users, CheckCircle, X, BarChart3 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "@/components/ui/sonner";
-import { PlayerStatus, TrainingAttendanceStatus } from "@/types";
+import { PlayerStatus, TrainingAttendanceStatus, EventAttendanceStatus } from "@/types";
 import { useMyPlayer, useUpcomingMatches, useUpcomingTrainings, useUpcomingEvents, useTodaysTrainings } from "@/hooks/useData";
 import { formatDate } from "@/lib/datetime";
 
