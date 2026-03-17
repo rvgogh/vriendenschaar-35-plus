@@ -7,7 +7,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Calendar, Trophy, Users, CheckCircle, X, BarChart3 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "@/components/ui/sonner";
-import { PlayerStatus, TrainingAttendanceStatus } from "@/types";
+import { PlayerStatus, TrainingAttendanceStatus, EventAttendanceStatus } from "@/types";
 import { useMyPlayer, useUpcomingMatches, useUpcomingTrainings, useUpcomingEvents, useTodaysTrainings } from "@/hooks/useData";
 import { formatDate } from "@/lib/datetime";
 
@@ -117,6 +117,40 @@ const fetchEventPresence = async (playerId: number, eventId: number) => {
   return data;
 };
 
+const updateEventStatus = async (playerId: number, eventId: number, status: EventAttendanceStatus) => {
+  const { data: existingStatus } = await supabase
+    .from('event_statuses')
+    .select('*')
+    .eq('player_id', playerId)
+    .eq('event_id', eventId)
+    .single();
+
+  if (existingStatus) {
+    const { error } = await supabase
+      .from('event_statuses')
+      .update({ status })
+      .eq('player_id', playerId)
+      .eq('event_id', eventId);
+    if (error) throw error;
+  } else {
+    const { error } = await supabase
+      .from('event_statuses')
+      .insert({ player_id: playerId, event_id: eventId, status });
+    if (error) throw error;
+  }
+};
+
+const fetchEventStatusCounts = async (eventId: number) => {
+  const { data: statuses, error } = await supabase
+    .from('event_statuses')
+    .select('status')
+    .eq('event_id', eventId);
+
+  if (error) return { yesCount: 0 };
+  const yesCount = (statuses || []).filter(s => s.status === 'YES').length;
+  return { yesCount };
+};
+
 const fetchTrainingStatusCounts = async (trainingId: number) => {
   const { data: statuses, error: statusesError } = await supabase
     .from("training_statuses")
@@ -195,6 +229,12 @@ const Index = () => {
     enabled: !!myPlayer && !!upcomingEvent,
   });
 
+  const { data: eventStatusCounts } = useQuery({
+    queryKey: ['eventStatusCounts', upcomingEvent?.id],
+    queryFn: () => fetchEventStatusCounts(upcomingEvent!.id),
+    enabled: !!upcomingEvent,
+  });
+
   const { data: trainingStatusCounts } = useQuery({
     queryKey: ['trainingStatusCounts', upcomingTraining?.id],
     queryFn: () => fetchTrainingStatusCounts(upcomingTraining!.id),
@@ -246,6 +286,22 @@ const Index = () => {
     trainingStatusMutation.mutate({ status });
   };
 
+  const eventStatusMutation = useMutation({
+    mutationFn: ({ status }: { status: EventAttendanceStatus }) =>
+      updateEventStatus(myPlayer!.id, upcomingEvent!.id, status),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['eventPresence'] });
+      queryClient.invalidateQueries({ queryKey: ['eventStatusCounts'] });
+      toast.success("Je aanwezigheid voor het evenement is bijgewerkt.");
+    },
+    onError: () => {
+      toast.error("Er is een fout opgetreden bij het bijwerken van je status.");
+    },
+  });
+
+  const handleEventStatusChange = (status: EventAttendanceStatus) => {
+    eventStatusMutation.mutate({ status });
+  };
 
   if (!user) {
     return null; // This will be handled by ProtectedRoute
@@ -491,7 +547,7 @@ const Index = () => {
           {/* Mijn Evenementen */}
           <Card 
             className="hover:shadow-lg transition-shadow cursor-pointer"
-            onClick={() => upcomingEvent && navigate(`/event/${upcomingEvent.id}`)}
+            onClick={() => navigate('/my-events')}
           >
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
@@ -509,22 +565,76 @@ const Index = () => {
               </div>
             </CardHeader>
             <CardContent>
-              <CardDescription className="mb-4">
-                {upcomingEvent ? (
-                  eventPresence && eventPresence.status !== 'UNKNOWN' ? (
-                    "Aanwezigheid ingesteld voor volgend evenement"
-                  ) : (
-                    "Nog geen aanwezigheid ingesteld - ben je soms een feestbreker? 🎉"
-                  )
-                ) : (
-                  "Geen komende evenementen"
-                )}
-              </CardDescription>
-              <div onClick={(e) => e.stopPropagation()}>
-                <Button asChild className="w-full">
-                  <Link to="/my-events">Bekijk Evenementen</Link>
-                </Button>
-              </div>
+              {upcomingEvent ? (
+                <div className="space-y-3">
+                  <div className="border rounded-lg p-3 bg-secondary/20">
+                    <div className="flex justify-between items-center mb-2">
+                      <div>
+                        <p className="font-medium text-sm">{upcomingEvent.title}</p>
+                        {upcomingEvent.subtitle && (
+                          <p className="text-xs text-muted-foreground">{upcomingEvent.subtitle}</p>
+                        )}
+                        <p className="text-xs text-muted-foreground">
+                          {upcomingEvent.event_date && new Date(upcomingEvent.event_date + 'T00:00:00').toLocaleDateString('nl-NL', {
+                            weekday: 'short',
+                            day: 'numeric',
+                            month: 'short',
+                          })}
+                          {upcomingEvent.event_time && ` om ${upcomingEvent.event_time.slice(0, 5)}`}
+                        </p>
+                        {upcomingEvent.location && (
+                          <p className="text-xs text-muted-foreground">📍 {upcomingEvent.location}</p>
+                        )}
+                      </div>
+                      <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
+                        <Button 
+                          variant='outline'
+                          size="sm" 
+                          onClick={() => handleEventStatusChange(eventPresence?.status === 'YES' ? 'UNKNOWN' : 'YES')}
+                          className={cn("text-lg w-8 h-8 p-0", eventPresence?.status === 'YES' && "ring-2 ring-primary")}
+                        >
+                          🍆
+                        </Button>
+                        <Button 
+                          variant='outline'
+                          size="sm" 
+                          onClick={() => handleEventStatusChange(eventPresence?.status === 'MAYBE' ? 'UNKNOWN' : 'MAYBE')}
+                          className={cn("text-lg w-8 h-8 p-0", eventPresence?.status === 'MAYBE' && "ring-2 ring-yellow-400")}
+                        >
+                          ❓
+                        </Button>
+                        <Button 
+                          variant='outline'
+                          size="sm" 
+                          onClick={() => handleEventStatusChange(eventPresence?.status === 'NO' ? 'UNKNOWN' : 'NO')}
+                          className={cn("text-lg w-8 h-8 p-0", eventPresence?.status === 'NO' && "ring-2 ring-destructive")}
+                        >
+                          ❌
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="mt-2 pt-2 border-t">
+                      <span className="text-sm text-muted-foreground">
+                        {eventStatusCounts?.yesCount || 0} speler(s) aanwezig
+                      </span>
+                    </div>
+                  </div>
+                  <div onClick={(e) => e.stopPropagation()}>
+                    <Button asChild className="w-full">
+                      <Link to="/my-events">Alle Evenementen</Link>
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  <CardDescription className="mb-4">Geen komende evenementen</CardDescription>
+                  <div onClick={(e) => e.stopPropagation()}>
+                    <Button asChild className="w-full">
+                      <Link to="/my-events">Bekijk Evenementen</Link>
+                    </Button>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
