@@ -229,6 +229,12 @@ const Index = () => {
     enabled: !!myPlayer && !!upcomingEvent,
   });
 
+  const { data: eventStatusCounts } = useQuery({
+    queryKey: ['eventStatusCounts', upcomingEvent?.id],
+    queryFn: () => fetchEventStatusCounts(upcomingEvent!.id),
+    enabled: !!upcomingEvent,
+  });
+
   const { data: trainingStatusCounts } = useQuery({
     queryKey: ['trainingStatusCounts', upcomingTraining?.id],
     queryFn: () => fetchTrainingStatusCounts(upcomingTraining!.id),
