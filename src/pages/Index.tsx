@@ -286,6 +286,22 @@ const Index = () => {
     trainingStatusMutation.mutate({ status });
   };
 
+  const eventStatusMutation = useMutation({
+    mutationFn: ({ status }: { status: EventAttendanceStatus }) =>
+      updateEventStatus(myPlayer!.id, upcomingEvent!.id, status),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['eventPresence'] });
+      queryClient.invalidateQueries({ queryKey: ['eventStatusCounts'] });
+      toast.success("Je aanwezigheid voor het evenement is bijgewerkt.");
+    },
+    onError: () => {
+      toast.error("Er is een fout opgetreden bij het bijwerken van je status.");
+    },
+  });
+
+  const handleEventStatusChange = (status: EventAttendanceStatus) => {
+    eventStatusMutation.mutate({ status });
+  };
 
   if (!user) {
     return null; // This will be handled by ProtectedRoute
