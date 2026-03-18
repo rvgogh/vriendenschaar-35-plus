@@ -1,6 +1,16 @@
+self.addEventListener('install', function(event) {
+  console.log('[SW] Installing service worker');
+  event.waitUntil(self.skipWaiting());
+});
+
+self.addEventListener('activate', function(event) {
+  console.log('[SW] Activating service worker');
+  event.waitUntil(clients.claim());
+});
+
 self.addEventListener('push', function(event) {
   console.log('[SW] Push event received');
-  
+
   if (!event.data) {
     console.log('[SW] No data in push event');
     return;
@@ -13,7 +23,6 @@ self.addEventListener('push', function(event) {
   } catch (e) {
     console.error('[SW] Failed to parse push data:', e);
     console.log('[SW] Raw data text:', event.data.text());
-    // Try to show a fallback notification
     data = {
       title: 'VriendenschaarTraining',
       body: 'Je hebt een nieuwe melding',
