@@ -402,14 +402,16 @@ Deno.serve(async (req) => {
     let isAuthorized = false;
     let supabaseClient;
 
-    // Check if it's a cron job with secret
-    if (authHeader === `Bearer ${expectedSecret}`) {
+    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+    
+    // Check if it's a cron job with secret or service_role_key
+    if (authHeader === `Bearer ${expectedSecret}` || authHeader === `Bearer ${serviceRoleKey}`) {
       isAuthorized = true;
       supabaseClient = createClient(
         Deno.env.get('SUPABASE_URL') ?? '',
-        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+        serviceRoleKey
       );
-      console.log('Authenticated via CRON_SECRET');
+      console.log('Authenticated via CRON_SECRET or service_role_key');
     } else if (authHeader?.startsWith('Bearer ')) {
       // Check if it's an authenticated superuser
       const jwt = authHeader.replace('Bearer ', '');
