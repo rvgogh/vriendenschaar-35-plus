@@ -487,21 +487,22 @@ Deno.serve(async (req) => {
         training_at: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
       }];
     } else {
-      console.log('Checking for trainings in 2 days...');
+      console.log('Checking for trainings today, tomorrow, and in 2 days...');
 
-      // Calculate date 2 days from now
-      const twoDaysFromNow = new Date();
+      // Calculate date range: today through 2 days from now
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const twoDaysFromNow = new Date(today);
       twoDaysFromNow.setDate(twoDaysFromNow.getDate() + 2);
-      twoDaysFromNow.setHours(0, 0, 0, 0);
-
       const twoDaysEnd = new Date(twoDaysFromNow);
       twoDaysEnd.setHours(23, 59, 59, 999);
 
-      // Get trainings happening in 2 days
+      // Get trainings happening today, tomorrow, or in 2 days
       const { data: trainingsData, error: trainingsError } = await supabaseClient
         .from('trainings')
         .select('*')
-        .gte('training_at', twoDaysFromNow.toISOString())
+        .gte('training_at', today.toISOString())
         .lte('training_at', twoDaysEnd.toISOString());
 
       if (trainingsError) {
@@ -510,7 +511,7 @@ Deno.serve(async (req) => {
       }
 
       trainings = trainingsData || [];
-      console.log(`Found ${trainings.length} trainings in 2 days`);
+      console.log(`Found ${trainings.length} trainings in the next 0-2 days`);
 
       if (trainings.length === 0) {
         return new Response(
@@ -547,6 +548,12 @@ Deno.serve(async (req) => {
       for (const training of trainings) {
         try {
           const trainingDate = new Date(training.training_at);
+          const nowDate = new Date();
+          nowDate.setHours(0, 0, 0, 0);
+          const trainingDay = new Date(trainingDate);
+          trainingDay.setHours(0, 0, 0, 0);
+          const daysUntil = Math.round((trainingDay.getTime() - nowDate.getTime()) / (1000 * 60 * 60 * 24));
+          
           const formattedDate = trainingDate.toLocaleDateString('nl-NL', {
             weekday: 'long',
             day: 'numeric',
@@ -567,11 +574,15 @@ Deno.serve(async (req) => {
               url: '/my-training',
             },
           } : {
-            title: 'Training Herinnering',
-            body: `Training op ${formattedDate} om ${formattedTime}. Vergeet niet je aanwezigheid aan te geven!`,
+            title: daysUntil === 0 ? 'Training Vandaag!' : 'Training Herinnering',
+            body: daysUntil === 0
+              ? `Vandaag training om ${formattedTime}. Vergeet niet je aanwezigheid aan te geven!`
+              : daysUntil === 1
+                ? `Morgen training om ${formattedTime}. Vergeet niet je aanwezigheid aan te geven!`
+                : `Training op ${formattedDate} om ${formattedTime}. Vergeet niet je aanwezigheid aan te geven!`,
             icon: '/icon-192x192.png',
             badge: '/icon-192x192.png',
-            tag: `training-${training.id}`,
+            tag: `training-${training.id}-d${daysUntil}`,
             data: {
               url: '/my-training',
               trainingId: training.id,
