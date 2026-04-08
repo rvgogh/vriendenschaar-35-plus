@@ -495,7 +495,6 @@ Deno.serve(async (req) => {
 
       const twoDaysFromNow = new Date(today);
       twoDaysFromNow.setDate(twoDaysFromNow.getDate() + 2);
-      twoDaysEnd.setHours(23, 59, 59, 999);
       const twoDaysEnd = new Date(twoDaysFromNow);
       twoDaysEnd.setHours(23, 59, 59, 999);
 
@@ -549,6 +548,12 @@ Deno.serve(async (req) => {
       for (const training of trainings) {
         try {
           const trainingDate = new Date(training.training_at);
+          const nowDate = new Date();
+          nowDate.setHours(0, 0, 0, 0);
+          const trainingDay = new Date(trainingDate);
+          trainingDay.setHours(0, 0, 0, 0);
+          const daysUntil = Math.round((trainingDay.getTime() - nowDate.getTime()) / (1000 * 60 * 60 * 24));
+          
           const formattedDate = trainingDate.toLocaleDateString('nl-NL', {
             weekday: 'long',
             day: 'numeric',
