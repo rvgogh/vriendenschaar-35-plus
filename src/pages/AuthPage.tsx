@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { z } from 'zod';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,6 +7,9 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from '@/components/ui/sonner';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+
+const emailSchema = z.string().trim().email('Ongeldig emailadres').max(255, 'Email te lang');
+const passwordSchema = z.string().min(8, 'Minimaal 8 karakters').max(72, 'Maximaal 72 karakters');
 
 const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -33,7 +37,6 @@ const AuthPage = () => {
         refresh_token: refreshToken
       }).then(({ error }) => {
         if (error) {
-          console.error('Session set error:', error);
           toast.error('Sessie kon niet worden ingesteld: ' + error.message);
         } else {
           setIsUpdatePassword(true);
@@ -58,14 +61,12 @@ const AuthPage = () => {
           });
           
           if (error) {
-            console.error('Email verification error:', error);
             toast.error('Email verificatie mislukt: ' + error.message);
           } else {
             toast.success('Email succesvol geverifieerd!');
             navigate('/');
           }
         } catch (error) {
-          console.error('Email verification error:', error);
           toast.error('Email verificatie mislukt');
         }
       }
@@ -78,6 +79,19 @@ const AuthPage = () => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+
+    const emailResult = emailSchema.safeParse(email);
+    if (!emailResult.success) {
+      toast.error(emailResult.error.issues[0].message);
+      setLoading(false);
+      return;
+    }
+    const passResult = passwordSchema.safeParse(password);
+    if (!passResult.success) {
+      toast.error(passResult.error.issues[0].message);
+      setLoading(false);
+      return;
+    }
 
     try {
       const { error } = await supabase.auth.signInWithPassword({
@@ -100,6 +114,19 @@ const AuthPage = () => {
     e.preventDefault();
     setLoading(true);
 
+    const emailResult = emailSchema.safeParse(email);
+    if (!emailResult.success) {
+      toast.error(emailResult.error.issues[0].message);
+      setLoading(false);
+      return;
+    }
+    const passResult = passwordSchema.safeParse(password);
+    if (!passResult.success) {
+      toast.error(passResult.error.issues[0].message);
+      setLoading(false);
+      return;
+    }
+
     try {
       // Use the correct production URL for email redirect
       const redirectUrl = 'https://vriendenschaar-35-plus.lovable.app/';
@@ -119,7 +146,6 @@ const AuthPage = () => {
       setEmail('');
       setPassword('');
     } catch (error: any) {
-      console.error('Registration error:', error);
       toast.error(error.message || 'Registratie mislukt');
     } finally {
       setLoading(false);
@@ -153,6 +179,13 @@ const AuthPage = () => {
     e.preventDefault();
     setLoading(true);
 
+    const passResult = passwordSchema.safeParse(newPassword);
+    if (!passResult.success) {
+      toast.error(passResult.error.issues[0].message);
+      setLoading(false);
+      return;
+    }
+
     try {
       const { data, error } = await supabase.auth.updateUser({
         password: newPassword
@@ -168,7 +201,6 @@ const AuthPage = () => {
       // Navigate immediately - the user is already authenticated
       navigate('/');
     } catch (error: any) {
-      console.error('Password update error:', error);
       toast.error(error.message || 'Kon wachtwoord niet wijzigen');
     } finally {
       setLoading(false);
@@ -217,7 +249,7 @@ const AuthPage = () => {
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   required
-                  minLength={6}
+                  minLength={8}
                   placeholder="Minimaal 6 karakters"
                 />
               </div>
@@ -243,7 +275,7 @@ const AuthPage = () => {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required
-                      minLength={6}
+                      minLength={8}
                     />
                   </div>
                 )}

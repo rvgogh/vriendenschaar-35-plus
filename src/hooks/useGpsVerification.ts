@@ -74,7 +74,7 @@ export const useGpsVerification = (
       console.log('Training attendance verified via GPS');
     },
     onError: (error) => {
-      console.error('Failed to verify training attendance:', error);
+      if (import.meta.env.DEV) console.error('Failed to verify training attendance:', error);
     }
   });
 

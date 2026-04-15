@@ -71,7 +71,7 @@ const KeyHolderCard = () => {
         description: "Er is een fout opgetreden bij het wijzigen van de sleutelbeheerder.",
         variant: "destructive",
       });
-      console.error("Error updating key holder:", error);
+      if (import.meta.env.DEV) console.error("Error updating key holder:", error);
     },
   });
 

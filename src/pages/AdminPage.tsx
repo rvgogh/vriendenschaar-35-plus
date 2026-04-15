@@ -60,7 +60,7 @@ const AdminPage = () => {
         description: `Nieuwe coördinaten: ${latitude.toFixed(6)}, ${longitude.toFixed(6)}`,
       });
     } catch (error: any) {
-      console.error('Error updating location:', error);
+      if (import.meta.env.DEV) console.error('Error updating location:', error);
       toast({
         title: 'Fout',
         description: error.message || 'Kon locatie niet bijwerken',
@@ -101,7 +101,7 @@ const AdminPage = () => {
         description: data.message || 'Notificaties zijn succesvol verstuurd naar alle geabonneerde gebruikers',
       });
     } catch (error) {
-      console.error('Error sending test notification:', error);
+      if (import.meta.env.DEV) console.error('Error sending test notification:', error);
       toast({
         title: 'Fout',
         description: 'Er ging iets mis bij het versturen van de test notificaties',
