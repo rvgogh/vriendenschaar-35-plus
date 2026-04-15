@@ -137,6 +137,20 @@ const AdminStatisticsPage = () => {
     enabled: !!user,
   });
 
+  // Fetch all players
+  const { data: allPlayers, isLoading: playersLoading } = useQuery({
+    queryKey: ['allPlayers'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('players')
+        .select('id, name, knvb_member')
+        .order('name');
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user,
+  });
+
   const pastMatches = matchData?.matches || [];
   const matchStats = matchData?.statuses || [];
   const pastTrainings = trainingData?.trainings || [];
