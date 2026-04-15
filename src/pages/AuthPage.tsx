@@ -82,13 +82,13 @@ const AuthPage = () => {
 
     const emailResult = emailSchema.safeParse(email);
     if (!emailResult.success) {
-      toast.error(emailResult.error.errors[0].message);
+      toast.error(emailResult.error.issues[0].message);
       setLoading(false);
       return;
     }
     const passResult = passwordSchema.safeParse(password);
     if (!passResult.success) {
-      toast.error(passResult.error.errors[0].message);
+      toast.error(passResult.error.issues[0].message);
       setLoading(false);
       return;
     }
@@ -116,13 +116,13 @@ const AuthPage = () => {
 
     const emailResult = emailSchema.safeParse(email);
     if (!emailResult.success) {
-      toast.error(emailResult.error.errors[0].message);
+      toast.error(emailResult.error.issues[0].message);
       setLoading(false);
       return;
     }
     const passResult = passwordSchema.safeParse(password);
     if (!passResult.success) {
-      toast.error(passResult.error.errors[0].message);
+      toast.error(passResult.error.issues[0].message);
       setLoading(false);
       return;
     }
@@ -181,7 +181,7 @@ const AuthPage = () => {
 
     const passResult = passwordSchema.safeParse(newPassword);
     if (!passResult.success) {
-      toast.error(passResult.error.errors[0].message);
+      toast.error(passResult.error.issues[0].message);
       setLoading(false);
       return;
     }
