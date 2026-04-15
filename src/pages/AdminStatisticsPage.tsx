@@ -152,7 +152,7 @@ const AdminStatisticsPage = () => {
     return <Navigate to="/" replace />;
   }
 
-  if (matchesLoading || trainingsLoading || eventsLoading || playersLoading || matchStatsLoading || trainingStatsLoading || eventStatsLoading || seasonsLoading) {
+  if (matchLoading || trainingLoading || eventLoading || playersLoading || seasonsLoading) {
     return <PageLoading message="Statistieken laden..." />;
   }
 
