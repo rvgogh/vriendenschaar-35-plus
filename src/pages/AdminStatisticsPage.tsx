@@ -76,66 +76,63 @@ const AdminStatisticsPage = () => {
     }
   }, [seasons, selectedSeasonId]);
 
-  // Fetch past matches
-  const { data: pastMatches, isLoading: matchesLoading } = useQuery({
-    queryKey: ['pastMatches', selectedSeasonId],
+  // Fetch all stats in parallel with single queries each
+  const seasonFilter = selectedSeasonId ? parseInt(selectedSeasonId) : null;
+  const now = new Date().toISOString();
+  const today = now.split('T')[0];
+
+  const { data: matchData, isLoading: matchLoading } = useQuery({
+    queryKey: ['matchStatsAll', selectedSeasonId],
     queryFn: async () => {
-      let query = supabase
-        .from('matches')
-        .select('id')
-        .lt('match_date', new Date().toISOString())
-        .order('match_date', { ascending: false });
-      
-      if (selectedSeasonId) {
-        query = query.eq('season_id', parseInt(selectedSeasonId));
-      }
-      
-      const { data, error } = await query;
-      if (error) throw error;
-      return data;
+      let matchQuery = supabase.from('matches').select('id').lt('match_date', now).order('match_date', { ascending: false });
+      if (seasonFilter) matchQuery = matchQuery.eq('season_id', seasonFilter);
+      const { data: matches, error: mErr } = await matchQuery;
+      if (mErr) throw mErr;
+      if (!matches?.length) return { matches: [], statuses: [] };
+
+      const { data: statuses, error: sErr } = await supabase
+        .from('player_statuses')
+        .select('status, player_id, match_id, players!inner(name)')
+        .in('match_id', matches.map(m => m.id));
+      if (sErr) throw sErr;
+      return { matches, statuses: statuses || [] };
     },
-    enabled: !!user,
+    enabled: !!user && !!selectedSeasonId,
   });
 
-  // Fetch past trainings
-  const { data: pastTrainings, isLoading: trainingsLoading } = useQuery({
-    queryKey: ['pastTrainings', selectedSeasonId],
+  const { data: trainingData, isLoading: trainingLoading } = useQuery({
+    queryKey: ['trainingStatsAll', selectedSeasonId],
     queryFn: async () => {
-      let query = supabase
-        .from('trainings')
-        .select('id')
-        .lt('training_at', new Date().toISOString())
-        .order('training_at', { ascending: false });
-      
-      if (selectedSeasonId) {
-        query = query.eq('season_id', parseInt(selectedSeasonId));
-      }
-      
-      const { data, error } = await query;
-      if (error) throw error;
-      return data;
+      let tQuery = supabase.from('trainings').select('id').lt('training_at', now).order('training_at', { ascending: false });
+      if (seasonFilter) tQuery = tQuery.eq('season_id', seasonFilter);
+      const { data: trainings, error: tErr } = await tQuery;
+      if (tErr) throw tErr;
+      if (!trainings?.length) return { trainings: [], statuses: [] };
+
+      const { data: statuses, error: sErr } = await supabase
+        .from('training_statuses')
+        .select('status, player_id, training_id, players!inner(name)')
+        .in('training_id', trainings.map(t => t.id));
+      if (sErr) throw sErr;
+      return { trainings, statuses: statuses || [] };
     },
-    enabled: !!user,
+    enabled: !!user && !!selectedSeasonId,
   });
 
-  // Fetch past events
-  const { data: pastEvents, isLoading: eventsLoading } = useQuery({
-    queryKey: ['pastEvents', selectedSeasonId],
+  const { data: eventData, isLoading: eventLoading } = useQuery({
+    queryKey: ['eventStatsAll', selectedSeasonId],
     queryFn: async () => {
-      let query = supabase
-        .from('events')
-        .select('id')
-        .lt('event_date', new Date().toISOString().split('T')[0])
-        .order('event_date', { ascending: false });
-      
-      if (selectedSeasonId) {
-        // @ts-ignore - season_id column exists but types not yet regenerated
-        query = query.eq('season_id', parseInt(selectedSeasonId));
-      }
-      
-      const { data, error } = await query;
-      if (error) throw error;
-      return data;
+      let eQuery = supabase.from('events').select('id').lt('event_date', today).order('event_date', { ascending: false });
+      const { data: events, error: eErr } = await eQuery;
+      if (eErr) throw eErr;
+      if (!events?.length) return { events: [], statuses: [] };
+
+      const { data: statuses, error: sErr } = await supabase
+        .from('event_statuses')
+        .select('status, player_id, event_id, players!inner(name)')
+        .in('event_id', events.map(e => e.id));
+      if (sErr) throw sErr;
+      return { events, statuses: statuses || [] };
     },
     enabled: !!user,
   });
@@ -154,65 +151,12 @@ const AdminStatisticsPage = () => {
     enabled: !!user,
   });
 
-  // Fetch match statuses for past matches
-  const { data: matchStats, isLoading: matchStatsLoading } = useQuery({
-    queryKey: ['matchStatistics', pastMatches],
-    queryFn: async () => {
-      if (!pastMatches?.length) return [];
-      const { data, error } = await supabase
-        .from('player_statuses')
-        .select(`
-          status,
-          player_id,
-          match_id,
-          players!inner(name)
-        `)
-        .in('match_id', pastMatches.map(m => m.id));
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!user && !!pastMatches,
-  });
-
-  // Fetch training statuses for past trainings
-  const { data: trainingStats, isLoading: trainingStatsLoading } = useQuery({
-    queryKey: ['trainingStatistics', pastTrainings],
-    queryFn: async () => {
-      if (!pastTrainings?.length) return [];
-      const { data, error } = await supabase
-        .from('training_statuses')
-        .select(`
-          status,
-          player_id,
-          training_id,
-          players!inner(name)
-        `)
-        .in('training_id', pastTrainings.map(t => t.id));
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!user && !!pastTrainings,
-  });
-
-  // Fetch event statuses for past events
-  const { data: eventStats, isLoading: eventStatsLoading } = useQuery({
-    queryKey: ['eventStatistics', pastEvents],
-    queryFn: async () => {
-      if (!pastEvents?.length) return [];
-      const { data, error } = await supabase
-        .from('event_statuses')
-        .select(`
-          status,
-          player_id,
-          event_id,
-          players!inner(name)
-        `)
-        .in('event_id', pastEvents.map(e => e.id));
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!user && !!pastEvents,
-  });
+  const pastMatches = matchData?.matches || [];
+  const matchStats = matchData?.statuses || [];
+  const pastTrainings = trainingData?.trainings || [];
+  const trainingStats = trainingData?.statuses || [];
+  const pastEvents = eventData?.events || [];
+  const eventStats = eventData?.statuses || [];
 
   if (roleLoading) {
     return <PageLoading message="Laden..." />;
@@ -222,7 +166,7 @@ const AdminStatisticsPage = () => {
     return <Navigate to="/" replace />;
   }
 
-  if (matchesLoading || trainingsLoading || eventsLoading || playersLoading || matchStatsLoading || trainingStatsLoading || eventStatsLoading || seasonsLoading) {
+  if (matchLoading || trainingLoading || eventLoading || playersLoading || seasonsLoading) {
     return <PageLoading message="Statistieken laden..." />;
   }
 
