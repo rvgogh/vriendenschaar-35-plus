@@ -66,7 +66,7 @@ const PlayerManagement = () => {
       setPlayers(playersWithEmails);
       setAvailableUsers(usersData || []);
     } catch (error) {
-      console.error('Error fetching data:', error);
+      if (import.meta.env.DEV) console.error('Error fetching data:', error);
       toast.error('Kon data niet laden');
     } finally {
       setLoading(false);
@@ -85,7 +85,7 @@ const PlayerManagement = () => {
       toast.success('Speler koppeling succesvol bijgewerkt');
       fetchData(); // Refresh data
     } catch (error) {
-      console.error('Error updating player link:', error);
+      if (import.meta.env.DEV) console.error('Error updating player link:', error);
       toast.error('Kon speler koppeling niet bijwerken');
     }
   };
