@@ -163,15 +163,14 @@ const fetchTrainingStatusCounts = async (trainingId: number) => {
   return { yesCount };
 };
 
-const fetchMatchStatusCounts = async (matchId: number) => {
-  const { data: statuses, error } = await supabase
+const fetchMatchStatusCounts = async (matchId: number, opponent: string | null) => {
+  const openToAll = isOpenToAllPlayers(opponent);
+  let q = supabase
     .from("player_statuses")
-    .select(`
-      status,
-      players!inner(knvb_member)
-    `)
-    .eq("match_id", matchId)
-    .eq("players.knvb_member", true);
+    .select(`status, players!inner(knvb_member)`)
+    .eq("match_id", matchId);
+  if (!openToAll) q = q.eq("players.knvb_member", true);
+  const { data: statuses, error } = await q;
 
   if (error) return { inCount: 0 };
 
