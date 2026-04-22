@@ -4,35 +4,35 @@ import { Shield, Calendar, Clock, Users } from "lucide-react";
 import { Match } from "@/types";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { isOpenToAllPlayers } from "@/lib/matchHelpers";
 
 interface UpcomingMatchProps {
   match: Match | null;
 }
 
-const fetchPlayerStatusCounts = async (matchId: number) => {
-  // Fetch only statuses for KNVB members
-  const { data: statuses, error } = await supabase
+const fetchPlayerStatusCounts = async (matchId: number, opponent: string | null) => {
+  const openToAll = isOpenToAllPlayers(opponent);
+
+  let statusesQuery = supabase
     .from("player_statuses")
-    .select(`
-      status,
-      players!inner(knvb_member)
-    `)
-    .eq("match_id", matchId)
-    .eq("players.knvb_member", true);
+    .select(`status, players!inner(knvb_member)`)
+    .eq("match_id", matchId);
+  if (!openToAll) {
+    statusesQuery = statusesQuery.eq("players.knvb_member", true);
+  }
+  const { data: statuses, error } = await statusesQuery;
 
   if (error) {
-    console.error("Error fetching player statuses:", error);
+    if (import.meta.env.DEV) console.error("Error fetching player statuses:", error);
     return { inCount: 0, maybeCount: 0, outCount: 0, unknownCount: 0 };
   }
 
-  // Get total KNVB members
-  const { data: players, error: playersError } = await supabase
-    .from("players")
-    .select("id")
-    .eq("knvb_member", true);
+  let playersQuery = supabase.from("players").select("id");
+  if (!openToAll) playersQuery = playersQuery.eq("knvb_member", true);
+  const { data: players, error: playersError } = await playersQuery;
 
   if (playersError) {
-    console.error("Error fetching players:", playersError);
+    if (import.meta.env.DEV) console.error("Error fetching players:", playersError);
     return { inCount: 0, maybeCount: 0, outCount: 0, unknownCount: 0 };
   }
 
@@ -41,7 +41,7 @@ const fetchPlayerStatusCounts = async (matchId: number) => {
   const maybeCount = (statuses || []).filter(s => s.status === 'MAYBE').length;
   const outCount = (statuses || []).filter(s => s.status === 'OUT').length;
   const respondedCount = inCount + maybeCount + outCount;
-  const unknownCount = totalPlayers - respondedCount;
+  const unknownCount = Math.max(0, totalPlayers - respondedCount);
 
   return { inCount, maybeCount, outCount, unknownCount };
 };
@@ -49,7 +49,7 @@ const fetchPlayerStatusCounts = async (matchId: number) => {
 const UpcomingMatch = ({ match }: UpcomingMatchProps) => {
   const { data: statusCounts } = useQuery({
     queryKey: ["playerStatusCounts", match?.id],
-    queryFn: () => fetchPlayerStatusCounts(match!.id),
+    queryFn: () => fetchPlayerStatusCounts(match!.id, match!.opponent),
     enabled: !!match?.id,
   });
 
