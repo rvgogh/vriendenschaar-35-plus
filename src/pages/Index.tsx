@@ -246,7 +246,7 @@ const Index = () => {
     queryFn: async () => {
       const countsMap = new Map();
       for (const match of matchesWithPresence) {
-        const counts = await fetchMatchStatusCounts(match.id);
+        const counts = await fetchMatchStatusCounts(match.id, match.opponent);
         countsMap.set(match.id, counts);
       }
       return countsMap;
