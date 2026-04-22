@@ -10,6 +10,7 @@ import { toast } from "@/components/ui/sonner";
 import { PlayerStatus, TrainingAttendanceStatus, EventAttendanceStatus } from "@/types";
 import { useMyPlayer, useUpcomingMatches, useUpcomingTrainings, useUpcomingEvents, useTodaysTrainings } from "@/hooks/useData";
 import { formatDate } from "@/lib/datetime";
+import { isOpenToAllPlayers } from "@/lib/matchHelpers";
 
 import TrainingStatusIndicator from "@/components/TrainingStatusIndicator";
 import { useGpsVerificationForMultipleTrainings } from "@/hooks/useGpsVerification";
