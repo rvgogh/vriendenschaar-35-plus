@@ -10,6 +10,7 @@ import { toast } from "@/components/ui/sonner";
 import { PlayerStatus, TrainingAttendanceStatus, EventAttendanceStatus } from "@/types";
 import { useMyPlayer, useUpcomingMatches, useUpcomingTrainings, useUpcomingEvents, useTodaysTrainings } from "@/hooks/useData";
 import { formatDate } from "@/lib/datetime";
+import { isOpenToAllPlayers } from "@/lib/matchHelpers";
 
 import TrainingStatusIndicator from "@/components/TrainingStatusIndicator";
 import { useGpsVerificationForMultipleTrainings } from "@/hooks/useGpsVerification";
@@ -163,15 +164,14 @@ const fetchTrainingStatusCounts = async (trainingId: number) => {
   return { yesCount };
 };
 
-const fetchMatchStatusCounts = async (matchId: number) => {
-  const { data: statuses, error } = await supabase
+const fetchMatchStatusCounts = async (matchId: number, opponent: string | null) => {
+  const openToAll = isOpenToAllPlayers(opponent);
+  let q = supabase
     .from("player_statuses")
-    .select(`
-      status,
-      players!inner(knvb_member)
-    `)
-    .eq("match_id", matchId)
-    .eq("players.knvb_member", true);
+    .select(`status, players!inner(knvb_member)`)
+    .eq("match_id", matchId);
+  if (!openToAll) q = q.eq("players.knvb_member", true);
+  const { data: statuses, error } = await q;
 
   if (error) return { inCount: 0 };
 
@@ -246,7 +246,7 @@ const Index = () => {
     queryFn: async () => {
       const countsMap = new Map();
       for (const match of matchesWithPresence) {
-        const counts = await fetchMatchStatusCounts(match.id);
+        const counts = await fetchMatchStatusCounts(match.id, match.opponent);
         countsMap.set(match.id, counts);
       }
       return countsMap;

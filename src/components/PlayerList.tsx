@@ -3,14 +3,27 @@ import { supabase } from "@/integrations/supabase/client";
 import { PlayerStatus, PlayerWithStatus } from "@/types";
 import PlayerCard from "./PlayerCard";
 import { toast } from "@/components/ui/sonner";
+import { isOpenToAllPlayers } from "@/lib/matchHelpers";
 
 const fetchPlayersWithStatus = async (matchId: number): Promise<PlayerWithStatus[]> => {
-    // Fetch only KNVB member players
-    const { data: players, error: playersError } = await supabase
+    // Determine if this match allows all players (e.g. Gecu cup) or KNVB members only
+    const { data: match, error: matchError } = await supabase
+        .from("matches")
+        .select("opponent")
+        .eq("id", matchId)
+        .single();
+    if (matchError) throw matchError;
+
+    const openToAll = isOpenToAllPlayers(match?.opponent);
+
+    let playersQuery = supabase
         .from("players")
         .select("*")
-        .eq("knvb_member", true)
         .order('name', { ascending: true });
+    if (!openToAll) {
+        playersQuery = playersQuery.eq("knvb_member", true);
+    }
+    const { data: players, error: playersError } = await playersQuery;
     if (playersError) throw playersError;
 
     const { data: statuses, error: statusesError } = await supabase

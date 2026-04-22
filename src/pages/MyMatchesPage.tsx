@@ -17,14 +17,19 @@ import { StatusOverview, StatusCount } from "@/components/StatusOverview";
 import { EmptyState } from "@/components/EmptyState";
 import { useMyPlayer, useUpcomingMatches } from "@/hooks/useData";
 import { formatDateLong, formatTime } from "@/lib/datetime";
+import { isOpenToAllPlayers } from "@/lib/matchHelpers";
 
 
-const fetchPlayersWithMatchStatus = async (matchId: number): Promise<PlayerWithStatus[]> => {
-  const { data: players, error: playersError } = await supabase
+const fetchPlayersWithMatchStatus = async (matchId: number, opponent: string | null): Promise<PlayerWithStatus[]> => {
+  const openToAll = isOpenToAllPlayers(opponent);
+  let playersQuery = supabase
     .from("players")
     .select("*")
-    .eq("knvb_member", true)
     .order('name', { ascending: true });
+  if (!openToAll) {
+    playersQuery = playersQuery.eq("knvb_member", true);
+  }
+  const { data: players, error: playersError } = await playersQuery;
   if (playersError) throw playersError;
 
   const { data: statuses, error: statusesError } = await supabase
@@ -51,7 +56,7 @@ const MatchCard = ({ match, myPlayer, onStatusChange }: {
   
   const { data: players } = useQuery({
     queryKey: ["matchPlayers", match.id],
-    queryFn: () => fetchPlayersWithMatchStatus(match.id),
+    queryFn: () => fetchPlayersWithMatchStatus(match.id, match.opponent),
   });
 
   const myStatus = players?.find(p => p.id === myPlayer?.id)?.status || "UNKNOWN";
