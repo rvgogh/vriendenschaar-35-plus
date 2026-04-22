@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import { Calendar, Clock, UserCheck } from "lucide-react";
+import { isOpenToAllPlayers } from "@/lib/matchHelpers";
 
 interface MatchWithCount {
     id: number;
@@ -25,58 +26,56 @@ const fetchMatches = async (): Promise<MatchWithCount[]> => {
     if (matchesError) throw matchesError;
     if (!matches) return [];
 
-    // Fetch statuses only for KNVB members
+    // Fetch all statuses with player KNVB info
     const { data: statuses, error: statusesError } = await supabase
         .from("player_statuses")
         .select(`
-            match_id, 
+            match_id,
             status,
             players!inner(knvb_member)
-        `)
-        .eq("players.knvb_member", true);
+        `);
 
     if (statusesError) {
-        console.error("Error fetching player statuses:", statusesError);
-        // Return matches with 0 counts in case of an error
+        if (import.meta.env.DEV) console.error("Error fetching player statuses:", statusesError);
         return matches.map(match => ({ ...match, in_count: 0, maybe_count: 0, out_count: 0, unknown_count: 0 }));
     }
 
-    // Get total number of KNVB member players
+    // Get all players (we need both totals: KNVB-only and all players)
     const { data: players, error: playersError } = await supabase
         .from("players")
-        .select('id')
-        .eq("knvb_member", true);
+        .select('id, knvb_member');
 
     if (playersError) {
-        console.error("Error fetching players:", playersError);
+        if (import.meta.env.DEV) console.error("Error fetching players:", playersError);
         return matches.map(match => ({ ...match, in_count: 0, maybe_count: 0, out_count: 0, unknown_count: 0 }));
     }
 
-    const totalPlayers = players?.length || 0;
-
-    const statusCounts = (statuses || []).reduce((acc, { match_id, status }) => {
-        if (!acc[match_id]) {
-            acc[match_id] = { in_count: 0, maybe_count: 0, out_count: 0, unknown_count: 0 };
-        }
-        if (status === 'IN') {
-            acc[match_id].in_count++;
-        } else if (status === 'MAYBE') {
-            acc[match_id].maybe_count++;
-        } else if (status === 'OUT') {
-            acc[match_id].out_count++;
-        }
-        return acc;
-    }, {} as Record<number, { in_count: number, maybe_count: number, out_count: number, unknown_count: number }>);
+    const totalKnvb = (players || []).filter(p => p.knvb_member).length;
+    const totalAll = (players || []).length;
 
     const matchesWithCounts = matches.map(match => {
-        const counts = statusCounts[match.id] || { in_count: 0, maybe_count: 0, out_count: 0, unknown_count: 0 };
+        const openToAll = isOpenToAllPlayers(match.opponent);
+        const matchStatuses = (statuses || []).filter((s: any) => {
+            if (s.match_id !== match.id) return false;
+            if (openToAll) return true;
+            return s.players?.knvb_member === true;
+        });
+
+        const counts = matchStatuses.reduce((acc, { status }: any) => {
+            if (status === 'IN') acc.in_count++;
+            else if (status === 'MAYBE') acc.maybe_count++;
+            else if (status === 'OUT') acc.out_count++;
+            return acc;
+        }, { in_count: 0, maybe_count: 0, out_count: 0 });
+
         const respondedCount = counts.in_count + counts.maybe_count + counts.out_count;
-        const unknownCount = totalPlayers - respondedCount;
-        
+        const totalPlayers = openToAll ? totalAll : totalKnvb;
+        const unknownCount = Math.max(0, totalPlayers - respondedCount);
+
         return {
             ...match,
             ...counts,
-            unknown_count: unknownCount
+            unknown_count: unknownCount,
         };
     });
 
