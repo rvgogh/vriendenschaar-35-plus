@@ -19,12 +19,16 @@ import { useMyPlayer, useUpcomingMatches } from "@/hooks/useData";
 import { formatDateLong, formatTime } from "@/lib/datetime";
 
 
-const fetchPlayersWithMatchStatus = async (matchId: number): Promise<PlayerWithStatus[]> => {
-  const { data: players, error: playersError } = await supabase
+const fetchPlayersWithMatchStatus = async (matchId: number, opponent: string | null): Promise<PlayerWithStatus[]> => {
+  const openToAll = isOpenToAllPlayers(opponent);
+  let playersQuery = supabase
     .from("players")
     .select("*")
-    .eq("knvb_member", true)
     .order('name', { ascending: true });
+  if (!openToAll) {
+    playersQuery = playersQuery.eq("knvb_member", true);
+  }
+  const { data: players, error: playersError } = await playersQuery;
   if (playersError) throw playersError;
 
   const { data: statuses, error: statusesError } = await supabase
