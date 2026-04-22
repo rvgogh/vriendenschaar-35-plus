@@ -17,6 +17,7 @@ import { StatusOverview, StatusCount } from "@/components/StatusOverview";
 import { EmptyState } from "@/components/EmptyState";
 import { useMyPlayer, useUpcomingMatches } from "@/hooks/useData";
 import { formatDateLong, formatTime } from "@/lib/datetime";
+import { isOpenToAllPlayers } from "@/lib/matchHelpers";
 
 
 const fetchPlayersWithMatchStatus = async (matchId: number, opponent: string | null): Promise<PlayerWithStatus[]> => {
@@ -55,7 +56,7 @@ const MatchCard = ({ match, myPlayer, onStatusChange }: {
   
   const { data: players } = useQuery({
     queryKey: ["matchPlayers", match.id],
-    queryFn: () => fetchPlayersWithMatchStatus(match.id),
+    queryFn: () => fetchPlayersWithMatchStatus(match.id, match.opponent),
   });
 
   const myStatus = players?.find(p => p.id === myPlayer?.id)?.status || "UNKNOWN";
