@@ -1,0 +1,1 @@
+INSERT INTO public.players (id, name, knvb_member) VALUES ((SELECT COALESCE(MAX(id),0)+1 FROM public.players), 'Hayk', false);
