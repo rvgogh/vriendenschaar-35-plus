@@ -341,30 +341,6 @@ const Index = () => {
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-          {/* Statistieken - NEW */}
-          <Card 
-            className="hover:shadow-lg transition-shadow cursor-pointer relative border-2 border-primary/50"
-            onClick={() => navigate('/admin/statistics')}
-          >
-            <div className="absolute top-2 right-2 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground text-xs font-bold px-2 py-1 rounded-full shadow-lg animate-pulse">
-              NIEUW
-            </div>
-            <CardHeader className="pb-3">
-              <div className="flex items-center gap-2">
-                <BarChart3 className="h-6 w-6 text-primary" />
-                <CardTitle className="text-xl">Seizoensstatistieken</CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <CardDescription className="mb-4">
-                Bekijk de statistieken van Najaars competitie '25
-              </CardDescription>
-              <Button className="w-full">
-                Bekijk Statistieken
-              </Button>
-            </CardContent>
-          </Card>
-
           {/* Mijn Trainingen */}
           <Card
             className="hover:shadow-lg transition-shadow cursor-pointer"
