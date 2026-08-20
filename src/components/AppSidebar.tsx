@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Home, Calendar, Trophy, Dumbbell, Shield, User, Users, CalendarDays } from "lucide-react";
+import { Home, Calendar, Trophy, Dumbbell, Shield, User, Users, CalendarDays, BarChart3 } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
@@ -79,6 +79,14 @@ export function AppSidebar() {
                     <NavLink to="/my-matches" className={getNavCls} onClick={handleNavClick}>
                       <Users className="mr-2 h-4 w-4" />
                       {state !== "collapsed" && <span>Mijn Wedstrijden</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <NavLink to="/admin/statistics" className={getNavCls} onClick={handleNavClick}>
+                      <BarChart3 className="mr-2 h-4 w-4" />
+                      {state !== "collapsed" && <span>Statistieken</span>}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
