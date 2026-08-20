@@ -33,11 +33,9 @@ const PlayerManagement = () => {
 
   const fetchData = async () => {
     try {
-      // Fetch all players
+      // Fetch all players including their linked account (superuser only)
       const { data: playersData, error: playersError } = await supabase
-        .from('players')
-        .select('*')
-        .order('name');
+        .rpc('admin_list_players');
 
       if (playersError) throw playersError;
 
