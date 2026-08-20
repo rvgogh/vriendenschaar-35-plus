@@ -123,6 +123,7 @@ const AdminStatisticsPage = () => {
     queryKey: ['eventStatsAll', selectedSeasonId],
     queryFn: async () => {
       let eQuery = supabase.from('events').select('id').lt('event_date', today).order('event_date', { ascending: false });
+      if (seasonFilter) eQuery = eQuery.eq('season_id', seasonFilter);
       const { data: events, error: eErr } = await eQuery;
       if (eErr) throw eErr;
       if (!events?.length) return { events: [], statuses: [] };
@@ -134,7 +135,7 @@ const AdminStatisticsPage = () => {
       if (sErr) throw sErr;
       return { events, statuses: statuses || [] };
     },
-    enabled: !!user,
+    enabled: !!user && !!selectedSeasonId,
   });
 
   // Fetch all players
