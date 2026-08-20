@@ -20,7 +20,7 @@ import { formatDateLong, formatTime } from "@/lib/datetime";
 const fetchPlayersWithEventStatus = async (eventId: number): Promise<PlayerWithEventStatus[]> => {
   const { data: players, error: playersError } = await supabase
     .from("players")
-    .select("*")
+    .select("id, name, knvb_member")
     .order('name', { ascending: true });
   if (playersError) throw playersError;
 

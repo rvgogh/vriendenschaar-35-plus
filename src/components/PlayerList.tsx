@@ -18,7 +18,7 @@ const fetchPlayersWithStatus = async (matchId: number): Promise<PlayerWithStatus
 
     let playersQuery = supabase
         .from("players")
-        .select("*")
+        .select("id, name, knvb_member")
         .order('name', { ascending: true });
     if (!openToAll) {
         playersQuery = playersQuery.eq("knvb_member", true);

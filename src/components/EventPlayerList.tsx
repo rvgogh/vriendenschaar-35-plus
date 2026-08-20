@@ -6,7 +6,7 @@ import EventPlayerCard from "./EventPlayerCard";
 import { toast } from "@/components/ui/sonner";
 
 const fetchPlayersWithEventStatus = async (eventId: number): Promise<PlayerWithEventStatus[]> => {
-    const { data: players, error: playersError } = await supabase.from("players").select("*").order('name', { ascending: true });
+    const { data: players, error: playersError } = await supabase.from("players").select("id, name, knvb_member").order('name', { ascending: true });
     if (playersError) throw playersError;
 
     const { data: statuses, error: statusesError } = await supabase
