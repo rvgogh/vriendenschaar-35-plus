@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Home, Calendar, Trophy, Dumbbell, Shield, User, Users, CalendarDays } from "lucide-react";
+import { Home, Calendar, Trophy, Dumbbell, Shield, User, Users, CalendarDays, BarChart3 } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
