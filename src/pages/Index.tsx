@@ -613,6 +613,27 @@ const Index = () => {
               )}
             </CardContent>
           </Card>
+
+          {/* Seizoensstatistieken */}
+          <Card 
+            className="hover:shadow-lg transition-shadow cursor-pointer"
+            onClick={() => navigate('/admin/statistics')}
+          >
+            <CardHeader className="pb-3">
+              <div className="flex items-center gap-2">
+                <BarChart3 className="h-6 w-6 text-primary" />
+                <CardTitle className="text-xl">Seizoensstatistieken</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <CardDescription className="mb-4">
+                Bekijk de statistieken van Najaars competitie '25
+              </CardDescription>
+              <Button className="w-full">
+                Bekijk Statistieken
+              </Button>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>
