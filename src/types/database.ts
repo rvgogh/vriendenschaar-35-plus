@@ -1,7 +1,11 @@
 import { Tables, Enums } from "@/integrations/supabase/types";
 
 // Database table types
-export type Player = Tables<'players'>;
+// Non-sensitive player fields readable by any signed-in user.
+// The linked auth account id (user_id) is only available for your own player
+// (get_my_player) or to superusers (admin_list_players).
+export type PublicPlayer = Omit<Tables<'players'>, 'user_id'>;
+export type Player = PublicPlayer & { user_id?: string | null };
 export type Match = Tables<'matches'>;
 export type Training = Tables<'trainings'>;
 export type Event = Tables<'events'>;
