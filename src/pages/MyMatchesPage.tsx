@@ -24,7 +24,7 @@ const fetchPlayersWithMatchStatus = async (matchId: number, opponent: string | n
   const openToAll = isOpenToAllPlayers(opponent);
   let playersQuery = supabase
     .from("players")
-    .select("*")
+    .select("id, name, knvb_member")
     .order('name', { ascending: true });
   if (!openToAll) {
     playersQuery = playersQuery.eq("knvb_member", true);

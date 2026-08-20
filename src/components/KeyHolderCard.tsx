@@ -28,7 +28,7 @@ const KeyHolderCard = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("players")
-        .select("*")
+        .select("id, name, knvb_member")
         .order("name");
       if (error) throw error;
       return data as Player[];
@@ -41,7 +41,7 @@ const KeyHolderCard = () => {
       if (!keyHolder?.player_id) return null;
       const { data, error } = await supabase
         .from("players")
-        .select("*")
+        .select("id, name, knvb_member")
         .eq("id", keyHolder.player_id)
         .single();
       if (error) throw error;

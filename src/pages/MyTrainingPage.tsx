@@ -24,7 +24,7 @@ type PlayerWithTrainingStatusExtended = PlayerWithTrainingStatus & {
 const fetchPlayersWithTrainingStatus = async (trainingId: number): Promise<PlayerWithTrainingStatusExtended[]> => {
   const { data: players, error: playersError } = await supabase
     .from("players")
-    .select("*")
+    .select("id, name, knvb_member")
     .order('name', { ascending: true });
   if (playersError) throw playersError;
 

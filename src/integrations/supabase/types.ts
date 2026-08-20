@@ -42,20 +42,6 @@ export type Database = {
             foreignKeyName: "event_statuses_player_id_fkey"
             columns: ["player_id"]
             isOneToOne: false
-            referencedRelation: "admin_players"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "event_statuses_player_id_fkey"
-            columns: ["player_id"]
-            isOneToOne: false
-            referencedRelation: "my_player"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "event_statuses_player_id_fkey"
-            columns: ["player_id"]
-            isOneToOne: false
             referencedRelation: "players"
             referencedColumns: ["id"]
           },
@@ -180,20 +166,6 @@ export type Database = {
             columns: ["match_id"]
             isOneToOne: false
             referencedRelation: "matches"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "player_statuses_player_id_fkey"
-            columns: ["player_id"]
-            isOneToOne: false
-            referencedRelation: "admin_players"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "player_statuses_player_id_fkey"
-            columns: ["player_id"]
-            isOneToOne: false
-            referencedRelation: "my_player"
             referencedColumns: ["id"]
           },
           {
@@ -364,20 +336,6 @@ export type Database = {
             foreignKeyName: "training_statuses_player_id_fkey"
             columns: ["player_id"]
             isOneToOne: false
-            referencedRelation: "admin_players"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "training_statuses_player_id_fkey"
-            columns: ["player_id"]
-            isOneToOne: false
-            referencedRelation: "my_player"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "training_statuses_player_id_fkey"
-            columns: ["player_id"]
-            isOneToOne: false
             referencedRelation: "players"
             referencedColumns: ["id"]
           },
@@ -439,50 +397,27 @@ export type Database = {
       }
     }
     Views: {
-      admin_players: {
-        Row: {
-          id: number | null
-          knvb_member: boolean | null
-          name: string | null
-          user_id: string | null
-        }
-        Insert: {
-          id?: number | null
-          knvb_member?: boolean | null
-          name?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          id?: number | null
-          knvb_member?: boolean | null
-          name?: string | null
-          user_id?: string | null
-        }
-        Relationships: []
-      }
-      my_player: {
-        Row: {
-          id: number | null
-          knvb_member: boolean | null
-          name: string | null
-          user_id: string | null
-        }
-        Insert: {
-          id?: number | null
-          knvb_member?: boolean | null
-          name?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          id?: number | null
-          knvb_member?: boolean | null
-          name?: string | null
-          user_id?: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
+      admin_list_players: {
+        Args: never
+        Returns: {
+          id: number
+          knvb_member: boolean
+          name: string
+          user_id: string
+        }[]
+      }
+      get_my_player: {
+        Args: never
+        Returns: {
+          id: number
+          knvb_member: boolean
+          name: string
+          user_id: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
