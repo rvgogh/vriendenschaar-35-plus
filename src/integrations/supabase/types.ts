@@ -55,6 +55,7 @@ export type Database = {
           event_time: string | null
           id: number
           location: string | null
+          season_id: number | null
           subtitle: string | null
           title: string
         }
@@ -65,6 +66,7 @@ export type Database = {
           event_time?: string | null
           id?: number
           location?: string | null
+          season_id?: number | null
           subtitle?: string | null
           title: string
         }
@@ -75,10 +77,19 @@ export type Database = {
           event_time?: string | null
           id?: number
           location?: string | null
+          season_id?: number | null
           subtitle?: string | null
           title?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "events_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       key_holder: {
         Row: {
