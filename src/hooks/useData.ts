@@ -7,13 +7,11 @@ export const useMyPlayer = (userId: string | undefined) => {
     queryKey: ["myPlayer", userId],
     queryFn: async () => {
       if (!userId) throw new Error("No user ID provided");
-      const { data, error } = await supabase
-        .from("players")
-        .select("*")
-        .eq("user_id", userId)
-        .single();
+      const { data, error } = await supabase.rpc("get_my_player");
       if (error) throw error;
-      return data as Player;
+      const player = (data || [])[0];
+      if (!player) throw new Error("No player linked to this account");
+      return player as Player;
     },
     enabled: !!userId,
   });
