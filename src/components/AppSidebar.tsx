@@ -84,6 +84,14 @@ export function AppSidebar() {
                 </SidebarMenuItem>
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild>
+                    <NavLink to="/admin/statistics" className={getNavCls} onClick={handleNavClick}>
+                      <BarChart3 className="mr-2 h-4 w-4" />
+                      {state !== "collapsed" && <span>Statistieken</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
                     <NavLink to="/my-events" className={getNavCls} onClick={handleNavClick}>
                       <CalendarDays className="mr-2 h-4 w-4" />
                       {state !== "collapsed" && <span>Mijn Evenementen</span>}
