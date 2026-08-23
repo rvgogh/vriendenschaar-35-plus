@@ -407,6 +407,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_my_player: { Args: { _player_id: number }; Returns: boolean }
     }
     Enums: {
       app_role: "user" | "superuser"
