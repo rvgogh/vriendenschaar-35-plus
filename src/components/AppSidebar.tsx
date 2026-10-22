@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Home, Calendar, Trophy, Dumbbell, Shield, User, Users, CalendarDays, BarChart3 } from "lucide-react";
+import { Home, Calendar, Trophy, Dumbbell, Shield, User, Users, CalendarDays, BarChart3, Beer } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
@@ -98,6 +98,26 @@ export function AppSidebar() {
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
+                {isSuperuser && (
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild>
+                      <NavLink to="/bar-duties" className={getNavCls} onClick={handleNavClick}>
+                        <Beer className="mr-2 h-4 w-4" />
+                        {state !== "collapsed" && <span>Bardiensten</span>}
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                )}
+                {!isSuperuser && (
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild>
+                      <NavLink to="/bar-duties" className={getNavCls} onClick={handleNavClick}>
+                        <Beer className="mr-2 h-4 w-4" />
+                        {state !== "collapsed" && <span>Bardiensten</span>}
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                )}
                 {isSuperuser && (
                   <SidebarMenuItem>
                     <SidebarMenuButton asChild>
