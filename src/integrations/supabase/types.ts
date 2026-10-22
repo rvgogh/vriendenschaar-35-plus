@@ -14,6 +14,61 @@ export type Database = {
   }
   public: {
     Tables: {
+      bar_duties: {
+        Row: {
+          created_at: string
+          duty_date: string
+          id: string
+          knvb_only: boolean
+          player_one_id: number
+          player_two_id: number
+          season_id: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          duty_date: string
+          id?: string
+          knvb_only?: boolean
+          player_one_id: number
+          player_two_id: number
+          season_id?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          duty_date?: string
+          id?: string
+          knvb_only?: boolean
+          player_one_id?: number
+          player_two_id?: number
+          season_id?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bar_duties_player_one_id_fkey"
+            columns: ["player_one_id"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bar_duties_player_two_id_fkey"
+            columns: ["player_two_id"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bar_duties_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_statuses: {
         Row: {
           event_id: number
