@@ -20,6 +20,7 @@ import LoginButton from "@/components/LoginButton";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { NotificationPrompt } from "@/components/NotificationPrompt";
 import BarDutiesPage from "./pages/BarDutiesPage";
+import BarDutiesPublicPage from "./pages/BarDutiesPublicPage";
 
 const queryClient = new QueryClient();
 
@@ -48,7 +49,8 @@ const App = () => (
                         </div>
                       </header>
                       <Routes>
-                        <Route path="/bar-duties" element={<ProtectedRoute><BarDutiesPage /></ProtectedRoute>} />
+<Route path="/bar-duties" element={<ProtectedRoute><BarDutiesPage /></ProtectedRoute>} />
+                        <Route path="/bardiensten" element={<ProtectedRoute><BarDutiesPublicPage /></ProtectedRoute>} />
                         <Route path="/" element={
                           <ProtectedRoute>
                             <Index />

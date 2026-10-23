@@ -98,14 +98,16 @@ export function AppSidebar() {
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton asChild>
-                    <NavLink to="/bar-duties" className={getNavCls} onClick={handleNavClick}>
-                      <Beer className="mr-2 h-4 w-4" />
-                      {state !== "collapsed" && <span>Bardiensten</span>}
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
+                {isSuperuser && (
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild>
+                      <NavLink to="/bar-duties" className={getNavCls} onClick={handleNavClick}>
+                        <Beer className="mr-2 h-4 w-4" />
+                        {state !== "collapsed" && <span>Bardiensten</span>}
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                )}
                 {isSuperuser && (
                   <SidebarMenuItem>
                     <SidebarMenuButton asChild>
