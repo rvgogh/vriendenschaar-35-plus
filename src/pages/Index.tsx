@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
-import { Calendar, Trophy, Users, CheckCircle, X, BarChart3 } from "lucide-react";
+import { Calendar, Trophy, Users, CheckCircle, X, BarChart3, Beer } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "@/components/ui/sonner";
 import { PlayerStatus, TrainingAttendanceStatus, EventAttendanceStatus } from "@/types";
@@ -197,6 +197,28 @@ const Index = () => {
     enabled: !!myPlayer,
   });
 
+  const { data: myNextBarDuty } = useQuery({
+    queryKey: ['myNextBarDuty', myPlayer?.id],
+    queryFn: async () => {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const { data, error } = await supabase
+        .from('bar_duties')
+        .select('*')
+        .gte('duty_date', today.toISOString().split('T')[0])
+        .or(`player_one_id.eq.${myPlayer!.id},player_two_id.eq.${myPlayer!.id}`)
+        .order('duty_date', { ascending: true })
+        .limit(1);
+      if (error) throw error;
+      const duty = data?.[0];
+      if (!duty) return null;
+      const partnerId = duty.player_one_id === myPlayer!.id ? duty.player_two_id : duty.player_one_id;
+      const { data: partner } = await supabase.from('players').select('name').eq('id', partnerId).single();
+      return { ...duty, partnerName: partner?.name ?? 'Onbekende speler' };
+    },
+    enabled: !!myPlayer,
+  });
+
   const upcomingTraining = upcomingTrainings[0];
   const upcomingEvent = upcomingEvents[0];
 
@@ -338,6 +360,33 @@ const Index = () => {
               playerId={myPlayer.id} 
             />
           </div>
+        )}
+
+        {/* Bardienst card - shown when the player has an upcoming bar duty */}
+        {myNextBarDuty && (
+          <Card
+            className="mb-6 hover:shadow-lg transition-shadow cursor-pointer"
+            onClick={() => navigate('/bardiensten')}
+          >
+            <CardHeader className="pb-3">
+              <div className="flex items-center gap-2">
+                <Beer className="h-6 w-6 text-primary" />
+                <CardTitle className="text-xl">Bardienst</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <p className="font-medium">
+                {new Date(`${myNextBarDuty.duty_date}T12:00:00`).toLocaleDateString('nl-NL', {
+                  weekday: 'long',
+                  day: 'numeric',
+                  month: 'long',
+                })}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Na de training · samen met {myNextBarDuty.partnerName}
+              </p>
+            </CardContent>
+          </Card>
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
