@@ -362,6 +362,33 @@ const Index = () => {
           </div>
         )}
 
+        {/* Bardienst card - shown when the player has an upcoming bar duty */}
+        {myNextBarDuty && (
+          <Card
+            className="mb-6 hover:shadow-lg transition-shadow cursor-pointer"
+            onClick={() => navigate('/bardiensten')}
+          >
+            <CardHeader className="pb-3">
+              <div className="flex items-center gap-2">
+                <Beer className="h-6 w-6 text-primary" />
+                <CardTitle className="text-xl">Bardienst</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <p className="font-medium">
+                {new Date(`${myNextBarDuty.duty_date}T12:00:00`).toLocaleDateString('nl-NL', {
+                  weekday: 'long',
+                  day: 'numeric',
+                  month: 'long',
+                })}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Na de training · samen met {myNextBarDuty.partnerName}
+              </p>
+            </CardContent>
+          </Card>
+        )}
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
           {/* Mijn Trainingen */}
           <Card
