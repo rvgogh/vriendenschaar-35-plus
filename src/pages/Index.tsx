@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
-import { Calendar, Trophy, Users, CheckCircle, X, BarChart3 } from "lucide-react";
+import { Calendar, Trophy, Users, CheckCircle, X, BarChart3, Beer } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "@/components/ui/sonner";
 import { PlayerStatus, TrainingAttendanceStatus, EventAttendanceStatus } from "@/types";
@@ -194,6 +194,28 @@ const Index = () => {
   const { data: matchesWithPresence = [] } = useQuery({
     queryKey: ['matchesWithPresence', myPlayer?.id],
     queryFn: () => fetchMatchesWithPresence(myPlayer!.id),
+    enabled: !!myPlayer,
+  });
+
+  const { data: myNextBarDuty } = useQuery({
+    queryKey: ['myNextBarDuty', myPlayer?.id],
+    queryFn: async () => {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const { data, error } = await supabase
+        .from('bar_duties')
+        .select('*')
+        .gte('duty_date', today.toISOString().split('T')[0])
+        .or(`player_one_id.eq.${myPlayer!.id},player_two_id.eq.${myPlayer!.id}`)
+        .order('duty_date', { ascending: true })
+        .limit(1);
+      if (error) throw error;
+      const duty = data?.[0];
+      if (!duty) return null;
+      const partnerId = duty.player_one_id === myPlayer!.id ? duty.player_two_id : duty.player_one_id;
+      const { data: partner } = await supabase.from('players').select('name').eq('id', partnerId).single();
+      return { ...duty, partnerName: partner?.name ?? 'Onbekende speler' };
+    },
     enabled: !!myPlayer,
   });
 
