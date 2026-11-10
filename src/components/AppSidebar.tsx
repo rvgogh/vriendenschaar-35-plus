@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Home, Calendar, Trophy, Dumbbell, Shield, User, Users, CalendarDays, BarChart3, Beer } from "lucide-react";
+import { Home, Calendar, Trophy, Dumbbell, Shield, User, Users, CalendarDays, BarChart3, Beer, ClipboardList } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
@@ -25,7 +25,7 @@ export function AppSidebar() {
   const location = useLocation();
   const currentPath = location.pathname;
   const { user } = useAuth();
-  const { isSuperuser } = useUserRole();
+  const { isSuperuser, isTrainer } = useUserRole();
 
   const isActive = (path: string) => currentPath === path;
   const isExpanded = mainItems.some((i) => isActive(i.url));
@@ -118,6 +118,34 @@ export function AppSidebar() {
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 )}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
+
+        {user && (
+          <SidebarGroup>
+            <SidebarGroupLabel>Training</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {isTrainer && (
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild>
+                      <NavLink to="/training-plans" className={getNavCls} onClick={handleNavClick}>
+                        <ClipboardList className="mr-2 h-4 w-4" />
+                        {state !== "collapsed" && <span>Training plannen</span>}
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                )}
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <NavLink to="/drills" className={getNavCls} onClick={handleNavClick}>
+                      <Dumbbell className="mr-2 h-4 w-4" />
+                      {state !== "collapsed" && <span>Oefeningen</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>

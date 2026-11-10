@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 200" width="600" height="400" font-family="Inter, Arial, sans-serif">
+<defs><marker id="aw" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#FFFFFF"/></marker><marker id="ay" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#FFE066"/></marker><marker id="ao" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#FFB27A"/></marker></defs>
+<rect width="300" height="200" fill="#2F8550"/>
+<rect x="0" y="0" width="15" height="200" fill="#348C56"/>
+<rect x="30" y="0" width="15" height="200" fill="#348C56"/>
+<rect x="60" y="0" width="15" height="200" fill="#348C56"/>
+<rect x="90" y="0" width="15" height="200" fill="#348C56"/>
+<rect x="120" y="0" width="15" height="200" fill="#348C56"/>
+<rect x="150" y="0" width="15" height="200" fill="#348C56"/>
+<rect x="180" y="0" width="15" height="200" fill="#348C56"/>
+<rect x="210" y="0" width="15" height="200" fill="#348C56"/>
+<rect x="240" y="0" width="15" height="200" fill="#348C56"/>
+<rect x="270" y="0" width="15" height="200" fill="#348C56"/>
+<rect x="40" y="30" width="220" height="140" fill="none" stroke="#FFFFFF" stroke-opacity="0.85" stroke-width="1.5" stroke-dasharray="5 4"/>
+<line x1="22" y1="100" x2="81.8" y2="73.6" stroke="#FFFFFF" stroke-width="1.6" stroke-dasharray="4 3" marker-end="url(#aw)"/>
+<line x1="90" y1="70" x2="141.1" y2="61.5" stroke="#FFFFFF" stroke-width="1.6" stroke-dasharray="4 3" marker-end="url(#aw)"/>
+<line x1="150" y1="60" x2="193.6" y2="103.6" stroke="#FFFFFF" stroke-width="1.6" stroke-dasharray="4 3" marker-end="url(#aw)"/>
+<line x1="200" y1="110" x2="269.1" y2="101.1" stroke="#FFFFFF" stroke-width="1.6" stroke-dasharray="4 3" marker-end="url(#aw)"/>
+<line x1="110" y1="130" x2="142.0" y2="146.0" stroke="#FFE066" stroke-width="1.8" marker-end="url(#ay)"/>
+<circle cx="22" cy="100" r="7" fill="#7B3FB8" stroke="#FFFFFF" stroke-width="1.5"/>
+<text x="22" y="103.2" font-size="8.5" font-weight="700" fill="#FFFFFF" text-anchor="middle">J</text>
+<circle cx="278" cy="100" r="7" fill="#7B3FB8" stroke="#FFFFFF" stroke-width="1.5"/>
+<text x="278" y="103.2" font-size="8.5" font-weight="700" fill="#FFFFFF" text-anchor="middle">J</text>
+<circle cx="90" cy="70" r="7" fill="#1F4E9A" stroke="#FFFFFF" stroke-width="1.5"/>
+<circle cx="150" cy="60" r="7" fill="#1F4E9A" stroke="#FFFFFF" stroke-width="1.5"/>
+<circle cx="110" cy="130" r="7" fill="#1F4E9A" stroke="#FFFFFF" stroke-width="1.5"/>
+<circle cx="200" cy="110" r="7" fill="#1F4E9A" stroke="#FFFFFF" stroke-width="1.5"/>
+<circle cx="100" cy="100" r="7" fill="#E8772E" stroke="#FFFFFF" stroke-width="1.5"/>
+<circle cx="160" cy="95" r="7" fill="#E8772E" stroke="#FFFFFF" stroke-width="1.5"/>
+<circle cx="180" cy="140" r="7" fill="#E8772E" stroke="#FFFFFF" stroke-width="1.5"/>
+<circle cx="220" cy="70" r="7" fill="#E8772E" stroke="#FFFFFF" stroke-width="1.5"/>
+<circle cx="28" cy="94" r="3.2" fill="#FFFFFF" stroke="#17201A" stroke-width="1"/>
+</svg>

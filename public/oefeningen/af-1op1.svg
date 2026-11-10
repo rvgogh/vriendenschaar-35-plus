@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 200" width="600" height="400" font-family="Inter, Arial, sans-serif">
+<defs><marker id="aw" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#FFFFFF"/></marker><marker id="ay" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#FFE066"/></marker><marker id="ao" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#FFB27A"/></marker></defs>
+<rect width="300" height="200" fill="#2F8550"/>
+<rect x="0" y="0" width="15" height="200" fill="#348C56"/>
+<rect x="30" y="0" width="15" height="200" fill="#348C56"/>
+<rect x="60" y="0" width="15" height="200" fill="#348C56"/>
+<rect x="90" y="0" width="15" height="200" fill="#348C56"/>
+<rect x="120" y="0" width="15" height="200" fill="#348C56"/>
+<rect x="150" y="0" width="15" height="200" fill="#348C56"/>
+<rect x="180" y="0" width="15" height="200" fill="#348C56"/>
+<rect x="210" y="0" width="15" height="200" fill="#348C56"/>
+<rect x="240" y="0" width="15" height="200" fill="#348C56"/>
+<rect x="270" y="0" width="15" height="200" fill="#348C56"/>
+<rect x="6" y="6" width="288" height="188" fill="none" stroke="#FFFFFF" stroke-width="2"/>
+<rect x="80" y="6" width="140" height="60" fill="none" stroke="#FFFFFF" stroke-opacity="0.85" stroke-width="1.5" stroke-dasharray="5 4"/>
+<rect x="125" y="2" width="50" height="8" fill="#FFFFFF" fill-opacity="0.25" stroke="#FFFFFF" stroke-width="2.5"/>
+<line x1="150" y1="185" x2="130.0" y2="155.5" stroke="#FFFFFF" stroke-width="1.6" stroke-dasharray="4 3" marker-end="url(#aw)"/>
+<path d="M120.0,140.0 L122.3,137.7 L124.1,135.2 L125.0,132.6 L125.1,129.7 L124.5,126.6 L123.6,123.5 L122.9,120.4 L122.9,117.4 L123.7,114.7 L125.4,112.3 L127.7,109.9 L130.0,107.6 L131.8,105.2 L132.9,102.6 L133.1,99.7 L132.6,96.7 L131.7,93.5 L131.0,90.4 L130.8,87.5 L131.6,84.7 L133.2,82.2 L135.3,79.9 L137.6,77.6 L139.6,75.2 L140.8,72.6 L141.2,69.8 L140.7,66.7 L139.9,63.6 L139.1,60.5 L138.8,57.5 L139.4,54.7 L140.9,52.2 L144.5,46.9" fill="none" stroke="#FFFFFF" stroke-width="1.6" marker-end="url(#aw)"/>
+<line x1="180" y1="140" x2="160.4" y2="68.7" stroke="#FFE066" stroke-width="1.8" marker-end="url(#ay)"/>
+<circle cx="150" cy="18" r="7" fill="#F2D13A" stroke="#FFFFFF" stroke-width="1.5"/>
+<text x="150" y="21.2" font-size="8.5" font-weight="700" fill="#17201A" text-anchor="middle">K</text>
+<circle cx="150" cy="190" r="7" fill="#FFFFFF" stroke="#17201A" stroke-width="1.5"/>
+<text x="150" y="193.2" font-size="8.5" font-weight="700" fill="#17201A" text-anchor="middle">T</text>
+<circle cx="120" cy="140" r="7" fill="#1F4E9A" stroke="#FFFFFF" stroke-width="1.5"/>
+<circle cx="180" cy="140" r="7" fill="#E8772E" stroke="#FFFFFF" stroke-width="1.5"/>
+<circle cx="145" cy="180" r="3.2" fill="#FFFFFF" stroke="#17201A" stroke-width="1"/>
+</svg>

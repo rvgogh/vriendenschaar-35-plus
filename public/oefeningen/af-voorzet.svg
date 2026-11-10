@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 200" width="600" height="400" font-family="Inter, Arial, sans-serif">
+<defs><marker id="aw" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#FFFFFF"/></marker><marker id="ay" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#FFE066"/></marker><marker id="ao" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#FFB27A"/></marker></defs>
+<rect width="300" height="200" fill="#2F8550"/>
+<rect x="0" y="0" width="15" height="200" fill="#348C56"/>
+<rect x="30" y="0" width="15" height="200" fill="#348C56"/>
+<rect x="60" y="0" width="15" height="200" fill="#348C56"/>
+<rect x="90" y="0" width="15" height="200" fill="#348C56"/>
+<rect x="120" y="0" width="15" height="200" fill="#348C56"/>
+<rect x="150" y="0" width="15" height="200" fill="#348C56"/>
+<rect x="180" y="0" width="15" height="200" fill="#348C56"/>
+<rect x="210" y="0" width="15" height="200" fill="#348C56"/>
+<rect x="240" y="0" width="15" height="200" fill="#348C56"/>
+<rect x="270" y="0" width="15" height="200" fill="#348C56"/>
+<rect x="6" y="6" width="288" height="188" fill="none" stroke="#FFFFFF" stroke-width="2"/>
+<rect x="80" y="6" width="140" height="60" fill="none" stroke="#FFFFFF" stroke-opacity="0.85" stroke-width="1.5" stroke-dasharray="5 4"/>
+<rect x="125" y="2" width="50" height="8" fill="#FFFFFF" fill-opacity="0.25" stroke="#FFFFFF" stroke-width="2.5"/>
+<path d="M270.0,170.0 L271.6,167.2 L272.7,164.4 L273.0,161.6 L272.4,158.8 L271.0,156.0 L269.3,153.2 L267.9,150.4 L267.1,147.6 L267.2,144.8 L268.1,142.0 L269.6,139.2 L271.3,136.4 L272.5,133.6 L273.0,130.8 L272.6,128.0 L271.3,125.2 L269.7,122.4 L268.2,119.6 L267.2,116.8 L267.1,114.0 L267.8,111.2 L269.3,108.4 L270.9,105.6 L272.3,102.8 L273.0,100.0 L272.7,97.2 L271.7,94.4 L270.1,91.6 L268.5,88.8 L267.3,86.0 L267.0,83.2 L267.6,80.4 L268.9,77.6 L270.6,74.8 L272.0,72.0 L272.9,69.2 L272.9,66.4 L272.0,63.6 L270.5,60.8 L268.8,58.0 L270.0,52.0" fill="none" stroke="#FFFFFF" stroke-width="1.6" marker-end="url(#aw)"/>
+<path d="M270 48 Q230 10 165 38" fill="none" stroke="#FFFFFF" stroke-width="1.6" stroke-dasharray="4 3" marker-end="url(#aw)"/>
+<line x1="130" y1="130" x2="139.1" y2="44.0" stroke="#FFE066" stroke-width="1.8" marker-end="url(#ay)"/>
+<path d="M170 130 Q200 90 175 30" fill="none" stroke="#FFE066" stroke-width="1.8" marker-end="url(#ay)"/>
+<circle cx="150" cy="18" r="7" fill="#F2D13A" stroke="#FFFFFF" stroke-width="1.5"/>
+<text x="150" y="21.2" font-size="8.5" font-weight="700" fill="#17201A" text-anchor="middle">K</text>
+<circle cx="270" cy="170" r="7" fill="#1F4E9A" stroke="#FFFFFF" stroke-width="1.5"/>
+<circle cx="130" cy="130" r="7" fill="#1F4E9A" stroke="#FFFFFF" stroke-width="1.5"/>
+<circle cx="170" cy="130" r="7" fill="#1F4E9A" stroke="#FFFFFF" stroke-width="1.5"/>
+<text x="80" y="170" font-size="10" font-weight="600" fill="#FFFFFF" text-anchor="middle" paint-order="stroke" stroke="#1E5A36" stroke-width="3">eerste en tweede paal</text>
+</svg>

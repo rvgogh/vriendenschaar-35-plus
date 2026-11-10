@@ -21,6 +21,13 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { NotificationPrompt } from "@/components/NotificationPrompt";
 import BarDutiesPage from "./pages/BarDutiesPage";
 import BarDutiesPublicPage from "./pages/BarDutiesPublicPage";
+import TrainingPlansPage from "./pages/TrainingPlansPage";
+import TrainingPlanPage from "./pages/TrainingPlanPage";
+import TrainingTeamsPage from "./pages/TrainingTeamsPage";
+import TrainingProgramPage from "./pages/TrainingProgramPage";
+import TrainingPrintPage from "./pages/TrainingPrintPage";
+import DrillsPage from "./pages/DrillsPage";
+import DrillPage from "./pages/DrillPage";
 
 const queryClient = new QueryClient();
 
@@ -34,6 +41,8 @@ const App = () => (
           <BrowserRouter>
             <Routes>
               <Route path="/auth" element={<AuthPage />} />
+              {/* Printweergave: buiten de app-layout, zodat alleen het A4 op papier komt */}
+              <Route path="/training/:trainingId/print" element={<ProtectedRoute><TrainingPrintPage /></ProtectedRoute>} />
               <Route path="/*" element={
                 <SidebarProvider>
                   <div className="min-h-screen flex w-full">
@@ -51,6 +60,12 @@ const App = () => (
                       <Routes>
 <Route path="/bar-duties" element={<ProtectedRoute><BarDutiesPage /></ProtectedRoute>} />
                         <Route path="/bardiensten" element={<ProtectedRoute><BarDutiesPublicPage /></ProtectedRoute>} />
+                        <Route path="/training-plans" element={<ProtectedRoute><TrainingPlansPage /></ProtectedRoute>} />
+                        <Route path="/training-plans/:trainingId" element={<ProtectedRoute><TrainingPlanPage /></ProtectedRoute>} />
+                        <Route path="/training-plans/:trainingId/teams" element={<ProtectedRoute><TrainingTeamsPage /></ProtectedRoute>} />
+                        <Route path="/training/:trainingId" element={<ProtectedRoute><TrainingProgramPage /></ProtectedRoute>} />
+                        <Route path="/drills" element={<ProtectedRoute><DrillsPage /></ProtectedRoute>} />
+                        <Route path="/drills/:drillId" element={<ProtectedRoute><DrillPage /></ProtectedRoute>} />
                         <Route path="/" element={
                           <ProtectedRoute>
                             <Index />

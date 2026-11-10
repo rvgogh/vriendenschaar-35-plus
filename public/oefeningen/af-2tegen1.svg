@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 200" width="600" height="400" font-family="Inter, Arial, sans-serif">
+<defs><marker id="aw" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#FFFFFF"/></marker><marker id="ay" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#FFE066"/></marker><marker id="ao" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#FFB27A"/></marker></defs>
+<rect width="300" height="200" fill="#2F8550"/>
+<rect x="0" y="0" width="15" height="200" fill="#348C56"/>
+<rect x="30" y="0" width="15" height="200" fill="#348C56"/>
+<rect x="60" y="0" width="15" height="200" fill="#348C56"/>
+<rect x="90" y="0" width="15" height="200" fill="#348C56"/>
+<rect x="120" y="0" width="15" height="200" fill="#348C56"/>
+<rect x="150" y="0" width="15" height="200" fill="#348C56"/>
+<rect x="180" y="0" width="15" height="200" fill="#348C56"/>
+<rect x="210" y="0" width="15" height="200" fill="#348C56"/>
+<rect x="240" y="0" width="15" height="200" fill="#348C56"/>
+<rect x="270" y="0" width="15" height="200" fill="#348C56"/>
+<rect x="6" y="6" width="288" height="188" fill="none" stroke="#FFFFFF" stroke-width="2"/>
+<rect x="80" y="6" width="140" height="60" fill="none" stroke="#FFFFFF" stroke-opacity="0.85" stroke-width="1.5" stroke-dasharray="5 4"/>
+<rect x="125" y="2" width="50" height="8" fill="#FFFFFF" fill-opacity="0.25" stroke="#FFFFFF" stroke-width="2.5"/>
+<path d="M110.0,170.0 L112.1,167.8 L113.9,165.4 L114.9,162.9 L115.0,160.2 L114.5,157.3 L113.7,154.3 L112.9,151.3 L112.5,148.4 L113.0,145.8 L114.3,143.3 L116.2,141.0 L118.4,138.8 L120.4,136.5 L121.9,134.1 L122.6,131.5 L122.6,128.7 L121.9,125.8 L121.0,122.8 L120.3,119.8 L120.2,117.1 L124.5,111.9" fill="none" stroke="#FFFFFF" stroke-width="1.6" marker-end="url(#aw)"/>
+<line x1="125" y1="110" x2="176.3" y2="97.2" stroke="#FFFFFF" stroke-width="1.6" stroke-dasharray="4 3" marker-end="url(#aw)"/>
+<line x1="190" y1="170" x2="190.0" y2="109.0" stroke="#FFE066" stroke-width="1.8" marker-end="url(#ay)"/>
+<line x1="185" y1="95" x2="167.1" y2="20.7" stroke="#FFFFFF" stroke-width="2.6" marker-end="url(#aw)"/>
+<circle cx="150" cy="18" r="7" fill="#F2D13A" stroke="#FFFFFF" stroke-width="1.5"/>
+<text x="150" y="21.2" font-size="8.5" font-weight="700" fill="#17201A" text-anchor="middle">K</text>
+<circle cx="110" cy="170" r="7" fill="#1F4E9A" stroke="#FFFFFF" stroke-width="1.5"/>
+<circle cx="190" cy="170" r="7" fill="#1F4E9A" stroke="#FFFFFF" stroke-width="1.5"/>
+<circle cx="150" cy="100" r="7" fill="#E8772E" stroke="#FFFFFF" stroke-width="1.5"/>
+<circle cx="116" cy="166" r="3.2" fill="#FFFFFF" stroke="#17201A" stroke-width="1"/>
+</svg>
