@@ -12,7 +12,7 @@ import { toast } from "@/components/ui/sonner";
 import { cn } from "@/lib/utils";
 import { useUserRole } from "@/hooks/useUserRole";
 import {
-  buildTeams, fromAssignments, swapPlayers, teamLevel, toAssignments,
+  buildTeams, fromAssignments, levelCounts, lineup, primaryPosition, swapPlayers, toAssignments, POSITION_LABEL,
   type Side, type TeamMode, type TeamPlayer, type TeamResult,
 } from "@/lib/teamBuilder";
 import { fetchAssignments, fetchPlan, fetchPlayerInfo, fetchPresentPlayerIds, saveAssignments } from "@/lib/trainingDb";
@@ -30,14 +30,17 @@ const TeamCard = ({ title, players, side, selectedId, onSelect }: {
       <p className="mb-2 text-xs text-muted-foreground">
         {club.size === 1 ? `Team ${[...club][0]} · ` : ''}{players.length} spelers
       </p>
-      {players.map((player) => (
+      {lineup(players).map(({ player, position }) => (
         <button key={player.id} type="button" onClick={() => onSelect(player.id)} aria-pressed={selectedId === player.id}
           className={cn("flex min-h-9 w-full items-center justify-between gap-2 border-t text-left text-sm", selectedId === player.id && "bg-muted font-semibold text-primary")}>
           <span className="min-w-0 break-words">
             {player.name}
             {club.size > 1 && player.team !== ownTeam && <Badge variant="outline" className="ml-1 px-2 py-0">T{player.team}</Badge>}
           </span>
-          <span className="text-muted-foreground">{player.position ?? ''}</span>
+          <span className={cn("shrink-0 text-xs", player.positions.length > 0 && !player.positions.includes(position) ? "text-destructive" : "text-muted-foreground")}
+            title={player.positions.length > 0 && !player.positions.includes(position) ? 'Geen voorkeurspositie' : undefined}>
+            {POSITION_LABEL[position]}
+          </span>
         </button>
       ))}
     </section>
@@ -136,9 +139,12 @@ export default function TrainingTeamsPage() {
           </Tabs>
 
           <div className="mb-4 border-l-4 border-primary bg-muted p-4">
-            <p className="text-sm text-muted-foreground">Balans in niveau (alleen zichtbaar voor trainers)</p>
+            <p className="text-sm text-muted-foreground">Balans in niveau: GOAT / Eeuwig talent / Rookie (alleen zichtbaar voor trainers)</p>
             <p className="font-semibold">
-              {result.fields.map((f) => `${result.fields.length > 1 ? `Veld ${f.field}: ` : ''}${teamLevel(f.hesjes)} – ${teamLevel(f.zonder)}`).join(' · ')}
+              {result.fields.map((f) => {
+                const fmt = (t: TeamPlayer[]) => { const c = levelCounts(t); return `${c.goat}/${c.talent}/${c.rookie}`; };
+                return `${result.fields.length > 1 ? `Veld ${f.field}: ` : ''}${fmt(f.hesjes)} – ${fmt(f.zonder)}`;
+              }).join(' · ')}
             </p>
           </div>
 
@@ -165,6 +171,7 @@ export default function TrainingTeamsPage() {
                 className={cn("min-h-9 text-left font-semibold", selectedId === result.extra.id && "text-primary underline")}>
                 {result.extra.name}
               </button>
+              {primaryPosition(result.extra) && <span className="ml-2 text-xs text-muted-foreground">{POSITION_LABEL[primaryPosition(result.extra)!]}</span>}
               <p className="text-sm text-muted-foreground">
                 Speelt mee met het team dat als laatste een doelpunt tegen kreeg. Begint bij {SIDE_LABEL[result.extraStartsWith ?? 'hesjes']}.
               </p>
@@ -172,7 +179,7 @@ export default function TrainingTeamsPage() {
           )}
 
           <p className="mb-6 text-sm text-muted-foreground">
-            Geen wissels. Tot en met 15 spelers 2 teams, vanaf 16 spelers 4 teams op 2 velden. Tik op twee spelers om ze te ruilen.
+            Geen wissels. Tot en met 15 spelers 2 teams, vanaf 16 spelers 4 teams op 2 velden. Tik op twee spelers om ze te ruilen. Posities volgen de 1-2-3-1 en de voorkeur van de spelers; rood = geen voorkeurspositie.
           </p>
 
           <div className="flex flex-col gap-2">

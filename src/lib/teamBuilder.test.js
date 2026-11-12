@@ -1,10 +1,11 @@
 import { describe, test, expect } from 'bun:test';
-import { buildTeams, swapPlayers, toAssignments, fromAssignments, teamLevel } from './teamBuilder';
+import { buildTeams, swapPlayers, toAssignments, fromAssignments, teamLevel, lineup, formationFor, levelCounts } from './teamBuilder';
 
-const positions = ['K', 'V', 'V', 'M', 'M', 'A'];
-/** n spelers; de eerste `team1` horen bij Team 1. Niveau loopt rond van 1 tot 5. */
+const prefs = [['K'], ['V', 'MM'], ['V', 'VL'], ['MM', 'V', 'VL'], ['VL', 'S'], ['VL', 'MM'], ['S', 'VL']];
+const levels = ['rookie', 'talent', 'talent', 'goat'];
+/** n spelers; de eerste `team1` horen bij Team 1. Posities volgen een 1-2-3-1, niveau loopt rond. */
 const squad = (n, team1 = Math.ceil(n / 2)) => Array.from({ length: n }, (_, i) => ({
-  id: i + 1, name: `Speler ${i + 1}`, team: i < team1 ? 1 : 2, position: positions[i % positions.length], level: (i % 5) + 1,
+  id: i + 1, name: `Speler ${i + 1}`, team: i < team1 ? 1 : 2, positions: prefs[i % prefs.length], level: levels[i % levels.length],
 }));
 const ids = (result) => toAssignments(result).map((a) => a.player_id).sort((a, b) => a - b);
 
@@ -62,11 +63,11 @@ describe('teams maken', () => {
   test('gemengd: niveau per veld ligt dicht bij elkaar en keepers zijn gespreid', () => {
     const r = buildTeams(squad(20), 'gemengd');
     for (const f of r.fields) expect(Math.abs(teamLevel(f.hesjes) - teamLevel(f.zonder))).toBeLessThanOrEqual(2);
-    const keepers = r.fields.flatMap((f) => [f.hesjes, f.zonder]).map((t) => t.filter((p) => p.position === 'K').length);
+    const keepers = r.fields.flatMap((f) => [f.hesjes, f.zonder]).map((t) => t.filter((p) => p.positions[0] === 'K').length);
     expect(Math.max(...keepers)).toBe(1);
   });
   test('spelers zonder niveau of positie worden gewoon ingedeeld', () => {
-    const blank = squad(12).map((p) => ({ ...p, level: null, position: null }));
+    const blank = squad(12).map((p) => ({ ...p, level: null, positions: [] }));
     expect(ids(buildTeams(blank, 'gemengd')).length).toBe(12);
   });
   test('twee spelers ruilen, ook met de extra speler', () => {
@@ -81,5 +82,44 @@ describe('teams maken', () => {
     const players = squad(19);
     const r = buildTeams(players, 'gemengd');
     expect(fromAssignments(toAssignments(r), players)).toEqual(r);
+  });
+  test('GOATs worden over de teams verdeeld', () => {
+    const r = buildTeams(squad(14), 'gemengd');
+    const [a, b] = [levelCounts(r.fields[0].hesjes), levelCounts(r.fields[0].zonder)];
+    expect(Math.abs(a.goat - b.goat)).toBeLessThanOrEqual(1);
+  });
+  test('zonder niveau telt als Eeuwig talent', () => {
+    expect(teamLevel([{ id: 1, name: 'A', team: 1, positions: [], level: null }]))
+      .toBe(teamLevel([{ id: 1, name: 'A', team: 1, positions: [], level: 'talent' }]));
+  });
+});
+
+describe('opstelling 1-2-3-1', () => {
+  test('bij 7 spelers: keeper, 2 verdedigers, mid-mid, 2 vleugels, spits', () => {
+    expect(formationFor(7)).toEqual(['K', 'V', 'V', 'MM', 'VL', 'VL', 'S']);
+    expect(formationFor(6)).toEqual(['K', 'V', 'V', 'MM', 'VL', 'S']);
+    expect(formationFor(5)).toEqual(['K', 'V', 'V', 'MM', 'S']);
+    expect(formationFor(4)).toEqual(['K', 'V', 'MM', 'S']);
+  });
+  test('ieder op zijn favoriete positie als dat kan', () => {
+    const team = squad(7);
+    const spots = lineup(team);
+    expect(spots.map((s) => s.position)).toEqual(formationFor(7));
+    for (const s of spots) expect(s.player.positions).toContain(s.position);
+    expect(spots.filter((s) => s.player.positions[0] === s.position).length).toBeGreaterThanOrEqual(5);
+  });
+  test('volgorde telt: tweede keus gaat voor een positie die niet genoemd is', () => {
+    const team = [
+      { id: 1, name: 'A', team: 1, positions: ['S', 'K'], level: null },
+      { id: 2, name: 'B', team: 1, positions: ['S'], level: null },
+      { id: 3, name: 'C', team: 1, positions: ['V'], level: null },
+      { id: 4, name: 'D', team: 1, positions: ['MM'], level: null },
+    ];
+    const byPos = Object.fromEntries(lineup(team).map((s) => [s.position, s.player.name]));
+    expect(byPos).toEqual({ K: 'A', S: 'B', V: 'C', MM: 'D' });
+  });
+  test('iedereen krijgt precies één plek, ook zonder voorkeur', () => {
+    const team = squad(6).map((p) => ({ ...p, positions: [] }));
+    expect(lineup(team).map((s) => s.player.id).sort()).toEqual([1, 2, 3, 4, 5, 6]);
   });
 });

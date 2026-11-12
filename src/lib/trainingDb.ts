@@ -5,7 +5,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import type { Drill, PlanBlock, Theme } from "@/lib/trainingPlan";
 import { RECENT_DAYS } from "@/lib/trainingPlan";
-import type { Assignment, Position, TeamPlayer } from "@/lib/teamBuilder";
+import type { Assignment, Level, Position, TeamPlayer } from "@/lib/teamBuilder";
 
 const db = supabase as unknown as SupabaseClient;
 
@@ -152,40 +152,66 @@ export const setPlanStatus = async (planId: string, status: 'concept' | 'publish
   if (error) throw error;
 };
 
-/** Alle spelers met team en positie; niveau alleen als de ingelogde gebruiker trainer is. */
+/** Alle spelers met team en voorkeursposities; niveau alleen als de ingelogde gebruiker trainer is. */
 export const fetchPlayerInfo = async (withLevels: boolean): Promise<PlayerInfo[]> => {
   const players = await supabase.from('players').select('id, name, knvb_member').order('name');
   if (players.error) throw players.error;
-  const info = await db.from('player_training_info').select('player_id, team, position');
+  const info = await db.from('player_training_info').select('player_id, team, positions');
   if (info.error) throw info.error;
-  const levels = new Map<number, number>();
+  const levels = new Map<number, Level>();
   if (withLevels) {
-    const result = await db.from('player_levels').select('player_id, level');
+    const result = await db.from('player_levels').select('player_id, tier');
     if (result.error) throw result.error;
-    (result.data ?? []).forEach((row: { player_id: number; level: number }) => levels.set(row.player_id, row.level));
+    (result.data ?? []).forEach((row: { player_id: number; tier: Level }) => levels.set(row.player_id, row.tier));
   }
-  const infoById = new Map<number, { team: 1 | 2; position: Position | null }>();
-  (info.data ?? []).forEach((row: { player_id: number; team: 1 | 2; position: Position | null }) => infoById.set(row.player_id, row));
+  type InfoRow = { player_id: number; team: 1 | 2; positions: Position[] | null };
+  const infoById = new Map<number, InfoRow>();
+  (info.data ?? []).forEach((row: InfoRow) => infoById.set(row.player_id, row));
   return (players.data ?? []).map((p) => ({
     id: p.id,
     name: p.name,
     knvb_member: !!p.knvb_member,
     team: infoById.get(p.id)?.team ?? (p.knvb_member ? 1 : 2),
-    position: infoById.get(p.id)?.position ?? null,
+    positions: infoById.get(p.id)?.positions ?? [],
     level: levels.get(p.id) ?? null,
     hasInfo: infoById.has(p.id),
   }));
 };
 
-export const savePlayerInfo = async (playerId: number, team: 1 | 2, position: Position | null) => {
-  const { error } = await db.from('player_training_info').upsert({ player_id: playerId, team, position }, { onConflict: 'player_id' });
+export const savePlayerInfo = async (playerId: number, team: 1 | 2, positions: Position[]) => {
+  const { error } = await db.from('player_training_info').upsert({ player_id: playerId, team, positions }, { onConflict: 'player_id' });
   if (error) throw error;
 };
 
-export const savePlayerLevel = async (playerId: number, level: number | null) => {
-  const { error } = level === null
+/** Eeuwig talent is de standaard: dan is er geen rij nodig. */
+export const savePlayerLevel = async (playerId: number, level: Level) => {
+  const { error } = level === 'talent'
     ? await db.from('player_levels').delete().eq('player_id', playerId)
-    : await db.from('player_levels').upsert({ player_id: playerId, level }, { onConflict: 'player_id' });
+    : await db.from('player_levels').upsert({ player_id: playerId, tier: level }, { onConflict: 'player_id' });
+  if (error) throw error;
+};
+
+/** Voorkeursposities van de ingelogde speler. */
+export const fetchMyPositions = async (playerId: number): Promise<Position[]> => {
+  const { data, error } = await db.from('player_training_info').select('positions').eq('player_id', playerId).maybeSingle();
+  if (error) throw error;
+  return ((data as { positions: Position[] } | null)?.positions ?? []);
+};
+
+/** Eigen niveau; spelers zien alleen hun eigen niveau. */
+export const fetchMyLevel = async (): Promise<Level> => {
+  const { data, error } = await db.rpc('get_my_level');
+  if (error) throw error;
+  return ((data as Level | null) ?? 'talent');
+};
+
+export const saveMyLevel = async (level: Level) => {
+  const { error } = await db.rpc('set_my_level', { _tier: level });
+  if (error) throw error;
+};
+
+export const saveMyPositions = async (positions: Position[]) => {
+  const { error } = await db.rpc('set_my_positions', { _positions: positions });
   if (error) throw error;
 };
 
