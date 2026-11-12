@@ -5,7 +5,7 @@ import { useAuth } from './useAuth';
 
 export const useUserRole = () => {
   const { user } = useAuth();
-  const [role, setRole] = useState<'user' | 'superuser' | null>(null);
+  const [role, setRole] = useState<'user' | 'trainer' | 'superuser' | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -27,7 +27,7 @@ export const useUserRole = () => {
           console.error('Error fetching user role:', error);
           setRole('user'); // Default to user if no role found
         } else {
-          setRole(data.role);
+          setRole(data.role as 'user' | 'trainer' | 'superuser');
         }
       } catch (error) {
         console.error('Error fetching user role:', error);
@@ -40,5 +40,11 @@ export const useUserRole = () => {
     fetchUserRole();
   }, [user]);
 
-  return { role, loading, isSuperuser: role === 'superuser' };
+  return {
+    role,
+    loading,
+    isSuperuser: role === 'superuser',
+    // Trainers maken en publiceren trainingen; beheerders mogen dat ook.
+    isTrainer: role === 'trainer' || role === 'superuser',
+  };
 };

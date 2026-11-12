@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 200" width="600" height="400" font-family="Inter, Arial, sans-serif">
+<defs><marker id="aw" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#FFFFFF"/></marker><marker id="ay" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#FFE066"/></marker><marker id="ao" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#FFB27A"/></marker></defs>
+<rect width="300" height="200" fill="#2F8550"/>
+<rect x="0" y="0" width="15" height="200" fill="#348C56"/>
+<rect x="30" y="0" width="15" height="200" fill="#348C56"/>
+<rect x="60" y="0" width="15" height="200" fill="#348C56"/>
+<rect x="90" y="0" width="15" height="200" fill="#348C56"/>
+<rect x="120" y="0" width="15" height="200" fill="#348C56"/>
+<rect x="150" y="0" width="15" height="200" fill="#348C56"/>
+<rect x="180" y="0" width="15" height="200" fill="#348C56"/>
+<rect x="210" y="0" width="15" height="200" fill="#348C56"/>
+<rect x="240" y="0" width="15" height="200" fill="#348C56"/>
+<rect x="270" y="0" width="15" height="200" fill="#348C56"/>
+<rect x="30" y="15" width="240" height="170" fill="none" stroke="#FFFFFF" stroke-opacity="0.85" stroke-width="1.5" stroke-dasharray="5 4"/>
+<path d="M70.0,50.0 L71.7,52.5 L73.5,54.7 L75.7,56.2 L78.2,57.0 L81.1,57.2 L84.1,57.0 L87.1,56.9 L89.9,57.0 L92.5,57.9 L94.6,59.4 L96.5,61.6 L98.1,64.1 L99.8,66.6 L101.7,68.8 L108.2,69.1" fill="none" stroke="#FFFFFF" stroke-width="1.6" marker-end="url(#aw)"/>
+<path d="M150.0,40.0 L152.8,40.5 L155.5,40.6 L158.0,40.2 L160.3,39.1 L162.3,37.4 L164.1,35.2 L165.9,33.0 L167.8,31.0 L169.9,29.4 L172.2,28.6 L174.8,28.4 L177.5,28.6 L180.4,29.1 L183.2,29.5 L188.1,25.7" fill="none" stroke="#FFFFFF" stroke-width="1.6" marker-end="url(#aw)"/>
+<path d="M230.0,60.0 L227.8,61.8 L225.9,63.8 L224.6,65.9 L223.9,68.3 L223.9,71.0 L224.3,73.8 L224.8,76.6 L225.1,79.4 L224.9,81.9 L224.0,84.2 L222.5,86.3 L220.5,88.2 L218.2,90.0 L216.1,91.9 L215.7,98.1" fill="none" stroke="#FFFFFF" stroke-width="1.6" marker-end="url(#aw)"/>
+<path d="M240.0,140.0 L237.2,139.2 L234.4,138.8 L231.8,139.0 L229.4,139.9 L227.2,141.5 L225.1,143.5 L222.9,145.6 L220.8,147.3 L218.4,148.5 L215.9,148.9 L213.2,148.6 L210.3,147.9 L207.5,147.0 L201.9,149.5" fill="none" stroke="#FFFFFF" stroke-width="1.6" marker-end="url(#aw)"/>
+<path d="M90.0,150.0 L89.3,147.3 L88.3,144.8 L86.9,142.7 L85.0,141.1 L82.6,140.0 L80.0,139.2 L77.2,138.5 L74.6,137.6 L72.3,136.4 L70.5,134.7 L69.2,132.5 L68.3,129.9 L67.6,127.2 L66.9,124.5 L61.4,121.4" fill="none" stroke="#FFFFFF" stroke-width="1.6" marker-end="url(#aw)"/>
+<path d="M160.0,110.0 L160.7,112.8 L161.7,115.3 L163.2,117.4 L165.1,119.0 L167.5,120.1 L170.2,120.9 L173.0,121.6 L175.6,122.5 L177.9,123.8 L179.6,125.5 L180.9,127.8 L183.6,133.6" fill="none" stroke="#FFFFFF" stroke-width="1.6" marker-end="url(#aw)"/>
+<path d="M110.0,90.0 L112.4,88.8 L114.6,87.4 L116.4,85.8 L117.6,83.8 L118.3,81.5 L118.6,78.9 L118.8,76.2 L119.0,73.5 L119.5,71.0 L120.5,68.9 L122.0,67.1 L124.0,65.6 L128.9,61.7" fill="none" stroke="#FFFFFF" stroke-width="1.6" marker-end="url(#aw)"/>
+<circle cx="70" cy="50" r="7" fill="#1F4E9A" stroke="#FFFFFF" stroke-width="1.5"/>
+<circle cx="150" cy="40" r="7" fill="#1F4E9A" stroke="#FFFFFF" stroke-width="1.5"/>
+<circle cx="230" cy="60" r="7" fill="#1F4E9A" stroke="#FFFFFF" stroke-width="1.5"/>
+<circle cx="240" cy="140" r="7" fill="#1F4E9A" stroke="#FFFFFF" stroke-width="1.5"/>
+<circle cx="90" cy="150" r="7" fill="#1F4E9A" stroke="#FFFFFF" stroke-width="1.5"/>
+<circle cx="160" cy="110" r="7" fill="#1F4E9A" stroke="#FFFFFF" stroke-width="1.5"/>
+<circle cx="110" cy="90" r="7" fill="#1F4E9A" stroke="#FFFFFF" stroke-width="1.5"/>
+<circle cx="200" cy="160" r="7" fill="#1F4E9A" stroke="#FFFFFF" stroke-width="1.5"/>
+<text x="150" y="195" font-size="10" font-weight="600" fill="#FFFFFF" text-anchor="middle" paint-order="stroke" stroke="#1E5A36" stroke-width="3">op signaal: draaien, stoppen, versnellen</text>
+</svg>

@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 200" width="600" height="400" font-family="Inter, Arial, sans-serif">
+<defs><marker id="aw" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#FFFFFF"/></marker><marker id="ay" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#FFE066"/></marker><marker id="ao" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#FFB27A"/></marker></defs>
+<rect width="300" height="200" fill="#2F8550"/>
+<rect x="0" y="0" width="15" height="200" fill="#348C56"/>
+<rect x="30" y="0" width="15" height="200" fill="#348C56"/>
+<rect x="60" y="0" width="15" height="200" fill="#348C56"/>
+<rect x="90" y="0" width="15" height="200" fill="#348C56"/>
+<rect x="120" y="0" width="15" height="200" fill="#348C56"/>
+<rect x="150" y="0" width="15" height="200" fill="#348C56"/>
+<rect x="180" y="0" width="15" height="200" fill="#348C56"/>
+<rect x="210" y="0" width="15" height="200" fill="#348C56"/>
+<rect x="240" y="0" width="15" height="200" fill="#348C56"/>
+<rect x="270" y="0" width="15" height="200" fill="#348C56"/>
+<rect x="6" y="6" width="288" height="188" fill="none" stroke="#FFFFFF" stroke-width="2"/>
+<line x1="150" y1="6" x2="150" y2="194" stroke="#FFFFFF" stroke-opacity="0.9" stroke-width="2"/>
+<rect x="2" y="75" width="8" height="50" fill="#FFFFFF" fill-opacity="0.25" stroke="#FFFFFF" stroke-width="2.5"/>
+<rect x="290" y="75" width="8" height="50" fill="#FFFFFF" fill-opacity="0.25" stroke="#FFFFFF" stroke-width="2.5"/>
+<path d="M70.0,100.0 L72.7,101.5 L75.4,102.6 L78.1,103.0 L80.8,102.5 L83.5,101.3 L86.2,99.7 L88.9,98.2 L91.6,97.2 L94.3,97.0 L97.0,97.7 L99.7,99.0 L102.3,100.6 L105.0,102.0 L107.7,102.9 L110.4,102.9 L113.1,102.1 L115.8,100.8 L118.5,99.2 L121.2,97.8 L123.9,97.1 L126.6,97.2 L129.3,98.1 L132.0,99.5 L138.0,100.0" fill="none" stroke="#FFFFFF" stroke-width="1.6" marker-end="url(#aw)"/>
+<line x1="140" y1="100" x2="183.3" y2="61.0" stroke="#FFFFFF" stroke-width="1.6" stroke-dasharray="4 3" marker-end="url(#aw)"/>
+<line x1="70" y1="60" x2="181.0" y2="55.4" stroke="#FFE066" stroke-width="1.8" marker-end="url(#ay)"/>
+<line x1="70" y1="140" x2="221.0" y2="149.4" stroke="#FFE066" stroke-width="1.8" marker-end="url(#ay)"/>
+<circle cx="18" cy="100" r="7" fill="#F2D13A" stroke="#FFFFFF" stroke-width="1.5"/>
+<text x="18" y="103.2" font-size="8.5" font-weight="700" fill="#17201A" text-anchor="middle">K</text>
+<circle cx="282" cy="100" r="7" fill="#F2D13A" stroke="#FFFFFF" stroke-width="1.5"/>
+<text x="282" y="103.2" font-size="8.5" font-weight="700" fill="#17201A" text-anchor="middle">K</text>
+<circle cx="70" cy="60" r="7" fill="#1F4E9A" stroke="#FFFFFF" stroke-width="1.5"/>
+<circle cx="70" cy="100" r="7" fill="#1F4E9A" stroke="#FFFFFF" stroke-width="1.5"/>
+<circle cx="70" cy="140" r="7" fill="#1F4E9A" stroke="#FFFFFF" stroke-width="1.5"/>
+<circle cx="210" cy="80" r="7" fill="#E8772E" stroke="#FFFFFF" stroke-width="1.5"/>
+<circle cx="210" cy="120" r="7" fill="#E8772E" stroke="#FFFFFF" stroke-width="1.5"/>
+<circle cx="76" cy="96" r="3.2" fill="#FFFFFF" stroke="#17201A" stroke-width="1"/>
+<text x="150" y="190" font-size="10" font-weight="600" fill="#FFFFFF" text-anchor="middle" paint-order="stroke" stroke="#1E5A36" stroke-width="3">daarna 2+1 terug</text>
+</svg>

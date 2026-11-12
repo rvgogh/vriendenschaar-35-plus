@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 200" width="600" height="400" font-family="Inter, Arial, sans-serif">
+<defs><marker id="aw" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#FFFFFF"/></marker><marker id="ay" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#FFE066"/></marker><marker id="ao" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#FFB27A"/></marker></defs>
+<rect width="300" height="200" fill="#2F8550"/>
+<rect x="0" y="0" width="15" height="200" fill="#348C56"/>
+<rect x="30" y="0" width="15" height="200" fill="#348C56"/>
+<rect x="60" y="0" width="15" height="200" fill="#348C56"/>
+<rect x="90" y="0" width="15" height="200" fill="#348C56"/>
+<rect x="120" y="0" width="15" height="200" fill="#348C56"/>
+<rect x="150" y="0" width="15" height="200" fill="#348C56"/>
+<rect x="180" y="0" width="15" height="200" fill="#348C56"/>
+<rect x="210" y="0" width="15" height="200" fill="#348C56"/>
+<rect x="240" y="0" width="15" height="200" fill="#348C56"/>
+<rect x="270" y="0" width="15" height="200" fill="#348C56"/>
+<rect x="6" y="6" width="288" height="188" fill="none" stroke="#FFFFFF" stroke-width="2"/>
+<rect x="6" y="25" width="6" height="30" fill="#FFFFFF" fill-opacity="0.25" stroke="#FFFFFF" stroke-width="2.5"/>
+<rect x="6" y="145" width="6" height="30" fill="#FFFFFF" fill-opacity="0.25" stroke="#FFFFFF" stroke-width="2.5"/>
+<rect x="288" y="25" width="6" height="30" fill="#FFFFFF" fill-opacity="0.25" stroke="#FFFFFF" stroke-width="2.5"/>
+<rect x="288" y="145" width="6" height="30" fill="#FFFFFF" fill-opacity="0.25" stroke="#FFFFFF" stroke-width="2.5"/>
+<line x1="130" y1="100" x2="173.6" y2="143.6" stroke="#FFFFFF" stroke-width="1.6" stroke-dasharray="4 3" marker-end="url(#aw)"/>
+<path d="M180.0,150.0 L182.6,151.9 L185.2,153.3 L187.9,153.9 L190.7,153.6 L193.5,152.7 L196.5,151.3 L199.4,150.2 L202.2,149.6 L204.9,149.8 L207.6,150.9 L210.2,152.7 L212.7,154.6 L215.3,156.2 L218.0,157.2 L220.7,157.3 L223.6,156.6 L226.5,155.4 L229.4,154.1 L232.2,153.2 L235.0,153.1 L237.7,153.9 L240.3,155.4 L242.9,157.3 L245.4,159.1 L248.1,160.4 L250.8,160.8 L253.6,160.4 L256.5,159.4 L259.4,158.1 L262.3,157.0 L268.0,159.8" fill="none" stroke="#FFFFFF" stroke-width="1.6" marker-end="url(#aw)"/>
+<circle cx="70" cy="60" r="7" fill="#1F4E9A" stroke="#FFFFFF" stroke-width="1.5"/>
+<circle cx="80" cy="140" r="7" fill="#1F4E9A" stroke="#FFFFFF" stroke-width="1.5"/>
+<circle cx="130" cy="100" r="7" fill="#1F4E9A" stroke="#FFFFFF" stroke-width="1.5"/>
+<circle cx="170" cy="50" r="7" fill="#1F4E9A" stroke="#FFFFFF" stroke-width="1.5"/>
+<circle cx="180" cy="150" r="7" fill="#1F4E9A" stroke="#FFFFFF" stroke-width="1.5"/>
+<circle cx="230" cy="60" r="7" fill="#E8772E" stroke="#FFFFFF" stroke-width="1.5"/>
+<circle cx="220" cy="140" r="7" fill="#E8772E" stroke="#FFFFFF" stroke-width="1.5"/>
+<circle cx="170" cy="100" r="7" fill="#E8772E" stroke="#FFFFFF" stroke-width="1.5"/>
+<circle cx="120" cy="50" r="7" fill="#E8772E" stroke="#FFFFFF" stroke-width="1.5"/>
+<circle cx="110" cy="150" r="7" fill="#E8772E" stroke="#FFFFFF" stroke-width="1.5"/>
+<circle cx="136" cy="96" r="3.2" fill="#FFFFFF" stroke="#17201A" stroke-width="1"/>
+<text x="150" y="20" font-size="10" font-weight="600" fill="#FFFFFF" text-anchor="middle" paint-order="stroke" stroke="#1E5A36" stroke-width="3">2 doeltjes verdedigen, 2 aanvallen</text>
+</svg>

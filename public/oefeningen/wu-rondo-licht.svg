@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 200" width="600" height="400" font-family="Inter, Arial, sans-serif">
+<defs><marker id="aw" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#FFFFFF"/></marker><marker id="ay" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#FFE066"/></marker><marker id="ao" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#FFB27A"/></marker></defs>
+<rect width="300" height="200" fill="#2F8550"/>
+<rect x="0" y="0" width="15" height="200" fill="#348C56"/>
+<rect x="30" y="0" width="15" height="200" fill="#348C56"/>
+<rect x="60" y="0" width="15" height="200" fill="#348C56"/>
+<rect x="90" y="0" width="15" height="200" fill="#348C56"/>
+<rect x="120" y="0" width="15" height="200" fill="#348C56"/>
+<rect x="150" y="0" width="15" height="200" fill="#348C56"/>
+<rect x="180" y="0" width="15" height="200" fill="#348C56"/>
+<rect x="210" y="0" width="15" height="200" fill="#348C56"/>
+<rect x="240" y="0" width="15" height="200" fill="#348C56"/>
+<rect x="270" y="0" width="15" height="200" fill="#348C56"/>
+<rect x="100" y="50" width="100" height="100" fill="none" stroke="#FFFFFF" stroke-opacity="0.85" stroke-width="1.5" stroke-dasharray="5 4"/>
+<line x1="150" y1="50" x2="106.4" y2="93.6" stroke="#FFFFFF" stroke-width="1.6" stroke-dasharray="4 3" marker-end="url(#aw)"/>
+<line x1="100" y1="100" x2="143.6" y2="143.6" stroke="#FFFFFF" stroke-width="1.6" stroke-dasharray="4 3" marker-end="url(#aw)"/>
+<line x1="150" y1="150" x2="193.6" y2="106.4" stroke="#FFFFFF" stroke-width="1.6" stroke-dasharray="4 3" marker-end="url(#aw)"/>
+<circle cx="150" cy="50" r="7" fill="#1F4E9A" stroke="#FFFFFF" stroke-width="1.5"/>
+<circle cx="100" cy="100" r="7" fill="#1F4E9A" stroke="#FFFFFF" stroke-width="1.5"/>
+<circle cx="200" cy="100" r="7" fill="#1F4E9A" stroke="#FFFFFF" stroke-width="1.5"/>
+<circle cx="150" cy="150" r="7" fill="#1F4E9A" stroke="#FFFFFF" stroke-width="1.5"/>
+<circle cx="150" cy="100" r="7" fill="#E8772E" stroke="#FFFFFF" stroke-width="1.5"/>
+<circle cx="156" cy="56" r="3.2" fill="#FFFFFF" stroke="#17201A" stroke-width="1"/>
+<text x="150" y="180" font-size="10" font-weight="600" fill="#FFFFFF" text-anchor="middle" paint-order="stroke" stroke="#1E5A36" stroke-width="3">4 tegen 1 · 8×8 m</text>
+</svg>

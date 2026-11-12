@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
-import { Calendar, Trophy, Users, CheckCircle, X, BarChart3, Beer } from "lucide-react";
+import { Calendar, Trophy, Users, CheckCircle, X, BarChart3, Beer, ClipboardList } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "@/components/ui/sonner";
 import { PlayerStatus, TrainingAttendanceStatus, EventAttendanceStatus } from "@/types";
@@ -16,6 +16,7 @@ import TrainingStatusIndicator from "@/components/TrainingStatusIndicator";
 import { useGpsVerificationForMultipleTrainings } from "@/hooks/useGpsVerification";
 import GpsVerificationButton from "@/components/GpsVerificationButton";
 import { useUserRole } from "@/hooks/useUserRole";
+import { fetchPlan } from "@/lib/trainingDb";
 
 
 const fetchMatchesWithPresence = async (playerId: number) => {
@@ -239,6 +240,18 @@ const Index = () => {
     () => toast.success("Aanwezigheid automatisch geregistreerd via GPS! 📍")
   );
 
+  // Programma van de komende training: alleen zichtbaar als de trainer het gepubliceerd heeft.
+  // Fouten (bijvoorbeeld als de tabellen nog niet bestaan) verbergen de knop zonder melding.
+  const { data: publishedPlan } = useQuery({
+    queryKey: ['publishedPlan', upcomingTraining?.id],
+    queryFn: async () => {
+      const plan = await fetchPlan(upcomingTraining!.id);
+      return plan?.status === 'published' ? plan : null;
+    },
+    enabled: !!upcomingTraining,
+    retry: false,
+  });
+
   const { data: trainingPresence } = useQuery({
     queryKey: ['trainingPresence', myPlayer?.id, upcomingTraining?.id],
     queryFn: () => fetchTrainingPresence(myPlayer!.id, upcomingTraining!.id),
@@ -461,6 +474,16 @@ const Index = () => {
                       </div>
                     </div>
                   </div>
+                  {publishedPlan && (
+                    <div onClick={(e) => e.stopPropagation()}>
+                      <Button asChild variant="outline" className="w-full">
+                        <Link to={`/training/${upcomingTraining.id}`}>
+                          <ClipboardList className="mr-2 h-4 w-4" />
+                          Programma bekijken
+                        </Link>
+                      </Button>
+                    </div>
+                  )}
                   <div onClick={(e) => e.stopPropagation()}>
                     <Button asChild className="w-full">
                       <Link to="/my-training">Alle Trainingen</Link>
