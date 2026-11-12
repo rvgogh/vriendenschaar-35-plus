@@ -198,6 +198,18 @@ export const fetchMyPositions = async (playerId: number): Promise<Position[]> =>
   return ((data as { positions: Position[] } | null)?.positions ?? []);
 };
 
+/** Eigen niveau; spelers zien alleen hun eigen niveau. */
+export const fetchMyLevel = async (): Promise<Level> => {
+  const { data, error } = await db.rpc('get_my_level');
+  if (error) throw error;
+  return ((data as Level | null) ?? 'talent');
+};
+
+export const saveMyLevel = async (level: Level) => {
+  const { error } = await db.rpc('set_my_level', { _tier: level });
+  if (error) throw error;
+};
+
 export const saveMyPositions = async (positions: Position[]) => {
   const { error } = await db.rpc('set_my_positions', { _positions: positions });
   if (error) throw error;

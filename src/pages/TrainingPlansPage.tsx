@@ -50,8 +50,8 @@ const PlayerSettings = ({ isSuperuser }: { isSuperuser: boolean }) => {
   return (
     <div>
       <p className="mb-4 text-sm text-muted-foreground">
-        Team en posities zijn zichtbaar voor iedereen. Spelers zetten hun posities zelf op volgorde via Mijn posities; je kunt ze hier ook aanpassen.
-        Het niveau zien alleen trainers; iedereen begint als Eeuwig talent.
+        Team en posities zijn zichtbaar voor iedereen. Spelers stellen hun posities en niveau zelf in via Mijn voorkeur; je kunt ze hier aanpassen.
+        Andermans niveau zien alleen trainers; iedereen begint als Eeuwig talent.
       </p>
       <div className="divide-y border-y">
         {players.map((player) => {

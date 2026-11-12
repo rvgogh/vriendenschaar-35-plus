@@ -142,7 +142,7 @@ export function AppSidebar() {
                   <SidebarMenuButton asChild>
                     <NavLink to="/my-positions" className={getNavCls} onClick={handleNavClick}>
                       <ListOrdered className="mr-2 h-4 w-4" />
-                      {state !== "collapsed" && <span>Mijn posities</span>}
+                      {state !== "collapsed" && <span>Mijn voorkeur</span>}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
