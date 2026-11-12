@@ -465,7 +465,7 @@ export type Database = {
       is_my_player: { Args: { _player_id: number }; Returns: boolean }
     }
     Enums: {
-      app_role: "user" | "superuser"
+      app_role: "user" | "superuser" | "trainer"
       event_attendance_status: "YES" | "NO" | "MAYBE" | "UNKNOWN"
       player_status: "IN" | "OUT" | "MAYBE" | "UNKNOWN"
       training_status: "YES" | "NO" | "UNKNOWN"
@@ -596,7 +596,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["user", "superuser"],
+      app_role: ["user", "superuser", "trainer"],
       event_attendance_status: ["YES", "NO", "MAYBE", "UNKNOWN"],
       player_status: ["IN", "OUT", "MAYBE", "UNKNOWN"],
       training_status: ["YES", "NO", "UNKNOWN"],
