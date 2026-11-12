@@ -10,7 +10,9 @@
 - [x] Voorstel per trainingsavond op aantal aanmeldingen en thema; niets uit de laatste 3 weken; blokken wisselen; publiceren.
 - [x] Teams maken zonder wissels: 2 teams t/m 15 spelers, 4 teams op 2 velden vanaf 16, extra speler bij oneven aantal.
 - [x] Oefeningen, programma voor spelers, print op A4, zijmenu en knop op Home.
-- [x] 24 regeltests geslaagd; migraties en toegangsregels gedraaid op een lokale Postgres 16 met nagebouwde basistabellen.
+- [x] Posities op volgorde van voorkeur (1-2-3-1: keeper, verdediger, mid-mid, vleugel, spits); spelers stellen ze zelf in via Mijn posities; teams tonen per speler de positie in de opstelling.
+- [x] Niveau in drie groepen: Rookie, Eeuwig talent (standaard), GOAT.
+- [x] 30 regeltests geslaagd; migraties en toegangsregels gedraaid op een lokale Postgres 16 met nagebouwde basistabellen.
 - [ ] Migraties uitvoeren op het Supabase-project — zie supabase/TRAINING-MODULE.md.
 - [ ] Ingelogde pagina's controleren met echte gegevens — geblokkeerd tot de migraties gedraaid zijn.
 - [ ] Nog niet gebouwd: eigen oefening toevoegen in de app, aanmeldknoppen op de programmapagina, schetsen met twee velden.

@@ -27,6 +27,7 @@ import TrainingTeamsPage from "./pages/TrainingTeamsPage";
 import TrainingProgramPage from "./pages/TrainingProgramPage";
 import TrainingPrintPage from "./pages/TrainingPrintPage";
 import DrillsPage from "./pages/DrillsPage";
+import MyPositionsPage from "./pages/MyPositionsPage";
 import DrillPage from "./pages/DrillPage";
 
 const queryClient = new QueryClient();
@@ -64,6 +65,7 @@ const App = () => (
                         <Route path="/training-plans/:trainingId" element={<ProtectedRoute><TrainingPlanPage /></ProtectedRoute>} />
                         <Route path="/training-plans/:trainingId/teams" element={<ProtectedRoute><TrainingTeamsPage /></ProtectedRoute>} />
                         <Route path="/training/:trainingId" element={<ProtectedRoute><TrainingProgramPage /></ProtectedRoute>} />
+                        <Route path="/my-positions" element={<ProtectedRoute><MyPositionsPage /></ProtectedRoute>} />
                         <Route path="/drills" element={<ProtectedRoute><DrillsPage /></ProtectedRoute>} />
                         <Route path="/drills/:drillId" element={<ProtectedRoute><DrillPage /></ProtectedRoute>} />
                         <Route path="/" element={

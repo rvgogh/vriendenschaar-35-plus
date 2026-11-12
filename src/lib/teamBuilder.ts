@@ -1,7 +1,31 @@
 // Teams maken voor de afsluitende partij. Geen database of React hier, zodat alles los te testen is.
 import { matchFormat } from './trainingPlan';
 
-export type Position = 'K' | 'V' | 'M' | 'A';
+/** Posities in de 1-2-3-1: keeper, verdediger, mid-mid, vleugel, spits. */
+export type Position = 'K' | 'V' | 'MM' | 'VL' | 'S';
+export const POSITIONS: { value: Position; label: string }[] = [
+  { value: 'K', label: 'Keeper' },
+  { value: 'V', label: 'Verdediger' },
+  { value: 'MM', label: 'Mid-mid' },
+  { value: 'VL', label: 'Vleugel' },
+  { value: 'S', label: 'Spits' },
+];
+export const POSITION_LABEL: Record<Position, string> = Object.fromEntries(POSITIONS.map((p) => [p.value, p.label])) as Record<Position, string>;
+/** Korte weergave: "1. Spits · 2. Vleugel". */
+export const positionsSummary = (positions: Position[]): string =>
+  positions.length ? positions.map((p, i) => `${i + 1}. ${POSITION_LABEL[p]}`).join(' · ') : 'Geen voorkeur';
+
+/** Niveau in drie groepen. Iedereen begint als Eeuwig talent. */
+export type Level = 'rookie' | 'talent' | 'goat';
+export const LEVELS: { value: Level; label: string }[] = [
+  { value: 'rookie', label: 'Rookie' },
+  { value: 'talent', label: 'Eeuwig talent' },
+  { value: 'goat', label: 'GOAT' },
+];
+export const LEVEL_LABEL: Record<Level, string> = { rookie: 'Rookie', talent: 'Eeuwig talent', goat: 'GOAT' };
+export const DEFAULT_LEVEL: Level = 'talent';
+const LEVEL_POINTS: Record<Level, number> = { rookie: 1, talent: 2, goat: 3 };
+
 export type Side = 'hesjes' | 'zonder';
 export type TeamMode = 'eigen' | 'gemengd';
 
@@ -10,9 +34,10 @@ export interface TeamPlayer {
   name: string;
   /** Eigen clubteam: 1 of 2. */
   team: 1 | 2;
-  position: Position | null;
-  /** Niveau 1–5; zonder niveau rekenen we met 3. */
-  level: number | null;
+  /** Voorkeursposities op volgorde; de eerste is de favoriet. Leeg = geen voorkeur opgegeven. */
+  positions: Position[];
+  /** Zonder niveau geldt Eeuwig talent. */
+  level: Level | null;
 }
 
 export interface Assignment {
@@ -36,8 +61,14 @@ export interface TeamResult {
   extraStartsWith: Side | null;
 }
 
-const DEFAULT_LEVEL = 3;
-export const levelOf = (p: TeamPlayer): number => p.level ?? DEFAULT_LEVEL;
+export const levelOf = (p: TeamPlayer): number => LEVEL_POINTS[p.level ?? DEFAULT_LEVEL];
+export const primaryPosition = (p: TeamPlayer): Position | null => p.positions[0] ?? null;
+/** Hoeveel spelers per niveau in een team, voor de balans die de trainer ziet. */
+export const levelCounts = (players: TeamPlayer[]): Record<Level, number> => {
+  const counts: Record<Level, number> = { rookie: 0, talent: 0, goat: 0 };
+  players.forEach((p) => { counts[p.level ?? DEFAULT_LEVEL] += 1; });
+  return counts;
+};
 export const teamLevel = (players: TeamPlayer[]): number => players.reduce((sum, p) => sum + levelOf(p), 0);
 
 /** Volgorde bij gelijk niveau. Standaard op id; met een willekeurige volgorde geeft "Opnieuw verdelen" een andere indeling. */
@@ -47,7 +78,7 @@ const byLevelDesc = (tie: TieOrder) => (a: TeamPlayer, b: TeamPlayer) =>
 
 /**
  * Verdeelt spelers over bakken met een vaste grootte. De sterkste speler eerst; elke speler gaat naar de bak
- * met de minste spelers op zijn positie, daarna het laagste totaalniveau.
+ * met de minste spelers met dezelfde favoriete positie, daarna het laagste totaalniveau.
  */
 const distribute = (players: TeamPlayer[], capacities: number[], tie: TieOrder = null): TeamPlayer[][] => {
   const bins: TeamPlayer[][] = capacities.map(() => []);
@@ -56,7 +87,8 @@ const distribute = (players: TeamPlayer[], capacities: number[], tie: TieOrder =
     bins.forEach((bin, i) => {
       if (bin.length >= capacities[i]) return;
       if (best === -1) { best = i; return; }
-      const samePos = (b: TeamPlayer[]) => (player.position ? b.filter((p) => p.position === player.position).length : 0);
+      const pos = primaryPosition(player);
+      const samePos = (b: TeamPlayer[]) => (pos ? b.filter((p) => primaryPosition(p) === pos).length : 0);
       const a = [samePos(bin), teamLevel(bin), bin.length];
       const b = [samePos(bins[best]), teamLevel(bins[best]), bins[best].length];
       for (let k = 0; k < a.length; k++) {
@@ -73,7 +105,7 @@ const pickExtra = (players: TeamPlayer[]): TeamPlayer => {
   const avg = teamLevel(players) / players.length;
   return [...players].sort((a, b) =>
     Math.abs(levelOf(a) - avg) - Math.abs(levelOf(b) - avg)
-    || Number(a.position === 'K') - Number(b.position === 'K')
+    || Number(primaryPosition(a) === 'K') - Number(primaryPosition(b) === 'K')
     || b.id - a.id)[0];
 };
 
@@ -87,7 +119,7 @@ const splitOwnTeams = (players: TeamPlayer[], size: number): [TeamPlayer[], Team
       const diff = teamLevel(from) - teamLevel(to);
       const chosen = [...from].sort((a, b) =>
         Math.abs(diff - 2 * levelOf(a)) - Math.abs(diff - 2 * levelOf(b))
-        || Number(a.position === 'K') - Number(b.position === 'K')
+        || Number(primaryPosition(a) === 'K') - Number(primaryPosition(b) === 'K')
         || b.id - a.id)[0];
       from.splice(from.indexOf(chosen), 1);
       to.push(chosen);
@@ -192,4 +224,67 @@ export const fromAssignments = (assignments: Assignment[], players: TeamPlayer[]
     extraField: extra && last ? last.field : null,
     extraStartsWith: extra && last ? (teamLevel(last.hesjes) <= teamLevel(last.zonder) ? 'hesjes' : 'zonder') : null,
   };
+};
+
+/**
+ * Opstelling per teamgrootte, gebaseerd op de 1-2-3-1 (7 spelers). Kleinere teams laten eerst een vleugel vallen,
+ * dan de tweede vleugel, dan een verdediger.
+ */
+export const formationFor = (size: number): Position[] => {
+  const seven: Position[] = ['K', 'V', 'V', 'MM', 'VL', 'VL', 'S'];
+  if (size >= 7) return [...seven, ...Array.from({ length: size - 7 }, (_, i): Position => (i % 2 ? 'V' : 'MM'))];
+  const drop: Position[][] = [
+    [], ['VL'], ['VL', 'VL'], ['VL', 'VL', 'V'], ['VL', 'VL', 'V', 'S'], ['VL', 'VL', 'V', 'S', 'MM'], ['VL', 'VL', 'V', 'S', 'MM', 'V'],
+  ];
+  const result = [...seven];
+  drop[7 - Math.max(1, size)].forEach((pos) => result.splice(result.lastIndexOf(pos), 1));
+  return result;
+};
+
+/** Hoe graag speelt iemand op deze positie? 0 = favoriet. Wie niets heeft ingevuld, kan overal staan. */
+const positionCost = (player: TeamPlayer, pos: Position): number => {
+  if (!player.positions.length) return 2.5;
+  const rank = player.positions.indexOf(pos);
+  return rank === -1 ? 10 : rank;
+};
+
+export interface LineupSpot {
+  player: TeamPlayer;
+  position: Position;
+}
+
+/**
+ * Zet een team op in de 1-2-3-1 zodat zoveel mogelijk spelers op een positie staan die ze graag spelen.
+ * Exact uitgerekend (teams zijn hooguit een handvol spelers). Volgorde: keeper, verdediging, middenveld, spits.
+ */
+export const lineup = (players: TeamPlayer[]): LineupSpot[] => {
+  const slots = formationFor(players.length);
+  const n = players.length;
+  if (!n) return [];
+  const sorted = [...players].sort((a, b) => a.id - b.id);
+  // best[mask] = laagste kosten als de spelers in `mask` de eerste popcount(mask) plekken vullen.
+  const size = 1 << n;
+  const best = new Array<number>(size).fill(Infinity);
+  const from = new Array<number>(size).fill(-1);
+  best[0] = 0;
+  for (let mask = 0; mask < size; mask++) {
+    if (best[mask] === Infinity) continue;
+    let slot = 0;
+    for (let m = mask; m; m &= m - 1) slot++;
+    if (slot >= n) continue;
+    for (let i = 0; i < n; i++) {
+      if (mask & (1 << i)) continue;
+      const next = mask | (1 << i);
+      const cost = best[mask] + positionCost(sorted[i], slots[slot]);
+      if (cost < best[next]) { best[next] = cost; from[next] = i; }
+    }
+  }
+  const spots: LineupSpot[] = [];
+  let mask = size - 1;
+  for (let slot = n - 1; slot >= 0; slot--) {
+    const i = from[mask];
+    spots[slot] = { player: sorted[i], position: slots[slot] };
+    mask &= ~(1 << i);
+  }
+  return spots;
 };

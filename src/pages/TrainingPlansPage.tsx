@@ -1,10 +1,14 @@
 import { Link } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ChevronRight } from "lucide-react";
+import { useState } from "react";
+import { ChevronRight, Pencil } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
 import { PageLoading } from "@/components/PageLoading";
 import { EmptyState } from "@/components/EmptyState";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { PositionPreferences } from "@/components/PositionPreferences";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -16,25 +20,23 @@ import {
   fetchPlanStatuses, fetchPlayerInfo, fetchPresentCounts, fetchTrainerRoles, formatClock, formatTrainingDate,
   savePlayerInfo, savePlayerLevel, setTrainer, type PlayerInfo,
 } from "@/lib/trainingDb";
-import type { Position } from "@/lib/teamBuilder";
-
-const POSITIONS: { value: Position; label: string }[] = [
-  { value: 'K', label: 'Keeper' }, { value: 'V', label: 'Verdediger' }, { value: 'M', label: 'Middenvelder' }, { value: 'A', label: 'Aanvaller' },
-];
+import { DEFAULT_LEVEL, LEVELS, positionsSummary, type Level, type Position } from "@/lib/teamBuilder";
 
 const PlayerSettings = ({ isSuperuser }: { isSuperuser: boolean }) => {
   const queryClient = useQueryClient();
   const { data: players, isLoading, error } = useQuery({ queryKey: ['trainingPlayerInfo', true], queryFn: () => fetchPlayerInfo(true) });
   const { data: roles } = useQuery({ queryKey: ['trainerRoles'], queryFn: fetchTrainerRoles, enabled: isSuperuser });
+  const [editing, setEditing] = useState<{ player: PlayerInfo; positions: Position[] } | null>(null);
 
   const mutation = useMutation({
-    mutationFn: async (change: { player: PlayerInfo; team?: 1 | 2; position?: Position | null; level?: number | null; trainer?: boolean }) => {
+    mutationFn: async (change: { player: PlayerInfo; team?: 1 | 2; positions?: Position[]; level?: Level; trainer?: boolean }) => {
       const { player } = change;
       if (change.trainer !== undefined) return setTrainer(player.id, change.trainer);
       if (change.level !== undefined) return savePlayerLevel(player.id, change.level);
-      return savePlayerInfo(player.id, change.team ?? player.team, change.position !== undefined ? change.position : player.position);
+      return savePlayerInfo(player.id, change.team ?? player.team, change.positions ?? player.positions);
     },
     onSuccess: () => {
+      setEditing(null);
       queryClient.invalidateQueries({ queryKey: ['trainingPlayerInfo'] });
       queryClient.invalidateQueries({ queryKey: ['trainerRoles'] });
       toast.success("Opgeslagen.");
@@ -48,7 +50,8 @@ const PlayerSettings = ({ isSuperuser }: { isSuperuser: boolean }) => {
   return (
     <div>
       <p className="mb-4 text-sm text-muted-foreground">
-        Team en positie zijn zichtbaar voor iedereen. Het niveau zien alleen trainers; het wordt gebruikt om eerlijke teams te maken.
+        Team en posities zijn zichtbaar voor iedereen. Spelers zetten hun posities zelf op volgorde via Mijn posities; je kunt ze hier ook aanpassen.
+        Het niveau zien alleen trainers; iedereen begint als Eeuwig talent.
       </p>
       <div className="divide-y border-y">
         {players.map((player) => {
@@ -64,18 +67,14 @@ const PlayerSettings = ({ isSuperuser }: { isSuperuser: boolean }) => {
                   <SelectTrigger className="w-28" aria-label={`Team van ${player.name}`}><SelectValue /></SelectTrigger>
                   <SelectContent><SelectItem value="1">Team 1</SelectItem><SelectItem value="2">Team 2</SelectItem></SelectContent>
                 </Select>
-                <Select value={player.position ?? 'geen'} onValueChange={(v) => mutation.mutate({ player, position: v === 'geen' ? null : v as Position })}>
-                  <SelectTrigger className="w-40" aria-label={`Positie van ${player.name}`}><SelectValue /></SelectTrigger>
+                <Button variant="outline" className="max-w-full justify-start" onClick={() => setEditing({ player, positions: player.positions })}
+                  aria-label={`Posities van ${player.name} aanpassen`}>
+                  <Pencil className="mr-2 h-4 w-4 shrink-0" /><span className="truncate">{positionsSummary(player.positions)}</span>
+                </Button>
+                <Select value={player.level ?? DEFAULT_LEVEL} onValueChange={(v) => mutation.mutate({ player, level: v as Level })}>
+                  <SelectTrigger className="w-40" aria-label={`Niveau van ${player.name}`}><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="geen">Geen positie</SelectItem>
-                    {POSITIONS.map((p) => <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-                <Select value={player.level ? String(player.level) : 'geen'} onValueChange={(v) => mutation.mutate({ player, level: v === 'geen' ? null : Number(v) })}>
-                  <SelectTrigger className="w-32" aria-label={`Niveau van ${player.name}`}><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="geen">Geen niveau</SelectItem>
-                    {[1, 2, 3, 4, 5].map((n) => <SelectItem key={n} value={String(n)}>Niveau {n}</SelectItem>)}
+                    {LEVELS.map((l) => <SelectItem key={l.value} value={l.value}>{l.label}</SelectItem>)}
                   </SelectContent>
                 </Select>
                 {isSuperuser && (role === 'superuser'
@@ -92,6 +91,15 @@ const PlayerSettings = ({ isSuperuser }: { isSuperuser: boolean }) => {
           );
         })}
       </div>
+      <Dialog open={editing !== null} onOpenChange={(open) => !open && setEditing(null)}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Posities van {editing?.player.name}</DialogTitle></DialogHeader>
+          {editing && <PositionPreferences value={editing.positions} onChange={(positions) => setEditing({ ...editing, positions })} disabled={mutation.isPending} />}
+          <DialogFooter>
+            <Button disabled={mutation.isPending} onClick={() => editing && mutation.mutate({ player: editing.player, positions: editing.positions })}>Opslaan</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
