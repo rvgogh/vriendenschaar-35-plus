@@ -69,6 +69,60 @@ export type Database = {
           },
         ]
       }
+      drills: {
+        Row: {
+          active: boolean
+          category: string
+          coaching_points: string[]
+          created_at: string
+          duration: number
+          explanation: string
+          fixed: boolean
+          id: string
+          material: string | null
+          max_players: number
+          min_players: number
+          name: string
+          sketch: string | null
+          tactical: boolean
+          variants: Json
+        }
+        Insert: {
+          active?: boolean
+          category: string
+          coaching_points?: string[]
+          created_at?: string
+          duration: number
+          explanation: string
+          fixed?: boolean
+          id: string
+          material?: string | null
+          max_players: number
+          min_players: number
+          name: string
+          sketch?: string | null
+          tactical?: boolean
+          variants?: Json
+        }
+        Update: {
+          active?: boolean
+          category?: string
+          coaching_points?: string[]
+          created_at?: string
+          duration?: number
+          explanation?: string
+          fixed?: boolean
+          id?: string
+          material?: string | null
+          max_players?: number
+          min_players?: number
+          name?: string
+          sketch?: string | null
+          tactical?: boolean
+          variants?: Json
+        }
+        Relationships: []
+      }
       event_statuses: {
         Row: {
           event_id: number
@@ -181,6 +235,32 @@ export type Database = {
           },
         ]
       }
+      player_levels: {
+        Row: {
+          level: number
+          player_id: number
+          updated_at: string
+        }
+        Insert: {
+          level: number
+          player_id: number
+          updated_at?: string
+        }
+        Update: {
+          level?: number
+          player_id?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "player_levels_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: true
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       player_statuses: {
         Row: {
           match_id: number
@@ -209,6 +289,35 @@ export type Database = {
             foreignKeyName: "player_statuses_player_id_fkey"
             columns: ["player_id"]
             isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      player_training_info: {
+        Row: {
+          player_id: number
+          position: string | null
+          team: number
+          updated_at: string
+        }
+        Insert: {
+          player_id: number
+          position?: string | null
+          team: number
+          updated_at?: string
+        }
+        Update: {
+          player_id?: number
+          position?: string | null
+          team?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "player_training_info_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: true
             referencedRelation: "players"
             referencedColumns: ["id"]
           },
@@ -343,6 +452,89 @@ export type Database = {
         }
         Relationships: []
       }
+      training_plan_blocks: {
+        Row: {
+          drill_id: string
+          id: string
+          minutes: number
+          plan_id: string
+          position: number
+        }
+        Insert: {
+          drill_id: string
+          id?: string
+          minutes: number
+          plan_id: string
+          position: number
+        }
+        Update: {
+          drill_id?: string
+          id?: string
+          minutes?: number
+          plan_id?: string
+          position?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "training_plan_blocks_drill_id_fkey"
+            columns: ["drill_id"]
+            isOneToOne: false
+            referencedRelation: "drills"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "training_plan_blocks_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "training_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      training_plans: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          player_count: number | null
+          status: string
+          teams_shared: boolean
+          theme: string | null
+          training_id: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          player_count?: number | null
+          status?: string
+          teams_shared?: boolean
+          theme?: string | null
+          training_id: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          player_count?: number | null
+          status?: string
+          teams_shared?: boolean
+          theme?: string | null
+          training_id?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "training_plans_training_id_fkey"
+            columns: ["training_id"]
+            isOneToOne: true
+            referencedRelation: "trainings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       training_statuses: {
         Row: {
           player_id: number
@@ -381,6 +573,42 @@ export type Database = {
             columns: ["training_id"]
             isOneToOne: false
             referencedRelation: "trainings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      training_team_assignments: {
+        Row: {
+          field: number
+          plan_id: string
+          player_id: number
+          side: string
+        }
+        Insert: {
+          field: number
+          plan_id: string
+          player_id: number
+          side: string
+        }
+        Update: {
+          field?: number
+          plan_id?: string
+          player_id?: number
+          side?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "training_team_assignments_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "training_plans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "training_team_assignments_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "players"
             referencedColumns: ["id"]
           },
         ]
@@ -446,6 +674,17 @@ export type Database = {
           user_id: string
         }[]
       }
+      admin_list_trainer_player_ids: {
+        Args: never
+        Returns: {
+          player_id: number
+          role: string
+        }[]
+      }
+      admin_set_trainer: {
+        Args: { _enabled: boolean; _player_id: number }
+        Returns: undefined
+      }
       get_my_player: {
         Args: never
         Returns: {
@@ -463,6 +702,7 @@ export type Database = {
         Returns: boolean
       }
       is_my_player: { Args: { _player_id: number }; Returns: boolean }
+      is_trainer: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
       app_role: "user" | "superuser" | "trainer"
