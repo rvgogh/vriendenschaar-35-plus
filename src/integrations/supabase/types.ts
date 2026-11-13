@@ -237,18 +237,18 @@ export type Database = {
       }
       player_levels: {
         Row: {
-          level: number
           player_id: number
+          tier: string
           updated_at: string
         }
         Insert: {
-          level: number
           player_id: number
+          tier?: string
           updated_at?: string
         }
         Update: {
-          level?: number
           player_id?: number
+          tier?: string
           updated_at?: string
         }
         Relationships: [
@@ -297,19 +297,19 @@ export type Database = {
       player_training_info: {
         Row: {
           player_id: number
-          position: string | null
+          positions: string[]
           team: number
           updated_at: string
         }
         Insert: {
           player_id: number
-          position?: string | null
+          positions?: string[]
           team: number
           updated_at?: string
         }
         Update: {
           player_id?: number
-          position?: string | null
+          positions?: string[]
           team?: number
           updated_at?: string
         }
@@ -703,6 +703,7 @@ export type Database = {
       }
       is_my_player: { Args: { _player_id: number }; Returns: boolean }
       is_trainer: { Args: { _user_id: string }; Returns: boolean }
+      set_my_positions: { Args: { _positions: string[] }; Returns: undefined }
     }
     Enums: {
       app_role: "user" | "superuser" | "trainer"
