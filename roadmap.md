@@ -6,6 +6,7 @@
 - [ ] Ingelogde pagina en beheerhandelingen controleren — geblokkeerd: externe Supabase biedt hier geen testsessie.
 
 # Training-module
+- [ ] Niveau ‘Mag er ook zijn’ toevoegen tussen Rookie en Eeuwig talent, inclusief opslaan en teambalans.
 - [x] Migraties: rol trainer, zes tabellen met toegangsregels, 34 oefeningen met schetsen.
 - [x] Voorstel per trainingsavond op aantal aanmeldingen en thema; niets uit de laatste 3 weken; blokken wisselen; publiceren.
 - [x] Teams maken zonder wissels: 2 teams t/m 15 spelers, 4 teams op 2 velden vanaf 16, extra speler bij oneven aantal.
