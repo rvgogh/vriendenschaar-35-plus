@@ -15,16 +15,17 @@ export const POSITION_LABEL: Record<Position, string> = Object.fromEntries(POSIT
 export const positionsSummary = (positions: Position[]): string =>
   positions.length ? positions.map((p, i) => `${i + 1}. ${POSITION_LABEL[p]}`).join(' · ') : 'Geen voorkeur';
 
-/** Niveau in drie groepen. Iedereen begint als Eeuwig talent. */
-export type Level = 'rookie' | 'talent' | 'goat';
+/** Niveau in vier groepen. Iedereen begint als Eeuwig talent. */
+export type Level = 'rookie' | 'decent' | 'talent' | 'goat';
 export const LEVELS: { value: Level; label: string }[] = [
   { value: 'rookie', label: 'Rookie' },
+  { value: 'decent', label: 'Mag er ook zijn' },
   { value: 'talent', label: 'Eeuwig talent' },
   { value: 'goat', label: 'GOAT' },
 ];
-export const LEVEL_LABEL: Record<Level, string> = { rookie: 'Rookie', talent: 'Eeuwig talent', goat: 'GOAT' };
+export const LEVEL_LABEL: Record<Level, string> = { rookie: 'Rookie', decent: 'Mag er ook zijn', talent: 'Eeuwig talent', goat: 'GOAT' };
 export const DEFAULT_LEVEL: Level = 'talent';
-const LEVEL_POINTS: Record<Level, number> = { rookie: 1, talent: 2, goat: 3 };
+const LEVEL_POINTS: Record<Level, number> = { rookie: 1, decent: 1.5, talent: 2, goat: 3 };
 
 export type Side = 'hesjes' | 'zonder';
 export type TeamMode = 'eigen' | 'gemengd';
@@ -65,7 +66,7 @@ export const levelOf = (p: TeamPlayer): number => LEVEL_POINTS[p.level ?? DEFAUL
 export const primaryPosition = (p: TeamPlayer): Position | null => p.positions[0] ?? null;
 /** Hoeveel spelers per niveau in een team, voor de balans die de trainer ziet. */
 export const levelCounts = (players: TeamPlayer[]): Record<Level, number> => {
-  const counts: Record<Level, number> = { rookie: 0, talent: 0, goat: 0 };
+  const counts: Record<Level, number> = { rookie: 0, decent: 0, talent: 0, goat: 0 };
   players.forEach((p) => { counts[p.level ?? DEFAULT_LEVEL] += 1; });
   return counts;
 };

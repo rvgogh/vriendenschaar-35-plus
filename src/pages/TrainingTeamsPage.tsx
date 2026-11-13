@@ -139,10 +139,10 @@ export default function TrainingTeamsPage() {
           </Tabs>
 
           <div className="mb-4 border-l-4 border-primary bg-muted p-4">
-            <p className="text-sm text-muted-foreground">Balans in niveau: GOAT / Eeuwig talent / Rookie (alleen zichtbaar voor trainers)</p>
+            <p className="text-sm text-muted-foreground">Balans in niveau: GOAT / Eeuwig talent / Mag er ook zijn / Rookie (alleen zichtbaar voor trainers)</p>
             <p className="font-semibold">
               {result.fields.map((f) => {
-                const fmt = (t: TeamPlayer[]) => { const c = levelCounts(t); return `${c.goat}/${c.talent}/${c.rookie}`; };
+                const fmt = (t: TeamPlayer[]) => { const c = levelCounts(t); return `${c.goat}/${c.talent}/${c.decent}/${c.rookie}`; };
                 return `${result.fields.length > 1 ? `Veld ${f.field}: ` : ''}${fmt(f.hesjes)} – ${fmt(f.zonder)}`;
               }).join(' · ')}
             </p>

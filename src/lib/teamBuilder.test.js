@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'bun:test';
-import { buildTeams, swapPlayers, toAssignments, fromAssignments, teamLevel, lineup, formationFor, levelCounts } from './teamBuilder';
+import { buildTeams, swapPlayers, toAssignments, fromAssignments, teamLevel, lineup, formationFor, levelCounts, LEVELS, levelOf } from './teamBuilder';
 
 const prefs = [['K'], ['V', 'MM'], ['V', 'VL'], ['MM', 'V', 'VL'], ['VL', 'S'], ['VL', 'MM'], ['S', 'VL']];
 const levels = ['rookie', 'talent', 'talent', 'goat'];
@@ -10,6 +10,14 @@ const squad = (n, team1 = Math.ceil(n / 2)) => Array.from({ length: n }, (_, i) 
 const ids = (result) => toAssignments(result).map((a) => a.player_id).sort((a, b) => a - b);
 
 describe('teams maken', () => {
+  test('Mag er ook zijn staat tussen Rookie en Eeuwig talent en telt mee in de balans', () => {
+    expect(LEVELS.map((level) => level.value)).toEqual(['rookie', 'decent', 'talent', 'goat']);
+    const player = { id: 1, name: 'A', team: 1, positions: [], level: 'decent' };
+    expect(levelOf(player)).toBe(1.5);
+    expect(levelOf(player)).toBeGreaterThan(levelOf({ ...player, level: 'rookie' }));
+    expect(levelOf(player)).toBeLessThan(levelOf({ ...player, level: 'talent' }));
+    expect(levelCounts([player])).toEqual({ rookie: 0, decent: 1, talent: 0, goat: 0 });
+  });
   test('iedereen speelt, niemand staat wissel', () => {
     for (let n = 10; n <= 25; n++) {
       for (const mode of ['eigen', 'gemengd']) {
