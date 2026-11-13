@@ -685,6 +685,7 @@ export type Database = {
         Args: { _enabled: boolean; _player_id: number }
         Returns: undefined
       }
+      get_my_level: { Args: never; Returns: string }
       get_my_player: {
         Args: never
         Returns: {
@@ -703,6 +704,7 @@ export type Database = {
       }
       is_my_player: { Args: { _player_id: number }; Returns: boolean }
       is_trainer: { Args: { _user_id: string }; Returns: boolean }
+      set_my_level: { Args: { _tier: string }; Returns: undefined }
       set_my_positions: { Args: { _positions: string[] }; Returns: undefined }
     }
     Enums: {

@@ -13,6 +13,6 @@
 - [x] Posities op volgorde van voorkeur (1-2-3-1: keeper, verdediger, mid-mid, vleugel, spits); spelers stellen ze zelf in via Mijn voorkeur; teams tonen per speler de positie in de opstelling.
 - [x] Niveau in drie groepen: Rookie, Eeuwig talent (standaard), GOAT; spelers kiezen hun eigen niveau, trainer kan het aanpassen.
 - [x] 30 regeltests geslaagd; migraties en toegangsregels gedraaid op een lokale Postgres 16 met nagebouwde basistabellen.
-- [ ] Migraties uitvoeren op het Supabase-project — zie supabase/TRAINING-MODULE.md.
-- [ ] Ingelogde pagina's controleren met echte gegevens — geblokkeerd tot de migraties gedraaid zijn.
+- [x] Pull request 2 verwerkt: migraties 4 en 5 letterlijk in volgorde uitgevoerd op Supabase; gegevensdefinities bijgewerkt; 30 regeltests geslaagd.
+- [ ] Ingelogde pagina's controleren met echte gegevens — geblokkeerd: externe Supabase biedt hier geen testsessie.
 - [ ] Nog niet gebouwd: eigen oefening toevoegen in de app, aanmeldknoppen op de programmapagina, schetsen met twee velden.
