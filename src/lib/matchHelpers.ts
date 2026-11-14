@@ -11,7 +11,7 @@ export const canPlayMatch = (player: { knvb_member: boolean }, opponent: string 
   player.knvb_member || isOpenToAllPlayers(opponent);
 
 export const matchStatusOptions = (canPlay: boolean) =>
-  canPlay ? ["IN", "SUPPORTER", "MAYBE", "OUT"] as const : ["SUPPORTER"] as const;
+  canPlay ? ["IN", "MAYBE", "OUT", "SUPPORTER"] as const : ["SUPPORTER"] as const;
 
 export const countMatchStatuses = (
   players: Array<{ id: number; knvb_member: boolean }>,

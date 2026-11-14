@@ -82,7 +82,6 @@ const MatchCard = ({ match, myPlayer, onStatusChange }: {
   };
 
   const statusCounts: StatusCount[] = [
-    { status: "SUPPORTER", count: supporterCount, players: playersByStatus.SUPPORTER, emoji: "📣", label: "Supporters", color: "text-primary" },
     {
       status: 'IN',
       count: inCount,
@@ -114,7 +113,8 @@ const MatchCard = ({ match, myPlayer, onStatusChange }: {
       emoji: '➖',
       label: 'Niet gereageerd',
       color: 'text-gray-600'
-    }
+    },
+    { status: "SUPPORTER", count: supporterCount, players: playersByStatus.SUPPORTER, emoji: "📣", label: "Supporters", color: "text-primary" },
   ];
 
   return (

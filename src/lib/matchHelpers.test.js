@@ -2,7 +2,7 @@ import { test, expect } from 'bun:test';
 import { countMatchStatuses, matchStatusOptions } from './matchHelpers';
 
 test('supporter is an extra match signup option', () => {
-  expect(matchStatusOptions(true)).toEqual(['IN', 'SUPPORTER', 'MAYBE', 'OUT']);
+  expect(matchStatusOptions(true)).toEqual(['IN', 'MAYBE', 'OUT', 'SUPPORTER']);
 });
 test('training members can support a regular match without signing up to play', () => {
   expect(matchStatusOptions(false)).toEqual(['SUPPORTER']);

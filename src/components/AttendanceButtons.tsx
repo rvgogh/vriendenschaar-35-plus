@@ -27,12 +27,12 @@ const STATUS_CONFIG = {
     ]
   },
   match: {
-    statuses: ["IN", "SUPPORTER", "MAYBE", "OUT", "UNKNOWN"] as const,
+    statuses: ["IN", "MAYBE", "OUT", "UNKNOWN", "SUPPORTER"] as const,
     buttons: [
       { status: "IN" as const, emoji: "🍆", label: "Aanwezig", ringColor: "ring-primary" },
-      { status: "SUPPORTER" as const, emoji: "📣", label: "Supporter", ringColor: "ring-primary" },
       { status: "MAYBE" as const, emoji: "❓", label: "Misschien", ringColor: "ring-orange-500" },
       { status: "OUT" as const, emoji: "❌", label: "Afwezig", ringColor: "ring-destructive" },
+      { status: "SUPPORTER" as const, emoji: "📣", label: "Supporter", ringColor: "ring-primary" },
     ]
   },
   event: {

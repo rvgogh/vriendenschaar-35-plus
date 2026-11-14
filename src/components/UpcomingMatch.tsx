@@ -104,7 +104,6 @@ const UpcomingMatch = ({ match }: UpcomingMatchProps) => {
         <div className="border-t pt-4">
           <h3 className="text-lg font-semibold mb-3 text-primary">Status overzicht</h3>
           <div className="grid grid-cols-2 gap-4 text-sm">
-            <div className="flex items-center text-primary font-semibold"><span className="mr-2 text-lg">📣</span><span>{supporterCount} Supporters</span></div>
             <div className="flex items-center text-green-600 font-semibold">
               <span className="mr-2 text-lg">🍆</span>
               <span>{inCount} Aanwezig</span>
@@ -121,6 +120,7 @@ const UpcomingMatch = ({ match }: UpcomingMatchProps) => {
               <span className="mr-2 text-lg">➖</span>
               <span>{unknownCount} Geen reactie</span>
             </div>
+            <div className="flex items-center text-primary font-semibold"><span className="mr-2 text-lg">📣</span><span>{supporterCount} Supporters</span></div>
           </div>
         </div>
       </CardContent>

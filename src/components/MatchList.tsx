@@ -117,7 +117,6 @@ const MatchList = () => {
                         </CardHeader>
                         <CardContent>
                             <div className="grid grid-cols-2 gap-2 text-sm">
-                                <div className="flex items-center text-primary font-semibold"><span className="mr-2 text-lg">📣</span><span>{match.supporter_count} SUPPORTERS</span></div>
                                 <div className="flex items-center text-green-600 font-semibold">
                                     <span className="mr-2 text-lg">🍆</span>
                                     <span>{match.in_count} AANWEZIG</span>
@@ -134,6 +133,7 @@ const MatchList = () => {
                                     <span className="mr-2 text-lg">➖</span>
                                     <span>{match.unknown_count} GEEN REACTIE</span>
                                 </div>
+                                <div className="flex items-center text-primary font-semibold"><span className="mr-2 text-lg">📣</span><span>{match.supporter_count} SUPPORTERS</span></div>
                             </div>
                         </CardContent>
                     </Card>
