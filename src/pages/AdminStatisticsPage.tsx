@@ -27,6 +27,7 @@ import {
 import { Season } from '@/types/database';
 
 const COLORS = {
+  SUPPORTER: 'hsl(var(--primary))',
   IN: 'hsl(142 71% 45%)',
   YES: 'hsl(142 71% 45%)',
   OUT: 'hsl(0 84% 60%)',
@@ -225,7 +226,7 @@ const AdminStatisticsPage = () => {
   const knvbMemberCount = allPlayers?.filter(p => p.knvb_member).length || 0;
   
   const matchStatusData = calculateStatusCounts(
-    matchStats || [], 
+    matchStats.filter(s => allPlayers?.some(p => p.id === s.player_id && p.knvb_member)) || [],
     pastMatches?.length || 0, 
     knvbMemberCount
   );

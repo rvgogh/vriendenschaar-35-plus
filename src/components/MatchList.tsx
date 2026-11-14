@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import { Calendar, Clock, UserCheck } from "lucide-react";
-import { isOpenToAllPlayers } from "@/lib/matchHelpers";
+import { countMatchStatuses } from "@/lib/matchHelpers";
 
 interface MatchWithCount {
     id: number;
@@ -11,6 +11,7 @@ interface MatchWithCount {
     match_date: string | null;
     start_time: string | null;
     arrival_time: string | null;
+    supporter_count: number;
     in_count: number;
     maybe_count: number;
     out_count: number;
@@ -31,13 +32,14 @@ const fetchMatches = async (): Promise<MatchWithCount[]> => {
         .from("player_statuses")
         .select(`
             match_id,
+            player_id,
             status,
             players!inner(knvb_member)
         `);
 
     if (statusesError) {
         if (import.meta.env.DEV) console.error("Error fetching player statuses:", statusesError);
-        return matches.map(match => ({ ...match, in_count: 0, maybe_count: 0, out_count: 0, unknown_count: 0 }));
+        return matches.map(match => ({ ...match, supporter_count: 0, in_count: 0, maybe_count: 0, out_count: 0, unknown_count: 0 }));
     }
 
     // Get all players (we need both totals: KNVB-only and all players)
@@ -47,36 +49,13 @@ const fetchMatches = async (): Promise<MatchWithCount[]> => {
 
     if (playersError) {
         if (import.meta.env.DEV) console.error("Error fetching players:", playersError);
-        return matches.map(match => ({ ...match, in_count: 0, maybe_count: 0, out_count: 0, unknown_count: 0 }));
+        return matches.map(match => ({ ...match, supporter_count: 0, in_count: 0, maybe_count: 0, out_count: 0, unknown_count: 0 }));
     }
 
-    const totalKnvb = (players || []).filter(p => p.knvb_member).length;
-    const totalAll = (players || []).length;
-
     const matchesWithCounts = matches.map(match => {
-        const openToAll = isOpenToAllPlayers(match.opponent);
-        const matchStatuses = (statuses || []).filter((s: any) => {
-            if (s.match_id !== match.id) return false;
-            if (openToAll) return true;
-            return s.players?.knvb_member === true;
-        });
-
-        const counts = matchStatuses.reduce((acc, { status }: any) => {
-            if (status === 'IN') acc.in_count++;
-            else if (status === 'MAYBE') acc.maybe_count++;
-            else if (status === 'OUT') acc.out_count++;
-            return acc;
-        }, { in_count: 0, maybe_count: 0, out_count: 0 });
-
-        const respondedCount = counts.in_count + counts.maybe_count + counts.out_count;
-        const totalPlayers = openToAll ? totalAll : totalKnvb;
-        const unknownCount = Math.max(0, totalPlayers - respondedCount);
-
-        return {
-            ...match,
-            ...counts,
-            unknown_count: unknownCount,
-        };
+        const counts = countMatchStatuses(players || [], (statuses || []).filter(s => s.match_id === match.id), match.opponent);
+        return { ...match, in_count: counts.inCount, maybe_count: counts.maybeCount,
+            out_count: counts.outCount, unknown_count: counts.unknownCount, supporter_count: counts.supporterCount };
     });
 
     return matchesWithCounts;
@@ -138,6 +117,7 @@ const MatchList = () => {
                         </CardHeader>
                         <CardContent>
                             <div className="grid grid-cols-2 gap-2 text-sm">
+                                <div className="flex items-center text-primary font-semibold"><span className="mr-2 text-lg">📣</span><span>{match.supporter_count} SUPPORTERS</span></div>
                                 <div className="flex items-center text-green-600 font-semibold">
                                     <span className="mr-2 text-lg">🍆</span>
                                     <span>{match.in_count} AANWEZIG</span>

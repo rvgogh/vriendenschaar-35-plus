@@ -4,52 +4,26 @@ import { Shield, Calendar, Clock, Users } from "lucide-react";
 import { Match } from "@/types";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { isOpenToAllPlayers } from "@/lib/matchHelpers";
+import { countMatchStatuses } from "@/lib/matchHelpers";
 
 interface UpcomingMatchProps {
   match: Match | null;
 }
 
 const fetchPlayerStatusCounts = async (matchId: number, opponent: string | null) => {
-  const openToAll = isOpenToAllPlayers(opponent);
-
-  let statusesQuery = supabase
-    .from("player_statuses")
-    .select(`status, players!inner(knvb_member)`)
-    .eq("match_id", matchId);
-  if (!openToAll) {
-    statusesQuery = statusesQuery.eq("players.knvb_member", true);
-  }
-  const { data: statuses, error } = await statusesQuery;
-
-  if (error) {
-    if (import.meta.env.DEV) console.error("Error fetching player statuses:", error);
-    return { inCount: 0, maybeCount: 0, outCount: 0, unknownCount: 0 };
-  }
-
-  let playersQuery = supabase.from("players").select("id");
-  if (!openToAll) playersQuery = playersQuery.eq("knvb_member", true);
-  const { data: players, error: playersError } = await playersQuery;
-
-  if (playersError) {
-    if (import.meta.env.DEV) console.error("Error fetching players:", playersError);
-    return { inCount: 0, maybeCount: 0, outCount: 0, unknownCount: 0 };
-  }
-
-  const totalPlayers = players?.length || 0;
-  const inCount = (statuses || []).filter(s => s.status === 'IN').length;
-  const maybeCount = (statuses || []).filter(s => s.status === 'MAYBE').length;
-  const outCount = (statuses || []).filter(s => s.status === 'OUT').length;
-  const respondedCount = inCount + maybeCount + outCount;
-  const unknownCount = Math.max(0, totalPlayers - respondedCount);
-
-  return { inCount, maybeCount, outCount, unknownCount };
+  const [{ data: statuses, error }, { data: players, error: playersError }] = await Promise.all([
+    supabase.from("player_statuses").select("player_id, status").eq("match_id", matchId),
+    supabase.from("players").select("id, knvb_member"),
+  ]);
+  if (error) throw error;
+  if (playersError) throw playersError;
+  return countMatchStatuses(players || [], statuses || [], opponent);
 };
 
 const UpcomingMatch = ({ match }: UpcomingMatchProps) => {
   const { data: statusCounts } = useQuery({
     queryKey: ["playerStatusCounts", match?.id],
-    queryFn: () => fetchPlayerStatusCounts(match!.id, match!.opponent),
+    queryFn: () => match ? fetchPlayerStatusCounts(match.id, match.opponent) : null,
     enabled: !!match?.id,
   });
 
@@ -80,7 +54,7 @@ const UpcomingMatch = ({ match }: UpcomingMatchProps) => {
     return timeString.substring(0, 5); // Format HH:MM from HH:MM:SS
   };
 
-  const { inCount = 0, maybeCount = 0, outCount = 0, unknownCount = 0 } = statusCounts || {};
+  const { supporterCount = 0, inCount = 0, maybeCount = 0, outCount = 0, unknownCount = 0 } = statusCounts || {};
 
   return (
     <Card className="mb-8 bg-secondary border-primary">
@@ -130,6 +104,7 @@ const UpcomingMatch = ({ match }: UpcomingMatchProps) => {
         <div className="border-t pt-4">
           <h3 className="text-lg font-semibold mb-3 text-primary">Status overzicht</h3>
           <div className="grid grid-cols-2 gap-4 text-sm">
+            <div className="flex items-center text-primary font-semibold"><span className="mr-2 text-lg">📣</span><span>{supporterCount} Supporters</span></div>
             <div className="flex items-center text-green-600 font-semibold">
               <span className="mr-2 text-lg">🍆</span>
               <span>{inCount} Aanwezig</span>

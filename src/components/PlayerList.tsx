@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { PlayerStatus, PlayerWithStatus } from "@/types";
 import PlayerCard from "./PlayerCard";
 import { toast } from "@/components/ui/sonner";
-import { isOpenToAllPlayers } from "@/lib/matchHelpers";
+import { canPlayMatch } from "@/lib/matchHelpers";
 
 const fetchPlayersWithStatus = async (matchId: number): Promise<PlayerWithStatus[]> => {
     // Determine if this match allows all players (e.g. Gecu cup) or KNVB members only
@@ -14,15 +14,12 @@ const fetchPlayersWithStatus = async (matchId: number): Promise<PlayerWithStatus
         .single();
     if (matchError) throw matchError;
 
-    const openToAll = isOpenToAllPlayers(match?.opponent);
+
 
     let playersQuery = supabase
         .from("players")
         .select("id, name, knvb_member")
         .order('name', { ascending: true });
-    if (!openToAll) {
-        playersQuery = playersQuery.eq("knvb_member", true);
-    }
     const { data: players, error: playersError } = await playersQuery;
     if (playersError) throw playersError;
 
@@ -37,6 +34,7 @@ const fetchPlayersWithStatus = async (matchId: number): Promise<PlayerWithStatus
     return (players || []).map(p => ({
         ...p,
         status: statusMap.get(p.id) || "UNKNOWN",
+        canPlay: canPlayMatch(p, match?.opponent),
     }));
 };
 
@@ -85,6 +83,7 @@ const PlayerList = ({ matchId }: { matchId: number }) => {
             key={player.id}
             player={player}
             onStatusChange={handleStatusChange}
+            canPlay={(player as PlayerWithStatus & { canPlay: boolean }).canPlay}
           />
         ))}
       </div>

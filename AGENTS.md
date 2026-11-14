@@ -1,4 +1,5 @@
 # Architecture
+- Keep match eligibility and supporter counts in `matchHelpers.ts`; supporters are separate from available players, and non-KNVB members can support regular matches without joining the playing selection.
 - Store bar duties separately from attendance with two player slots per date; attendance changes must not alter bar assignments.
 - Authorize bar duty management through existing superuser RLS and security-invoker validation triggers; authenticated members may read the schedule.
 - Balance bar assignments across all seasons by assignment count, using player ID as a stable tie-breaker.

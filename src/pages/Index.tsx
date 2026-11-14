@@ -10,8 +10,9 @@ import { toast } from "@/components/ui/sonner";
 import { PlayerStatus, TrainingAttendanceStatus, EventAttendanceStatus } from "@/types";
 import { useMyPlayer, useUpcomingMatches, useUpcomingTrainings, useUpcomingEvents, useTodaysTrainings } from "@/hooks/useData";
 import { formatDate } from "@/lib/datetime";
-import { isOpenToAllPlayers } from "@/lib/matchHelpers";
+import { isOpenToAllPlayers, canPlayMatch } from "@/lib/matchHelpers";
 
+import { AttendanceButtons } from "@/components/AttendanceButtons";
 import TrainingStatusIndicator from "@/components/TrainingStatusIndicator";
 import { useGpsVerificationForMultipleTrainings } from "@/hooks/useGpsVerification";
 import GpsVerificationButton from "@/components/GpsVerificationButton";
@@ -171,13 +172,14 @@ const fetchMatchStatusCounts = async (matchId: number, opponent: string | null) 
     .from("player_statuses")
     .select(`status, players!inner(knvb_member)`)
     .eq("match_id", matchId);
-  if (!openToAll) q = q.eq("players.knvb_member", true);
+
   const { data: statuses, error } = await q;
 
-  if (error) return { inCount: 0 };
+  if (error) return { inCount: 0, supporterCount: 0 };
 
-  const inCount = (statuses || []).filter(s => s.status === 'IN').length;
-  return { inCount };
+  const inCount = (statuses || []).filter(s => s.status === 'IN' && (openToAll || s.players.knvb_member)).length;
+  const supporterCount = (statuses || []).filter(s => s.status === 'SUPPORTER').length;
+  return { inCount, supporterCount };
 };
 
 const Index = () => {
@@ -517,7 +519,7 @@ const Index = () => {
               {matchesWithPresence.length > 0 ? (
                 <div className="space-y-3">
                   {matchesWithPresence.map((match) => {
-                    const matchCounts = matchStatusCountsMap?.get(match.id) || { inCount: 0 };
+                    const matchCounts = matchStatusCountsMap?.get(match.id) || { inCount: 0, supporterCount: 0 };
                     const inCount = matchCounts.inCount;
                     const needed = 7;
                     const hasEnough = inCount >= needed;
@@ -534,36 +536,16 @@ const Index = () => {
                             <p className="text-xs text-muted-foreground">{formatDate(match.match_date)}</p>
                           </div>
                           <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
-                            <Button 
-                              variant='outline'
-                              size="sm" 
-                              onClick={() => handleMatchStatusChange(match.id, match.status === 'IN' ? 'UNKNOWN' : 'IN')}
-                              className={cn("text-lg w-8 h-8 p-0", match.status === 'IN' && "ring-2 ring-primary")}
-                            >
-                              🍆
-                            </Button>
-                            <Button 
-                              variant='outline'
-                              size="sm" 
-                              onClick={() => handleMatchStatusChange(match.id, match.status === 'MAYBE' ? 'UNKNOWN' : 'MAYBE')}
-                              className={cn("text-lg w-8 h-8 p-0", match.status === 'MAYBE' && "ring-2 ring-yellow-400")}
-                            >
-                              ❓
-                            </Button>
-                            <Button 
-                              variant='outline'
-                              size="sm" 
-                              onClick={() => handleMatchStatusChange(match.id, match.status === 'OUT' ? 'UNKNOWN' : 'OUT')}
-                              className={cn("text-lg w-8 h-8 p-0", match.status === 'OUT' && "ring-2 ring-destructive")}
-                            >
-                              ❌
-                            </Button>
+                            <AttendanceButtons variant="match" currentStatus={match.status}
+                              canPlay={!!myPlayer && canPlayMatch(myPlayer, match.opponent)}
+                              onStatusChange={status => handleMatchStatusChange(match.id, status as PlayerStatus)} />
                           </div>
                         </div>
                         <div className="mt-2 pt-2 border-t">
                           <div className="flex items-center justify-between">
                             <span className="text-sm text-muted-foreground">
                               {inCount} speler(s) beschikbaar
+                              {matchCounts.supporterCount > 0 && <span className="block text-primary">📣 {matchCounts.supporterCount} supporter(s)</span>}
                             </span>
                             {hasEnough ? (
                               <div className="text-xs font-medium text-green-600 dark:text-green-400">

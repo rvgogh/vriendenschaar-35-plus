@@ -51,7 +51,7 @@ export const StatusOverview = ({
     <div className={cn("space-y-4", className)}>
       <h4 className="text-sm font-semibold text-muted-foreground">Aanwezigheidsoverzicht</h4>
       
-      <div className={`grid gap-2 text-center text-sm ${statusCounts.length === 3 ? 'grid-cols-3' : 'grid-cols-2 sm:grid-cols-4'}`}>
+      <div className={`grid gap-2 text-center text-sm ${statusCounts.length === 3 ? 'grid-cols-3' : statusCounts.length === 5 ? 'grid-cols-3 sm:grid-cols-5' : 'grid-cols-2 sm:grid-cols-4'}`}>
         {statusCounts.map(({ status, count, players, emoji, label, color }) => (
           <div 
             key={status}
@@ -62,7 +62,7 @@ export const StatusOverview = ({
             )}
             onClick={() => isMobile && handleStatusSelect(status)}
           >
-            <div className="text-lg">{emoji}</div>
+            <div className="text-lg" title={label} aria-label={label}>{emoji}</div>
             <div className={cn("font-semibold text-sm", color)}>{count}</div>
             {!isMobile && players.length > 0 && (
               <div className="mt-2 space-y-1">

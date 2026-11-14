@@ -17,18 +17,14 @@ import { StatusOverview, StatusCount } from "@/components/StatusOverview";
 import { EmptyState } from "@/components/EmptyState";
 import { useMyPlayer, useUpcomingMatches } from "@/hooks/useData";
 import { formatDateLong, formatTime } from "@/lib/datetime";
-import { isOpenToAllPlayers } from "@/lib/matchHelpers";
+import { canPlayMatch } from "@/lib/matchHelpers";
 
 
 const fetchPlayersWithMatchStatus = async (matchId: number, opponent: string | null): Promise<PlayerWithStatus[]> => {
-  const openToAll = isOpenToAllPlayers(opponent);
   let playersQuery = supabase
     .from("players")
     .select("id, name, knvb_member")
     .order('name', { ascending: true });
-  if (!openToAll) {
-    playersQuery = playersQuery.eq("knvb_member", true);
-  }
   const { data: players, error: playersError } = await playersQuery;
   if (playersError) throw playersError;
 
@@ -40,7 +36,7 @@ const fetchPlayersWithMatchStatus = async (matchId: number, opponent: string | n
 
   const statusMap = new Map((statuses || []).map(s => [s.player_id, s.status]));
 
-  return (players || []).map(p => ({
+  return (players || []).filter(p => canPlayMatch(p, opponent) || statusMap.get(p.id) === "SUPPORTER").map(p => ({
     ...p,
     status: statusMap.get(p.id) || "UNKNOWN",
   }));
@@ -59,14 +55,26 @@ const MatchCard = ({ match, myPlayer, onStatusChange }: {
     queryFn: () => fetchPlayersWithMatchStatus(match.id, match.opponent),
   });
 
-  const myStatus = players?.find(p => p.id === myPlayer?.id)?.status || "UNKNOWN";
+  const { data: ownStatus } = useQuery({
+    queryKey: ["matchPlayers", match.id, "own", myPlayer?.id],
+    enabled: !!myPlayer,
+    queryFn: async () => {
+      const { data, error } = await supabase.from("player_statuses").select("status")
+        .eq("match_id", match.id).eq("player_id", myPlayer.id).maybeSingle();
+      if (error) throw error;
+      return data?.status || "UNKNOWN";
+    },
+  });
+  const myStatus = ownStatus || "UNKNOWN";
   const inCount = players?.filter(p => p.status === 'IN').length || 0;
   const outCount = players?.filter(p => p.status === 'OUT').length || 0;
   const maybeCount = players?.filter(p => p.status === 'MAYBE').length || 0;
+  const supporterCount = players?.filter(p => p.status === 'SUPPORTER').length || 0;
   const unknownCount = players?.filter(p => p.status === 'UNKNOWN').length || 0;
 
   // Group players by status
   const playersByStatus = {
+    SUPPORTER: players?.filter(p => p.status === 'SUPPORTER').sort((a, b) => a.name.localeCompare(b.name)) || [],
     IN: players?.filter(p => p.status === 'IN').sort((a, b) => a.name.localeCompare(b.name)) || [],
     MAYBE: players?.filter(p => p.status === 'MAYBE').sort((a, b) => a.name.localeCompare(b.name)) || [],
     OUT: players?.filter(p => p.status === 'OUT').sort((a, b) => a.name.localeCompare(b.name)) || [],
@@ -74,6 +82,7 @@ const MatchCard = ({ match, myPlayer, onStatusChange }: {
   };
 
   const statusCounts: StatusCount[] = [
+    { status: "SUPPORTER", count: supporterCount, players: playersByStatus.SUPPORTER, emoji: "📣", label: "Supporters", color: "text-primary" },
     {
       status: 'IN',
       count: inCount,
@@ -133,10 +142,11 @@ const MatchCard = ({ match, myPlayer, onStatusChange }: {
         {myPlayer && (
           <div>
             <h4 className="text-sm font-semibold mb-3 text-muted-foreground">Mijn status</h4>
-            <div className="flex items-center justify-between p-3 bg-card rounded-lg border">
+            <div className="flex flex-wrap gap-2 items-center justify-between p-3 bg-card rounded-lg border">
               <span className="font-medium">{myPlayer.name}</span>
               <AttendanceButtons
                 variant="match"
+                canPlay={canPlayMatch(myPlayer, match.opponent)}
                 currentStatus={myStatus}
                 onStatusChange={(status) => onStatusChange(match.id, status as PlayerStatus)}
               />
@@ -159,7 +169,7 @@ const MatchCard = ({ match, myPlayer, onStatusChange }: {
             <h4 className="text-sm font-semibold mb-3 text-muted-foreground">Alle spelers</h4>
             <div className="space-y-2 max-h-60 overflow-y-auto">
               {players?.slice().sort((a, b) => {
-                const statusOrder = { 'IN': 0, 'MAYBE': 1, 'OUT': 2, 'UNKNOWN': 3 };
+                const statusOrder = { 'IN': 0, 'SUPPORTER': 1, 'MAYBE': 2, 'OUT': 3, 'UNKNOWN': 4 };
                 const statusDiff = statusOrder[a.status] - statusOrder[b.status];
                 if (statusDiff !== 0) return statusDiff;
                 return a.name.localeCompare(b.name);
@@ -167,7 +177,7 @@ const MatchCard = ({ match, myPlayer, onStatusChange }: {
                 <div key={player.id} className="flex items-center justify-between text-sm p-2 bg-muted/30 rounded">
                   <span>{player.name}</span>
                   <span className="text-lg">
-                    {player.status === 'IN' ? '🍆' : player.status === 'MAYBE' ? '❓' : player.status === 'OUT' ? '❌' : '➖'}
+                    {player.status === 'SUPPORTER' ? '📣' : player.status === 'IN' ? '🍆' : player.status === 'MAYBE' ? '❓' : player.status === 'OUT' ? '❌' : '➖'}
                   </span>
                 </div>
               ))}

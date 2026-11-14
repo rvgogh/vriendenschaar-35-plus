@@ -1,46 +1,22 @@
 
 import { PlayerWithStatus, PlayerStatus } from "@/types";
-import { Button } from "@/components/ui/button";
 import { Card, CardTitle } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
+import { AttendanceButtons } from "./AttendanceButtons";
 
 interface PlayerCardProps {
   player: PlayerWithStatus;
   onStatusChange: (id: number, status: PlayerStatus) => void;
+  canPlay?: boolean;
 }
 
-const PlayerCard = ({ player, onStatusChange }: PlayerCardProps) => {
+const PlayerCard = ({ player, onStatusChange, canPlay = true }: PlayerCardProps) => {
   return (
-    <Card className="bg-secondary/50 flex items-center justify-between p-3">
-      <CardTitle className="text-xl truncate mr-2">
+    <Card className="bg-secondary/50 flex flex-wrap gap-2 items-center justify-between p-3">
+      <CardTitle className="text-xl break-words min-w-0">
         {player.name}
       </CardTitle>
-      <div className="flex gap-2 flex-shrink-0">
-        <Button 
-          variant='outline'
-          size="sm" 
-          onClick={() => onStatusChange(player.id, player.status === 'IN' ? 'UNKNOWN' : 'IN')}
-          className={cn("text-2xl w-12", player.status === 'IN' && "ring-2 ring-primary")}
-        >
-          🍆
-        </Button>
-        <Button 
-          variant='outline'
-          size="sm" 
-          onClick={() => onStatusChange(player.id, player.status === 'MAYBE' ? 'UNKNOWN' : 'MAYBE')}
-          className={cn("text-2xl w-12", player.status === 'MAYBE' && "ring-2 ring-yellow-400")}
-        >
-          ❓
-        </Button>
-        <Button 
-          variant='outline'
-          size="sm" 
-          onClick={() => onStatusChange(player.id, player.status === 'OUT' ? 'UNKNOWN' : 'OUT')}
-          className={cn("text-2xl w-12", player.status === 'OUT' && "ring-2 ring-destructive")}
-        >
-          ❌
-        </Button>
-      </div>
+      <AttendanceButtons variant="match" currentStatus={player.status} canPlay={canPlay}
+        onStatusChange={status => onStatusChange(player.id, status as PlayerStatus)} />
     </Card>
   );
 };

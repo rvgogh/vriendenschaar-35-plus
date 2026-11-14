@@ -1,3 +1,9 @@
+# Supporters bij wedstrijden
+- [x] Aanmeldoptie en aparte telling toevoegen, ook voor trainingsleden.
+- [x] Egbert, Tim, Isidoor, Robin en Max registreren voor 13 november 2026.
+- [x] 38 tests geslaagd, vijf registraties teruggelezen, app opent zonder fouten op desktop en mobiel.
+- [ ] Ingelogd aanmelden en teruglezen controleren — geblokkeerd: externe Supabase biedt hier geen testsessie.
+
 # Bardiensten
 - [x] Opslag, toegangsregels en eerlijke indeling toevoegen.
 - [x] Vijf woensdagavonden aanmaken voor KNVB-spelers.
