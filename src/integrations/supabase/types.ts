@@ -710,7 +710,7 @@ export type Database = {
     Enums: {
       app_role: "user" | "superuser" | "trainer"
       event_attendance_status: "YES" | "NO" | "MAYBE" | "UNKNOWN"
-      player_status: "IN" | "OUT" | "MAYBE" | "UNKNOWN"
+      player_status: "IN" | "OUT" | "MAYBE" | "UNKNOWN" | "SUPPORTER"
       training_status: "YES" | "NO" | "UNKNOWN"
     }
     CompositeTypes: {
@@ -841,7 +841,7 @@ export const Constants = {
     Enums: {
       app_role: ["user", "superuser", "trainer"],
       event_attendance_status: ["YES", "NO", "MAYBE", "UNKNOWN"],
-      player_status: ["IN", "OUT", "MAYBE", "UNKNOWN"],
+      player_status: ["IN", "OUT", "MAYBE", "UNKNOWN", "SUPPORTER"],
       training_status: ["YES", "NO", "UNKNOWN"],
     },
   },
