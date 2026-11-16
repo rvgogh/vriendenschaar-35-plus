@@ -1,4 +1,5 @@
 # Supporters bij wedstrijden
+- [x] Supporters apart opgenomen in seizoensstatistieken, totalengrafiek en overzicht per lid; vier regeltests geslaagd.
 - [x] Aanmeldoptie en aparte telling toevoegen, ook voor trainingsleden.
 - [x] Egbert, Tim, Isidoor, Robin en Max registreren voor 13 november 2026.
 - [x] 38 tests geslaagd, vijf registraties teruggelezen, app opent zonder fouten op desktop en mobiel.

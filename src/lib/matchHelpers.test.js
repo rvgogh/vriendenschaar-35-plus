@@ -1,5 +1,5 @@
 import { test, expect } from 'bun:test';
-import { countMatchStatuses, matchStatusOptions } from './matchHelpers';
+import { countMatchStatuses, matchStatusOptions, matchSeasonStatusCounts } from './matchHelpers';
 
 test('supporter is an extra match signup option', () => {
   expect(matchStatusOptions(true)).toEqual(['IN', 'MAYBE', 'OUT', 'SUPPORTER']);
@@ -18,4 +18,15 @@ test('the five named supporters are separate from available players and unknown 
   expect(countMatchStatuses(players, statuses, 'Vriendenschaar')).toEqual({
     inCount: 1, supporterCount: 5, maybeCount: 0, outCount: 0, unknownCount: 1,
   });
+});
+
+test('season statistics include all five supporters without counting them as players or missing responses', () => {
+  const players = [25, 26, 2, 5, 18, 8].map(id => ({ id, knvb_member: id !== 25 && id !== 26 }));
+  const statuses = [25, 26, 2, 5, 18].map(player_id => ({ match_id: 29, player_id, status: 'SUPPORTER' }));
+  // An attendance row outside the selected season must not affect its statistics.
+  statuses.push({ match_id: 30, player_id: 8, status: 'SUPPORTER' });
+  expect(matchSeasonStatusCounts(players, [{ id: 29, opponent: 'Vriendenschaar' }], statuses)).toEqual([
+    { name: 'IN', value: 0 }, { name: 'MAYBE', value: 0 }, { name: 'OUT', value: 0 },
+    { name: 'UNKNOWN', value: 1 }, { name: 'SUPPORTER', value: 5 },
+  ]);
 });

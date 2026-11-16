@@ -25,6 +25,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Season } from '@/types/database';
+import { matchSeasonStatusCounts } from '@/lib/matchHelpers';
 
 const COLORS = {
   SUPPORTER: 'hsl(var(--primary))',
@@ -42,6 +43,7 @@ const AdminStatisticsPage = () => {
   const [showAllMatches, setShowAllMatches] = useState(false);
   const [showAllTrainings, setShowAllTrainings] = useState(false);
   const [showAllEvents, setShowAllEvents] = useState(false);
+  const [showAllSupporters, setShowAllSupporters] = useState(false);
   const [selectedSeasonId, setSelectedSeasonId] = useState<string>('');
 
   // Fetch all seasons
@@ -85,7 +87,7 @@ const AdminStatisticsPage = () => {
   const { data: matchData, isLoading: matchLoading } = useQuery({
     queryKey: ['matchStatsAll', selectedSeasonId],
     queryFn: async () => {
-      let matchQuery = supabase.from('matches').select('id').lt('match_date', now).order('match_date', { ascending: false });
+      let matchQuery = supabase.from('matches').select('id, opponent').lt('match_date', now).order('match_date', { ascending: false });
       if (seasonFilter) matchQuery = matchQuery.eq('season_id', seasonFilter);
       const { data: matches, error: mErr } = await matchQuery;
       if (mErr) throw mErr;
@@ -222,14 +224,7 @@ const AdminStatisticsPage = () => {
       .sort((a, b) => b.percentage - a.percentage);
   };
 
-  // Count KNVB members for match stats only
-  const knvbMemberCount = allPlayers?.filter(p => p.knvb_member).length || 0;
-  
-  const matchStatusData = calculateStatusCounts(
-    matchStats.filter(s => allPlayers?.some(p => p.id === s.player_id && p.knvb_member)) || [],
-    pastMatches?.length || 0, 
-    knvbMemberCount
-  );
+  const matchStatusData = matchSeasonStatusCounts(allPlayers || [], pastMatches, matchStats);
   const trainingStatusData = calculateStatusCounts(
     trainingStats || [], 
     pastTrainings?.length || 0, 
@@ -261,6 +256,9 @@ const AdminStatisticsPage = () => {
     allPlayers || [], 
     pastEvents?.length || 0,
     ['YES']
+  );
+  const supporterAttendance = calculatePlayerAttendance(
+    matchStats, allPlayers || [], pastMatches.length, ['SUPPORTER']
   );
 
   return (
@@ -310,6 +308,7 @@ const AdminStatisticsPage = () => {
                   const matchData = matchPlayerAttendance.find(p => p.name === player.name);
                   const trainingData = trainingPlayerAttendance.find(p => p.name === player.name);
                   const eventData = eventPlayerAttendance.find(p => p.name === player.name);
+                  const supporterCount = supporterAttendance.find(p => p.name === player.name)?.attended || 0;
                   
                   // Only count match attendance for KNVB members
                   const matchAttended = player.knvb_member ? (matchData?.attended || 0) : 0;
@@ -321,7 +320,8 @@ const AdminStatisticsPage = () => {
                     Wedstrijden: matchAttended,
                     Trainingen: trainingAttended,
                     Evenementen: eventAttended,
-                    total: matchAttended + trainingAttended + eventAttended
+                    Supporter: supporterCount,
+                    total: matchAttended + trainingAttended + eventAttended + supporterCount
                   };
                 }).sort((a, b) => b.total - a.total) || []}
                 layout="vertical"
@@ -335,6 +335,7 @@ const AdminStatisticsPage = () => {
                 <Bar dataKey="Wedstrijden" stackId="a" fill="hsl(221 83% 53%)" />
                 <Bar dataKey="Trainingen" stackId="a" fill="hsl(142 71% 45%)" />
                 <Bar dataKey="Evenementen" stackId="a" fill="hsl(280 65% 60%)" />
+                <Bar dataKey="Supporter" stackId="a" fill={COLORS.SUPPORTER} />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
@@ -454,6 +455,39 @@ const AdminStatisticsPage = () => {
           </Card>
         </div>
 
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle>Supporters bij wedstrijden</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Lid</TableHead>
+                  <TableHead className="text-right">%</TableHead>
+                  <TableHead className="text-right">Aantal</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {(showAllSupporters ? supporterAttendance : supporterAttendance.slice(0, 10)).map(player => (
+                  <TableRow key={player.name}>
+                    <TableCell className="font-medium">{player.name}</TableCell>
+                    <TableCell className="text-right">{player.percentage}%</TableCell>
+                    <TableCell className="text-right">{player.attended}/{player.total}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+            {supporterAttendance.length > 10 && (
+              <div className="mt-4 text-center">
+                <Button variant="outline" onClick={() => setShowAllSupporters(!showAllSupporters)}>
+                  {showAllSupporters ? 'Toon minder' : 'Toon alle leden'}
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
         {/* Status Distribution Charts */}
         <div className="grid gap-6 md:grid-cols-3 mb-8">
           <Card>
@@ -469,7 +503,7 @@ const AdminStatisticsPage = () => {
                     cx="50%"
                     cy="50%"
                     labelLine={false}
-                    label={({ name, value }) => `${name}: ${value}`}
+                    label={({ name, value }) => `${name === 'SUPPORTER' ? 'Supporter' : name}: ${value}`}
                     outerRadius={80}
                     fill="hsl(var(--foreground))"
                     dataKey="value"

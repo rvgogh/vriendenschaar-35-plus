@@ -29,3 +29,20 @@ export const countMatchStatuses = (
   return { inCount, maybeCount, outCount, supporterCount,
     unknownCount: Math.max(0, eligible.length - inCount - maybeCount - outCount - eligibleSupporters) };
 };
+
+export const matchSeasonStatusCounts = (
+  players: Array<{ id: number; knvb_member: boolean }>,
+  matches: Array<{ id: number; opponent: string | null }>,
+  statuses: Array<{ match_id: number; player_id: number; status: string }>,
+) => {
+  const totals = { IN: 0, MAYBE: 0, OUT: 0, UNKNOWN: 0, SUPPORTER: 0 };
+  for (const match of matches) {
+    const counts = countMatchStatuses(players, statuses.filter(s => s.match_id === match.id), match.opponent);
+    totals.IN += counts.inCount;
+    totals.MAYBE += counts.maybeCount;
+    totals.OUT += counts.outCount;
+    totals.UNKNOWN += counts.unknownCount;
+    totals.SUPPORTER += counts.supporterCount;
+  }
+  return Object.entries(totals).map(([name, value]) => ({ name, value }));
+};
