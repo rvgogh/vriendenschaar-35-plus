@@ -4,7 +4,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { TrainingAttendanceStatus, PlayerWithTrainingStatus, Training } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/components/ui/sonner";
-import { Calendar, MapPin } from "lucide-react";
+import { Calendar, MapPin, ClipboardList } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { fetchPlan } from "@/lib/trainingDb";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
@@ -78,6 +81,15 @@ const TrainingCard = ({ training, myPlayer, onStatusChange, isPast = false }: {
   onStatusChange: (trainingId: number, status: TrainingAttendanceStatus) => void;
   isPast?: boolean;
 }) => {
+  const { data: publishedPlan } = useQuery({
+    queryKey: ['publishedPlan', training.id],
+    queryFn: async () => {
+      const plan = await fetchPlan(training.id);
+      return plan?.status === 'published' ? plan : null;
+    },
+    retry: false,
+  });
+
   const isMobile = useIsMobile();
   const [selectedStatus, setSelectedStatus] = useState<TrainingAttendanceStatus>('YES');
   
@@ -142,6 +154,14 @@ const TrainingCard = ({ training, myPlayer, onStatusChange, isPast = false }: {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
+        {publishedPlan && (
+          <Button asChild variant="outline" className="w-full">
+            <Link to={`/training/${training.id}`}>
+              <ClipboardList className="mr-2 h-4 w-4" />
+              Programma bekijken
+            </Link>
+          </Button>
+        )}
         {/* My Status */}
         {myPlayer && (
           <div>
