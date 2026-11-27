@@ -208,6 +208,7 @@ export type Database = {
           opponent: string
           season_id: number | null
           start_time: string | null
+          status: string
         }
         Insert: {
           arrival_time?: string | null
@@ -216,6 +217,7 @@ export type Database = {
           opponent: string
           season_id?: number | null
           start_time?: string | null
+          status?: string
         }
         Update: {
           arrival_time?: string | null
@@ -224,6 +226,7 @@ export type Database = {
           opponent?: string
           season_id?: number | null
           start_time?: string | null
+          status?: string
         }
         Relationships: [
           {

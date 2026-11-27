@@ -11,6 +11,7 @@ interface MatchWithCount {
     match_date: string | null;
     start_time: string | null;
     arrival_time: string | null;
+    status?: string;
     supporter_count: number;
     in_count: number;
     maybe_count: number;
@@ -21,7 +22,7 @@ interface MatchWithCount {
 const fetchMatches = async (): Promise<MatchWithCount[]> => {
     const { data: matches, error: matchesError } = await supabase
         .from("matches")
-        .select(`id, opponent, match_date, start_time, arrival_time`)
+        .select(`id, opponent, match_date, start_time, arrival_time, status`)
         .order('match_date', { ascending: true });
 
     if (matchesError) throw matchesError;
@@ -94,6 +95,7 @@ const MatchList = () => {
                     <Card className="hover:bg-muted/50 transition-colors h-full">
                         <CardHeader>
                             <CardTitle className="text-xl">{match.opponent}</CardTitle>
+                            <span className={`w-fit rounded px-2 py-0.5 text-xs font-medium ${match.status === "cancelled" ? "bg-destructive text-destructive-foreground" : match.status === "played" ? "bg-secondary text-secondary-foreground" : "bg-muted text-muted-foreground"}`}>{match.status === "cancelled" ? "Afgelast" : match.status === "played" ? "Gespeeld" : "Gepland"}</span>
                             {match.match_date && (
                                 <div className="flex items-center gap-2 text-muted-foreground">
                                     <Calendar className="h-4 w-4" />

@@ -87,7 +87,7 @@ const AdminStatisticsPage = () => {
   const { data: matchData, isLoading: matchLoading } = useQuery({
     queryKey: ['matchStatsAll', selectedSeasonId],
     queryFn: async () => {
-      let matchQuery = supabase.from('matches').select('id, opponent').lt('match_date', now).order('match_date', { ascending: false });
+      let matchQuery = supabase.from('matches').select('id, opponent').lt('match_date', now).neq('status' as any, 'cancelled').order('match_date', { ascending: false });
       if (seasonFilter) matchQuery = matchQuery.eq('season_id', seasonFilter);
       const { data: matches, error: mErr } = await matchQuery;
       if (mErr) throw mErr;
