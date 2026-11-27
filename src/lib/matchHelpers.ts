@@ -2,6 +2,21 @@
  * Determines if a match is open to all players (KNVB members and non-members).
  * Currently this applies to the Gecu cup matches.
  */
+export type MatchStatus = 'planned' | 'played' | 'cancelled';
+
+export const MATCH_STATUS_LABEL: Record<MatchStatus, string> = {
+  planned: 'Gepland',
+  played: 'Gespeeld',
+  cancelled: 'Afgelast',
+};
+
+/** Dutch label for a match status; unknown or missing values read as Gepland. */
+export const matchStatusLabel = (status: string | null | undefined): string =>
+  MATCH_STATUS_LABEL[status as MatchStatus] ?? MATCH_STATUS_LABEL.planned;
+
+export const isMatchCancelled = (status: string | null | undefined): boolean =>
+  status === 'cancelled';
+
 export const isOpenToAllPlayers = (opponent: string | null | undefined): boolean => {
   if (!opponent) return false;
   return opponent.toLowerCase().includes("gecu");

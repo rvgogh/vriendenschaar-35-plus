@@ -24,3 +24,8 @@
 - [x] Pull request 2 verwerkt: migraties 4 en 5 letterlijk in volgorde uitgevoerd op Supabase; gegevensdefinities bijgewerkt; 30 regeltests geslaagd.
 - [ ] Ingelogde pagina's controleren met echte gegevens — geblokkeerd: externe Supabase biedt hier geen testsessie.
 - [ ] Nog niet gebouwd: eigen oefening toevoegen in de app, aanmeldknoppen op de programmapagina, schetsen met twee velden.
+
+# Wedstrijdstatus
+- [x] Status Gepland / Gespeeld / Afgelast zichtbaar op homepage en in het wedstrijdenoverzicht; afgelaste wedstrijd toont melding en telt niet mee in de statistieken.
+- [x] Zes regeltests geslaagd; typecheck en build zonder fouten.
+- [ ] Ingelogd controleren op homepage en Mijn Wedstrijden — geblokkeerd: externe Supabase biedt hier geen testsessie.

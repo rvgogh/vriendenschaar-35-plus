@@ -1,5 +1,18 @@
 import { test, expect } from 'bun:test';
-import { countMatchStatuses, matchStatusOptions, matchSeasonStatusCounts } from './matchHelpers';
+import { countMatchStatuses, matchStatusOptions, matchSeasonStatusCounts, matchStatusLabel, isMatchCancelled } from './matchHelpers';
+
+test('match statuses read Gepland, Gespeeld and Afgelast', () => {
+  expect(matchStatusLabel('planned')).toBe('Gepland');
+  expect(matchStatusLabel('played')).toBe('Gespeeld');
+  expect(matchStatusLabel('cancelled')).toBe('Afgelast');
+  expect(matchStatusLabel(null)).toBe('Gepland');
+});
+
+test('only a cancelled match counts as cancelled', () => {
+  expect(isMatchCancelled('cancelled')).toBe(true);
+  expect(isMatchCancelled('planned')).toBe(false);
+  expect(isMatchCancelled(undefined)).toBe(false);
+});
 
 test('supporter is an extra match signup option', () => {
   expect(matchStatusOptions(true)).toEqual(['IN', 'MAYBE', 'OUT', 'SUPPORTER']);

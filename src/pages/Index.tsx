@@ -10,7 +10,8 @@ import { toast } from "@/components/ui/sonner";
 import { PlayerStatus, TrainingAttendanceStatus, EventAttendanceStatus } from "@/types";
 import { useMyPlayer, useUpcomingMatches, useUpcomingTrainings, useUpcomingEvents, useTodaysTrainings } from "@/hooks/useData";
 import { formatDate } from "@/lib/datetime";
-import { isOpenToAllPlayers, canPlayMatch } from "@/lib/matchHelpers";
+import { isOpenToAllPlayers, canPlayMatch, isMatchCancelled } from "@/lib/matchHelpers";
+import MatchStatusBadge from "@/components/MatchStatusBadge";
 
 import { AttendanceButtons } from "@/components/AttendanceButtons";
 import TrainingStatusIndicator from "@/components/TrainingStatusIndicator";
@@ -46,6 +47,8 @@ const fetchMatchesWithPresence = async (playerId: number) => {
 
   return matches.map(match => ({
     ...match,
+    // The match's own status (planned / played / cancelled); `status` below is the player's signup.
+    match_status: match.status,
     status: statuses?.find(s => s.match_id === match.id)?.status || 'UNKNOWN'
   }));
 };
@@ -534,6 +537,7 @@ const Index = () => {
                           <div className="flex-1 min-w-0">
                             <p className="font-medium text-sm">{match.opponent}</p>
                             <p className="text-xs text-muted-foreground">{formatDate(match.match_date)}</p>
+                            <MatchStatusBadge status={match.match_status} className="mt-1" />
                           </div>
                           <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
                             <AttendanceButtons variant="match" currentStatus={match.status}
@@ -547,7 +551,11 @@ const Index = () => {
                               {inCount} speler(s) beschikbaar
                               {matchCounts.supporterCount > 0 && <span className="block text-primary">📣 {matchCounts.supporterCount} supporter(s)</span>}
                             </span>
-                            {hasEnough ? (
+                            {isMatchCancelled(match.match_status) ? (
+                              <div className="text-xs font-medium text-destructive">
+                                Wedstrijd afgelast
+                              </div>
+                            ) : hasEnough ? (
                               <div className="text-xs font-medium text-green-600 dark:text-green-400">
                                 Wedstrijd gaat door!
                               </div>

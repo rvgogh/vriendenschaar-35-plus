@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import { Calendar, Clock, UserCheck } from "lucide-react";
 import { countMatchStatuses } from "@/lib/matchHelpers";
+import MatchStatusBadge from "@/components/MatchStatusBadge";
 
 interface MatchWithCount {
     id: number;
@@ -95,7 +96,7 @@ const MatchList = () => {
                     <Card className="hover:bg-muted/50 transition-colors h-full">
                         <CardHeader>
                             <CardTitle className="text-xl">{match.opponent}</CardTitle>
-                            <span className={`w-fit rounded px-2 py-0.5 text-xs font-medium ${match.status === "cancelled" ? "bg-destructive text-destructive-foreground" : match.status === "played" ? "bg-secondary text-secondary-foreground" : "bg-muted text-muted-foreground"}`}>{match.status === "cancelled" ? "Afgelast" : match.status === "played" ? "Gespeeld" : "Gepland"}</span>
+                            <MatchStatusBadge status={match.status} />
                             {match.match_date && (
                                 <div className="flex items-center gap-2 text-muted-foreground">
                                     <Calendar className="h-4 w-4" />

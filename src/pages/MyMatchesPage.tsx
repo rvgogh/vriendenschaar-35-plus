@@ -17,7 +17,8 @@ import { StatusOverview, StatusCount } from "@/components/StatusOverview";
 import { EmptyState } from "@/components/EmptyState";
 import { useMyPlayer, useUpcomingMatches } from "@/hooks/useData";
 import { formatDateLong, formatTime } from "@/lib/datetime";
-import { canPlayMatch } from "@/lib/matchHelpers";
+import { canPlayMatch, isMatchCancelled } from "@/lib/matchHelpers";
+import MatchStatusBadge from "@/components/MatchStatusBadge";
 
 
 const fetchPlayersWithMatchStatus = async (matchId: number, opponent: string | null): Promise<PlayerWithStatus[]> => {
@@ -128,6 +129,7 @@ const MatchCard = ({ match, myPlayer, onStatusChange }: {
               {match.match_date ? formatDateLong(match.match_date) : 'Datum onbekend'}
               {match.start_time && ` om ${formatTime(match.start_time)}`}
             </div>
+            <MatchStatusBadge status={match.status} className="mt-2" />
           </div>
         </CardTitle>
         {match.arrival_time && (
@@ -138,6 +140,11 @@ const MatchCard = ({ match, myPlayer, onStatusChange }: {
         )}
       </CardHeader>
       <CardContent className="space-y-4">
+        {isMatchCancelled(match.status) && (
+          <p className="rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm font-medium text-destructive">
+            Deze wedstrijd is afgelast. Je aanmelding telt niet mee in de statistieken.
+          </p>
+        )}
         {/* My Status */}
         {myPlayer && (
           <div>
